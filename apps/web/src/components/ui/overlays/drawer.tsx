@@ -16,7 +16,7 @@ const sideClass = {
 
 const sizeClass = {
   default: 'max-w-md',
-  wide: 'max-w-[1100px] w-[92vw]',
+  wide: 'max-w-[1400px] w-[94vw]',
 } as const
 
 export interface DrawerContentProps extends React.ComponentProps<

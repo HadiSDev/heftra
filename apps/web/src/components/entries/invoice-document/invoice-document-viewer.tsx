@@ -2,6 +2,7 @@ import * as React from 'react'
 import { Document, Page, pdfjs } from 'react-pdf'
 import 'react-pdf/dist/Page/AnnotationLayer.css'
 import 'react-pdf/dist/Page/TextLayer.css'
+import { useElementWidth } from './use-element-width'
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
@@ -19,11 +20,13 @@ function prefersReducedMotion(): boolean {
 interface PageSlotProps {
   index: number
   scale: number
+  /** The width a page takes at 100%: the width of the pane it is shown in. */
+  fitWidth: number | undefined
   registerRef: (index: number, el: HTMLDivElement | null) => void
 }
 
 /** A page slot that renders its page once scrolled into view. */
-function PageSlot({ index, scale, registerRef }: PageSlotProps) {
+function PageSlot({ index, scale, fitWidth, registerRef }: PageSlotProps) {
   const [visible, setVisible] = React.useState(false)
   const elementRef = React.useRef<HTMLDivElement | null>(null)
 
@@ -63,6 +66,7 @@ function PageSlot({ index, scale, registerRef }: PageSlotProps) {
       {visible ? (
         <Page
           pageNumber={index}
+          width={fitWidth}
           scale={scale}
           className="shadow-lg"
           renderAnnotationLayer
@@ -94,6 +98,7 @@ export default function InvoiceDocumentViewer({
   onDocumentError,
 }: InvoiceDocumentViewerProps) {
   const [numPages, setNumPages] = React.useState(0)
+  const [measureRef, fitWidth] = useElementWidth<HTMLDivElement>()
   const pageRefs = React.useRef(new Map<number, HTMLDivElement>())
 
   const registerRef = React.useCallback(
@@ -118,29 +123,32 @@ export default function InvoiceDocumentViewer({
   }, [pageNumber])
 
   return (
-    <Document
-      file={url}
-      loading={null}
-      error={null}
-      noData={null}
-      onLoadSuccess={(pdf) => {
-        setNumPages(pdf.numPages)
-        onDocumentLoad(pdf.numPages)
-      }}
-      onLoadError={(error) =>
-        onDocumentError(
-          error.message || 'This document could not be displayed.',
-        )
-      }
-    >
-      {Array.from({ length: numPages }, (_, i) => i + 1).map((index) => (
-        <PageSlot
-          key={index}
-          index={index}
-          scale={scale}
-          registerRef={registerRef}
-        />
-      ))}
-    </Document>
+    <div ref={measureRef}>
+      <Document
+        file={url}
+        loading={null}
+        error={null}
+        noData={null}
+        onLoadSuccess={(pdf) => {
+          setNumPages(pdf.numPages)
+          onDocumentLoad(pdf.numPages)
+        }}
+        onLoadError={(error) =>
+          onDocumentError(
+            error.message || 'This document could not be displayed.',
+          )
+        }
+      >
+        {Array.from({ length: numPages }, (_, i) => i + 1).map((index) => (
+          <PageSlot
+            key={index}
+            index={index}
+            scale={scale}
+            fitWidth={fitWidth}
+            registerRef={registerRef}
+          />
+        ))}
+      </Document>
+    </div>
   )
 }

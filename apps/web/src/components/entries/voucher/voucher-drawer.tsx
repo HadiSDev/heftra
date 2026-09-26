@@ -220,7 +220,7 @@ export function VoucherDrawer({
                 {invoice ? (
                   <div
                     className={cn(
-                      'min-h-0 flex-col lg:flex lg:w-[43%] lg:shrink-0 lg:border-r lg:border-border lg:pr-6',
+                      'min-h-0 flex-col lg:flex lg:w-1/2 lg:shrink-0 lg:border-r lg:border-border lg:pr-6',
                       showDocument ? 'flex' : 'hidden lg:flex',
                     )}
                   >

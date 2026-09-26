@@ -312,7 +312,7 @@ describe('VoucherDrawer — layout', () => {
       />,
     )
     expect(screen.getByLabelText('Voucher detail').className).toContain(
-      'max-w-[1100px]',
+      'max-w-[1400px]',
     )
     expect(screen.getByRole('tab', { name: /details/i })).toBeTruthy()
     expect(screen.getByTestId('invoice-document')).toBeTruthy()
@@ -326,7 +326,7 @@ describe('VoucherDrawer — layout', () => {
       />,
     )
     expect(screen.getByLabelText('Voucher detail').className).not.toContain(
-      'max-w-[1100px]',
+      'max-w-[1400px]',
     )
     expect(screen.queryByRole('tab', { name: /details/i })).toBeNull()
     expect(screen.queryByRole('tab', { name: /postings/i })).toBeTruthy()

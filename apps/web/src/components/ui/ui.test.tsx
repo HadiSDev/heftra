@@ -147,7 +147,7 @@ describe('Drawer', () => {
       </Drawer>,
     )
     const panel = screen.getByLabelText('Wide panel')
-    expect(panel.className).toContain('max-w-[1100px]')
+    expect(panel.className).toContain('max-w-[1400px]')
     expect(panel.className).not.toContain('max-w-md')
   })
 })
