@@ -1,4 +1,4 @@
-"""Named result rows for the ERP entry queries."""
+"""Named result rows for the ERP entry and voucher queries."""
 from __future__ import annotations
 
 from decimal import Decimal

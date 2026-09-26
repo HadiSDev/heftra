@@ -1,13 +1,13 @@
 ## 1. Shared voucher netting (web-api)
 
-- [ ] 1.1 Move `EntryRow` and `InvoiceHeaderState` to `web_api/vouchers/rows.py`, and `_bucket_key`, `_net_spend`, `_voucher_amount`, `_shared`, `_AMOUNT_FIELDS` to `web_api/vouchers/amounts.py` as public functions; the router imports them; existing tests pass unchanged
+- [x] 1.1 Move `EntryRow` and `InvoiceHeaderState` to `web_api/vouchers/rows.py`, and `_bucket_key`, `_net_spend`, `_voucher_amount`, `_shared`, `_AMOUNT_FIELDS` to `web_api/vouchers/amounts.py` as public functions; the router imports them; existing tests pass unchanged
 
 ## 2. Spend allocation and periods (web-api)
 
-- [ ] 2.1 Write failing tests for `spend_analytics/periods.py`: comparison period of equal length ending the day before; twelve calendar months ending with a date; `from` after `to` rejected
-- [ ] 2.2 Implement `periods.py`
-- [ ] 2.3 Write failing tests for `spend_analytics/allocation.py`: VAT-inclusive lines give the posted net; a split across categories adds up to the posting exactly (remainder to the largest part); uncategorized, failed and missing lines go to "Not categorized"; a posting without an invoice has no supplier; unconverted postings are counted, not summed; only the caller's companies; voucher date is the earliest expense posting's date
-- [ ] 2.4 Implement `allocation.py` producing `AllocatedSpend` rows for a scope and date window
+- [x] 2.1 Write failing tests for `spend_analytics/periods.py`: comparison period of equal length ending the day before; twelve calendar months ending with a date; `from` after `to` rejected
+- [x] 2.2 Implement `periods.py`
+- [x] 2.3 Write failing tests for `spend_analytics/allocation.py`: VAT-inclusive lines give the posted net; a split across categories adds up to the posting exactly (remainder to the largest part); uncategorized, failed and missing lines go to "Not categorized"; a posting without an invoice has no supplier; unconverted postings are counted, not summed; only the caller's companies; voucher date is the earliest expense posting's date
+- [x] 2.4 Implement `allocation.py` producing `AllocatedSpend` rows for a scope and date window
 
 ## 3. Reports (web-api)
 

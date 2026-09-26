@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from datetime import date
-from decimal import Decimal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import String, func, literal, nulls_last, or_
@@ -11,15 +10,12 @@ from sqlmodel import Session, select
 from web_api.db.models import (
     AuditLog,
     Company,
-    ErpAccount,
     ErpEntry,
     File,
     Invoice,
     InvoiceLine,
     User,
-    Vendor,
 )
-from web_api.db.models.enums import EXPENSE_ACCOUNT_TYPE
 from .. import config, spend_coverage
 from ..auth.deps import TenantScope, get_session, resolve_company_ids, tenant_scope
 from ..schemas import (
@@ -38,48 +34,17 @@ from ..schemas import (
 )
 from ..reconcile import reconcile_lines, totals_agree
 from ..spend_coverage import LineState, VoucherSpend
-from .entry_rows import EntryRow, InvoiceHeaderState
+from ..vouchers.amounts import bucket_key, group_invoice_id, shared_value, voucher_amount
+from ..vouchers.query import entry_rows, entry_select, sync_enabled_condition, visible_entry_conditions
+from ..vouchers.rows import EntryRow, InvoiceHeaderState
 from .invoices import _invoice_read
 
 router = APIRouter(prefix="/api/v1", tags=["erp-entries"])
-
-_ZERO = Decimal("0")
 
 _GROUP_KEY = func.coalesce(
     literal("v:", String) + ErpEntry.voucher_id,
     literal("e:", String) + ErpEntry.id,
 )
-
-_EXCLUDED_ENTRY_TYPES = ("payment",)
-
-
-def _sync_enabled_condition():
-    """A posting is visible only if its account is still selected for sync."""
-    return ErpEntry.erp_account_id.in_(
-        select(ErpAccount.id).where(ErpAccount.sync_enabled == True)  # noqa: E712
-    )
-
-
-def _entry_select():
-    """Base select yielding each entry with its account, vendor and category columns."""
-    return (
-        select(
-            ErpEntry,
-            ErpAccount.erp_account_code,
-            ErpAccount.erp_account_name,
-            Vendor.id,
-            Vendor.name,
-            ErpAccount.erp_account_type,
-            InvoiceLine.level_1,
-            InvoiceLine.level_2,
-            InvoiceLine.level_3,
-        )
-        .join(ErpAccount, ErpAccount.id == ErpEntry.erp_account_id)
-        .outerjoin(Invoice, Invoice.id == ErpEntry.source_invoice_id)
-        .outerjoin(Vendor, Vendor.id == Invoice.vendor_id)
-        .outerjoin(InvoiceLine, InvoiceLine.id == ErpEntry.source_invoice_line_id)
-    )
-
 
 _OWN_FIELDS = tuple(
     name
@@ -90,11 +55,6 @@ _OWN_FIELDS = tuple(
         "spend_category_level_1", "spend_category_level_2", "spend_category_level_3",
     }
 )
-
-
-def _entry_rows(session: Session, statement) -> list[EntryRow]:
-    """Run a `_entry_select()` statement and name its columns."""
-    return [EntryRow(*row) for row in session.exec(statement).all()]
 
 
 def _entry_read(row: EntryRow) -> ErpEntryRead:
@@ -125,13 +85,7 @@ def _entry_conditions(
     needs_review: bool | None = None,
 ) -> list:
     """The WHERE clause shared by every entry listing."""
-    conditions = [
-        ErpEntry.company_id.in_(company_ids),
-        ErpEntry.entry_type.notin_(_EXCLUDED_ENTRY_TYPES),
-        ErpEntry.erp_account_id.in_(
-            select(ErpAccount.id).where(ErpAccount.sync_enabled == True)  # noqa: E712
-        ),
-    ]
+    conditions = visible_entry_conditions(company_ids)
     if entry_type is not None:
         conditions.append(ErpEntry.entry_type == entry_type)
     if voucher_id is not None:
@@ -200,9 +154,9 @@ def list_erp_entries(
     total = session.exec(
         select(func.count()).select_from(ErpEntry).where(*conditions)
     ).one()
-    rows = _entry_rows(
+    rows = entry_rows(
         session,
-        _entry_select()
+        entry_select()
         .where(*conditions)
         .order_by(
             nulls_last(ErpEntry.accounting_date.desc()),
@@ -275,21 +229,21 @@ def list_voucher_groups(
 
     order = [(company, key) for company, key, _ in keys]
     last_dates = {(company, key): last for company, key, last in keys}
-    rows = _entry_rows(
+    rows = entry_rows(
         session,
-        _entry_select()
+        entry_select()
         .where(*conditions, _GROUP_KEY.in_([key for _, key in order]))
         .order_by(ErpEntry.accounting_date, ErpEntry.id)
     )
 
     buckets: dict[tuple[str, str], list[EntryRow]] = {pair: [] for pair in order}
     for row in rows:
-        bucket = buckets.get(_bucket_key(row.entry))
+        bucket = buckets.get(bucket_key(row.entry))
         if bucket is not None:
             bucket.append(row)
 
     group_invoices = {
-        pair: _group_invoice_id(buckets[pair]) for pair in order
+        pair: group_invoice_id(buckets[pair]) for pair in order
     }
     invoice_ids = {inv for inv in group_invoices.values() if inv is not None}
     lines_by_invoice = _invoice_lines_for(session, invoice_ids)
@@ -338,14 +292,14 @@ def summarize_voucher_groups(
         needs_review=needs_review,
     )
     buckets: dict[tuple[str, str], list[EntryRow]] = {}
-    for row in _entry_rows(session, _entry_select().where(*conditions)):
-        buckets.setdefault(_bucket_key(row.entry), []).append(row)
+    for row in entry_rows(session, entry_select().where(*conditions)):
+        buckets.setdefault(bucket_key(row.entry), []).append(row)
 
     vouchers = []
     invoice_ids = set()
     for (group_company_id, _), rows in buckets.items():
-        amount, _, _, _, unconverted_count = _voucher_amount(rows, "base")
-        invoice_id = _group_invoice_id(rows)
+        amount, _, _, _, unconverted_count = voucher_amount(rows, "base")
+        invoice_id = group_invoice_id(rows)
         vouchers.append(VoucherSpend(group_company_id, amount, unconverted_count > 0, invoice_id))
         if invoice_id is not None:
             invoice_ids.add(invoice_id)
@@ -355,13 +309,6 @@ def summarize_voucher_groups(
         _line_states(session, invoice_ids),
         _base_currencies(session, company_ids),
     ))
-
-
-def _bucket_key(entry: ErpEntry) -> tuple[str, str]:
-    """The (company, group key) a posting belongs to, matching `_GROUP_KEY`."""
-    if entry.voucher_id is not None:
-        return entry.company_id, f"v:{entry.voucher_id}"
-    return entry.company_id, f"e:{entry.id}"
 
 
 def _line_states(session: Session, invoice_ids: set[str]) -> list[LineState]:
@@ -395,61 +342,6 @@ def _base_currencies(session: Session, company_ids: list[str]) -> dict[str, str]
         select(Company.id, Company.base_currency).where(Company.id.in_(company_ids))  # type: ignore[union-attr]
     ).all()
     return {row.id: row.base_currency for row in rows}
-
-
-def _shared(values: list) -> object | None:
-    """The one value every entry agrees on, or None if they disagree."""
-    distinct = {v for v in values}
-    if len(distinct) == 1:
-        return next(iter(distinct))
-    return None
-
-
-_EXPENSE = EXPENSE_ACCOUNT_TYPE
-
-_AMOUNT_FIELDS = {
-    "original": ("debit_amount", "credit_amount", "currency"),
-    "base": ("base_debit_amount", "base_credit_amount", "base_currency"),
-}
-
-
-def _net_spend(rows: list[EntryRow], debit_field: str, credit_field: str) -> Decimal | None:
-    """The group's signed net spend, or None when it spent nothing."""
-    expense_rows = [r for r in rows if r.account_type == _EXPENSE]
-    if not expense_rows:
-        return None
-    return sum(
-        (
-            (getattr(r.entry, debit_field) or _ZERO) - (getattr(r.entry, credit_field) or _ZERO)
-            for r in expense_rows
-        ),
-        _ZERO,
-    )
-
-
-def _voucher_amount(
-    rows: list[EntryRow], mode: str
-) -> tuple[Decimal | None, Decimal | None, Decimal | None, str | None, int]:
-    """Net spend, debit/credit totals, currency and unconverted count for one voucher."""
-    debit_field, credit_field, currency_field = _AMOUNT_FIELDS[mode]
-
-    if mode == "base":
-        summable = [r for r in rows if r.entry.base_currency is not None]
-        unconverted_count = len(rows) - len(summable)
-    else:
-        summable = rows
-        unconverted_count = 0
-
-    if not summable:
-        return None, None, None, None, unconverted_count
-
-    debit_total = sum((getattr(r.entry, debit_field) or _ZERO for r in summable), _ZERO)
-    credit_total = sum((getattr(r.entry, credit_field) or _ZERO for r in summable), _ZERO)
-    amount = _net_spend(summable, debit_field, credit_field)
-    if amount is None and not any(r.account_type for r in summable):
-        amount = debit_total
-    currency = _shared([getattr(r.entry, currency_field) for r in summable])
-    return amount, debit_total, credit_total, currency, unconverted_count
 
 
 def _invoice_lines_for(session: Session, invoice_ids: set[str]) -> dict[str, list[InvoiceLineRead]]:
@@ -511,11 +403,6 @@ def _invoice_header_state(
     }
 
 
-def _group_invoice_id(rows: list[EntryRow]) -> str | None:
-    """The source invoice the group's postings agree on, if any."""
-    return _shared([r.entry.source_invoice_id for r in rows if r.entry.source_invoice_id])
-
-
 def _voucher_group(
     company_id: str,
     key: str,
@@ -527,11 +414,11 @@ def _voucher_group(
 ) -> VoucherGroupRead:
     entries = [r.entry for r in rows]
     voucher_id = entries[0].voucher_id if entries else None
-    amount, debit_total, credit_total, currency, unconverted_count = _voucher_amount(rows, mode)
+    amount, debit_total, credit_total, currency, unconverted_count = voucher_amount(rows, mode)
 
     return VoucherGroupRead(
         voucher_id=voucher_id,
-        voucher_number=_shared([e.voucher_number for e in entries if e.voucher_number]),
+        voucher_number=shared_value([e.voucher_number for e in entries if e.voucher_number]),
         company_id=company_id,
         accounting_date=last_date,
         entry_types=sorted({e.entry_type for e in entries}),
@@ -540,8 +427,8 @@ def _voucher_group(
         debit_total=debit_total,
         credit_total=credit_total,
         currency=currency,
-        vendor_id=_shared([r.vendor_id for r in rows]),
-        vendor_name=_shared([r.vendor_name for r in rows]),
+        vendor_id=shared_value([r.vendor_id for r in rows]),
+        vendor_name=shared_value([r.vendor_name for r in rows]),
         unconverted_count=unconverted_count,
         entries=[_entry_read(r) for r in rows],
         lines=lines or [],
@@ -589,12 +476,12 @@ def _voucher_detail(
             if file_row is not None:
                 document = DocumentRead(file_id=file_row.id, filename=file_row.filename)
 
-    amount, _debit_total, _credit_total, currency, _unconverted_count = _voucher_amount(
+    amount, _debit_total, _credit_total, currency, _unconverted_count = voucher_amount(
         entries, mode
     )
     return VoucherDetailRead(
         voucher_id=first.voucher_id,
-        voucher_number=_shared([r.voucher_number for r in reads if r.voucher_number]),
+        voucher_number=shared_value([r.voucher_number for r in reads if r.voucher_number]),
         company_id=first.company_id,
         accounting_date=max((r.accounting_date for r in reads if r.accounting_date), default=None),
         currency=currency,
@@ -614,12 +501,12 @@ def get_voucher_by_entry(
     session: Session = Depends(get_session),
 ) -> VoucherDetailRead:
     """The voucher a posting belongs to, addressed by the posting."""
-    rows = _entry_rows(
+    rows = entry_rows(
         session,
-        _entry_select().where(
+        entry_select().where(
             ErpEntry.id == entry_id,
             ErpEntry.company_id.in_(scope.company_ids),
-            _sync_enabled_condition(),
+            sync_enabled_condition(),
         )
     )
     if not rows:
@@ -638,13 +525,13 @@ def get_voucher_detail(
     session: Session = Depends(get_session),
 ) -> VoucherDetailRead:
     """One voucher's postings, its invoice with lines, and its document."""
-    rows = _entry_rows(
+    rows = entry_rows(
         session,
-        _entry_select()
+        entry_select()
         .where(
             ErpEntry.voucher_id == voucher_id,
             ErpEntry.company_id.in_(scope.company_ids),
-            _sync_enabled_condition(),
+            sync_enabled_condition(),
         )
         .order_by(ErpEntry.id)
     )
@@ -713,9 +600,9 @@ def get_erp_entry(
     scope: TenantScope = Depends(tenant_scope),
     session: Session = Depends(get_session),
 ) -> ErpEntryRead:
-    rows = _entry_rows(
+    rows = entry_rows(
         session,
-        _entry_select().where(
+        entry_select().where(
             ErpEntry.id == entry_id,
             ErpEntry.company_id.in_(scope.company_ids),
         ),

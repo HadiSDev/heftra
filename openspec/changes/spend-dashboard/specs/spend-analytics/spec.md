@@ -23,7 +23,7 @@ Attributed amounts of one voucher SHALL add up to its spend, so no figure built 
 
 ### Requirement: Spend reports SHALL be tenant-scoped, per base currency, over a period with a comparison
 
-Every spend report SHALL take `from` and `to` dates (inclusive) and an optional `company_id`, SHALL cover only the caller's active companies (a foreign `company_id` is 404), and SHALL return figures per base currency, never summed across currencies. Where a report compares, the comparison period SHALL be the one of the same number of days ending the day before `from`. `from` after `to` SHALL be 422.
+Every spend report SHALL take `from` and `to` dates (inclusive) and an optional `company_id`, SHALL cover only the caller's active companies (a foreign `company_id` is 404), and SHALL return figures per base currency, never summed across currencies. Where a report compares, a period starting on the first of a month SHALL be compared with the same days as many calendar months earlier (a month's last day matching the earlier month's last day), and any other period with as many days ending the day before `from`. `from` after `to` SHALL be 422.
 
 #### Scenario: Another organization's spend
 
@@ -34,6 +34,16 @@ Every spend report SHALL take `from` and `to` dates (inclusive) and an optional 
 
 - **WHEN** the period is 2026-07-01 to 2026-09-30
 - **THEN** the comparison period is 2026-04-01 to 2026-06-30
+
+#### Scenario: A quarter so far
+
+- **WHEN** the period is 2026-07-01 to 2026-09-26
+- **THEN** the comparison period is 2026-04-01 to 2026-06-26
+
+#### Scenario: A custom range
+
+- **WHEN** the period is 2026-07-10 to 2026-07-19
+- **THEN** the comparison period is 2026-06-30 to 2026-07-09
 
 #### Scenario: Two base currencies
 

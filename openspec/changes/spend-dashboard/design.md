@@ -61,7 +61,7 @@ Stacked monthly bars with tooltips and a legend, and a sparkline, are what Recha
 - [Allocation in Python loads every posting in the window] → Windows are at most about two years of one organization's expense postings; if it becomes slow, the allocation can become a SQL query without changing the reports.
 - [Lines' `level_*` names drift from the tree when a category is renamed] → Accepted; the stale-category handling on Spend Lines already surfaces them, and re-categorization refreshes them.
 - [A voucher with lines of zero total value cannot be split] → Attributed wholly to "Not categorized", so it is visible rather than dropped.
-- [Comparing periods of equal length is not "same period last year"] → Stated in the page ("vs 1 Apr – 30 Jun"); a year-over-year option can follow.
+- [Comparing with the months before is not "same period last year"] → Stated in the page ("vs 1 Apr – 30 Jun"); a year-over-year option can follow.
 - [New dependency] → Recharts is widely used and tree-shakeable; only the chart components import it.
 
 ## Migration Plan
@@ -70,4 +70,4 @@ No data migration. Ship the API first (unused until the page switches), then the
 
 ## Open Questions
 
-- Whether "year to date" should compare with the same span of the previous year instead of the preceding span of equal length. This design uses the preceding span for every preset, for one rule.
+- Whether "year to date" should compare with the same span of the previous year. This design compares a period starting on the first of a month with the same days as many calendar months before it (so year to date on 26 September compares with 1 April – 26 December of the year before), for one rule across presets.

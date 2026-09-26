@@ -2,12 +2,12 @@
 
 ### Requirement: The dashboard SHALL be read for a period and a company chosen in the URL
 
-The dashboard SHALL offer a period of this month, this quarter, year to date, last 12 months, or a custom range, defaulting to year to date, and a company filter defaulting to every company; both SHALL be kept in the URL, so a view can be shared and survives a reload, and unknown values SHALL be ignored. Every figure SHALL be for the chosen period and company, and each change SHALL be against the preceding period of the same length, named in the page (for example "vs 1 Apr – 30 Jun").
+The dashboard SHALL offer a period of this month, this quarter, year to date, last 12 months, or a custom range, defaulting to year to date, and a company filter defaulting to every company; both SHALL be kept in the URL, so a view can be shared and survives a reload, and unknown values SHALL be ignored. Every figure SHALL be for the chosen period and company, and each change SHALL be against the comparison period the API uses (the same days as many calendar months earlier for a period starting on the first of a month, otherwise as many days before), named in the page (for example "vs 1 Apr – 26 Jun").
 
 #### Scenario: Choosing a quarter
 
 - **WHEN** the user chooses "This quarter" on 26 September 2026
-- **THEN** the URL holds the period, every figure covers 1 July – 26 September 2026, and changes are against the preceding 88 days
+- **THEN** the URL holds the period, every figure covers 1 July – 26 September 2026, and changes are against 1 April – 26 June 2026
 
 #### Scenario: A shared link
 
