@@ -88,7 +88,7 @@ def _sums(spend: list[AllocatedSpend]) -> dict[tuple[str | None, str | None], De
     """Spend per (level 1, level 2), the uncategorized under (None, None)."""
     sums: dict[tuple[str | None, str | None], Decimal] = {}
     for row in spend:
-        key = (row.level_1, row.level_2) if row.categorized else (None, None)
+        key = (row.category, row.subcategory) if row.categorized else (None, None)
         sums[key] = sums.get(key, ZERO) + row.amount
     return sums
 

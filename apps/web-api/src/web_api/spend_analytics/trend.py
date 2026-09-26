@@ -29,8 +29,8 @@ def top_categories(spend: list[AllocatedSpend], count: int = TOP_CATEGORIES) -> 
     """The top-level categories with the most spend, largest first, ties by name."""
     totals: dict[str, Decimal] = {}
     for row in spend:
-        if row.categorized and row.level_1:
-            totals[row.level_1] = totals.get(row.level_1, ZERO) + row.amount
+        if row.categorized and row.category:
+            totals[row.category] = totals.get(row.category, ZERO) + row.amount
     return sorted(totals, key=lambda name: (-totals[name], name))[:count]
 
 
@@ -38,10 +38,10 @@ def _series(spend: list[AllocatedSpend], months: list[date]) -> list[TrendSeries
     top = top_categories(spend)
     named = [
         TrendSeries(kind="category", name=name,
-                    amounts=_monthly([row for row in spend if row.categorized and row.level_1 == name], months))
+                    amounts=_monthly([row for row in spend if row.categorized and row.category == name], months))
         for name in top
     ]
-    others = [row for row in spend if row.categorized and row.level_1 not in top]
+    others = [row for row in spend if row.categorized and row.category not in top]
     uncategorized = [row for row in spend if not row.categorized]
     if others:
         named.append(TrendSeries(kind="other", amounts=_monthly(others, months)))

@@ -46,12 +46,12 @@ The dashboard SHALL show twelve monthly bars ending with the period's last month
 
 ### Requirement: The dashboard SHALL break spend down by category and by supplier
 
-The dashboard SHALL show spend by top-level category, largest first, each with its amount, its share of the period's spend as a bar, and its change, and each expandable to its second-level categories; and the top ten suppliers, each with amount, share and change, opening the supplier's page when chosen. "Not categorized" SHALL appear as a category, last.
+The dashboard SHALL show spend by top-level category, largest first, each with its amount, its share of the period's spend as a bar, and its change, and each expandable to its subcategories; and the top ten suppliers, each with amount, share and change, opening the supplier's page when chosen. "Not categorized" SHALL appear as a category, last.
 
 #### Scenario: Drilling into a category
 
 - **WHEN** the user expands Technology
-- **THEN** its second-level categories are listed beneath it with their amounts and changes
+- **THEN** its subcategories are listed beneath it with their amounts and changes
 
 #### Scenario: From the dashboard to a supplier
 

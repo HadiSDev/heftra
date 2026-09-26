@@ -23,7 +23,7 @@ def session(engine):
 def _parts(allocation) -> dict[tuple[str | None, str | None], Decimal]:
     parts: dict[tuple[str | None, str | None], Decimal] = {}
     for row in allocation.spend:
-        key = (row.level_1, row.level_2)
+        key = (row.category, row.subcategory)
         parts[key] = parts.get(key, Decimal("0")) + row.amount
     return parts
 
@@ -38,7 +38,7 @@ def test_lines_printed_with_vat_are_attributed_the_posted_net(session):
 
     (row,) = allocation.spend
     assert row.amount == Decimal("295.20")
-    assert (row.level_1, row.level_2, row.categorized) == ("Technology", "Internet", True)
+    assert (row.category, row.subcategory, row.categorized) == ("Technology", "Internet", True)
     assert row.vendor_id == hiper.id
     assert row.currency == "DKK"
 
@@ -138,3 +138,25 @@ def test_each_company_is_in_its_own_base_currency(session):
 
 def test_no_companies_read_nothing(session):
     assert allocate(session, [], SEPTEMBER).spend == []
+
+
+def test_an_uncategorized_discount_is_absorbed_by_what_it_discounts(session):
+    books = Books(session)
+    books.purchase(date(2026, 9, 3), "46.40", vendor=books.supplier("DSB"), lines=[
+        ("58.00", "Travel & Entertainment", "Ground Transport", "ai_categorized"),
+        ("-11.60", None, None, "uncategorized"),
+    ])
+
+    parts = _parts(allocate(session, [books.company.id], SEPTEMBER))
+
+    assert parts == {("Travel & Entertainment", "Ground Transport"): Decimal("46.40")}
+
+
+def test_the_category_is_the_second_tree_level_not_the_direct_indirect_split(session):
+    books = Books(session)
+    books.purchase(date(2026, 9, 3), "10.00", vendor=books.supplier("Shop ApS"),
+                   lines=[("10", "Technology", "Software", "verified")])
+
+    (row,) = allocate(session, [books.company.id], SEPTEMBER).spend
+
+    assert (row.category, row.subcategory) == ("Technology", "Software")

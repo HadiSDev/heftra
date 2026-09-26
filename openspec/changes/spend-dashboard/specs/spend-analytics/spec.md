@@ -2,7 +2,7 @@
 
 ### Requirement: Spend SHALL be the net expense the ERP posted, attributed by the lines' split
 
-A voucher's spend SHALL be its net posting to expense accounts (debit less credit) in its company's base currency, dated by its accounting date. It SHALL be attributed to the voucher's supplier (the vendor of its invoice) and to categories by splitting it across the voucher's invoice lines in proportion to their base amounts: each line's share SHALL go to the line's top-level and second-level category (`level_1`, `level_2`) when the line is categorized (`ai_categorized` or `verified`), and to "Not categorized" otherwise. A voucher with no invoice or no lines of positive total value SHALL be attributed wholly to "Not categorized" and, without an invoice, to no supplier. A voucher whose postings could not be converted SHALL be counted as unconverted and add no amount.
+A voucher's spend SHALL be its net posting to expense accounts (debit less credit) in its company's base currency, dated by its accounting date. It SHALL be attributed to the voucher's supplier (the vendor of its invoice) and to categories by splitting it across the voucher's invoice lines in proportion to their base amounts: each line's share SHALL go to the line's category and subcategory, its second and third tree levels (`level_2`, `level_3`; the first level only splits direct from indirect spend), when the line is categorized (`ai_categorized` or `verified`), and to "Not categorized" otherwise. An uncategorized line below zero, such as a discount, SHALL take no share, so the voucher's other parts absorb it in proportion. A voucher with no invoice or no lines of positive total value SHALL be attributed wholly to "Not categorized" and, without an invoice, to no supplier. A voucher whose postings could not be converted SHALL be counted as unconverted and add no amount.
 
 Attributed amounts of one voucher SHALL add up to its spend, so no figure built on them can exceed the spend it is part of.
 
@@ -15,6 +15,11 @@ Attributed amounts of one voucher SHALL add up to its spend, so no figure built 
 
 - **WHEN** a voucher posted 430.46 and its lines are 484.00 Technology, 39.00 uncategorized and 15.07 Financial Services
 - **THEN** Technology receives 387.20, Not categorized 31.20 and Financial Services 12.06, together 430.46
+
+#### Scenario: A discount on the document
+
+- **WHEN** a voucher posted 46.40 and its lines are 58.00 Travel › Ground Transport and an uncategorized discount of −11.60
+- **THEN** all 46.40 is attributed to Travel › Ground Transport, and "Not categorized" receives nothing
 
 #### Scenario: A posting with no invoice
 
@@ -66,7 +71,7 @@ Every spend report SHALL take `from` and `to` dates (inclusive) and an optional 
 
 ### Requirement: The trend SHALL give monthly spend by the top categories
 
-`GET /api/v1/reports/spend-trend` SHALL return per base currency the spend of each of the twelve calendar months ending with the month of `to`, split by top-level category: the five categories with the most spend over those twelve months by name, and the rest together as "Other", with "Not categorized" apart. Months without spend SHALL be present with zero.
+`GET /api/v1/reports/spend-trend` SHALL return per base currency the spend of each of the twelve calendar months ending with the month of `to`, split by category: the five categories with the most spend over those twelve months by name, and the rest together as "Other", with "Not categorized" apart. Months without spend SHALL be present with zero.
 
 #### Scenario: A quiet month
 
@@ -80,7 +85,7 @@ Every spend report SHALL take `from` and `to` dates (inclusive) and an optional 
 
 ### Requirement: The breakdown SHALL give spend by category and by supplier with their change
 
-`GET /api/v1/reports/spend-breakdown` SHALL return per base currency: each top-level category with its spend in the period, its spend in the comparison period and its second-level categories with theirs, largest first; and the suppliers with the most spend in the period (default 10, at most 50 by `limit`) with their spend in both periods, name, country and id, largest first, ties broken by name.
+`GET /api/v1/reports/spend-breakdown` SHALL return per base currency: each category with its spend in the period, its spend in the comparison period and its subcategories with theirs, largest first; and the suppliers with the most spend in the period (default 10, at most 50 by `limit`) with their spend in both periods, name, country and id, largest first, ties broken by name.
 
 #### Scenario: Categories with their children
 

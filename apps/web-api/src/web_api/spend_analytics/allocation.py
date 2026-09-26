@@ -1,4 +1,8 @@
-"""Posted net expense per voucher, split across its lines' categories and given to its supplier."""
+"""Posted net expense per voucher, split across its lines' categories and given to its supplier.
+
+A category is a line's second tree level and a subcategory its third: the first level only splits
+direct from indirect spend, as the spend-by-category report already assumes.
+"""
 from __future__ import annotations
 
 from datetime import date
@@ -16,6 +20,9 @@ from web_api.vouchers.rows import EntryRow
 from .periods import Period
 
 CATEGORIZED = {LineStatus.AI_CATEGORIZED.value, LineStatus.VERIFIED.value}
+
+CATEGORY_LEVEL = InvoiceLine.level_2
+SUBCATEGORY_LEVEL = InvoiceLine.level_3
 _CENT = Decimal("0.01")
 
 CategoryKey = tuple[str | None, str | None]
@@ -31,8 +38,8 @@ class AllocatedSpend(NamedTuple):
     invoice_id: str | None
     vendor_id: str | None
     spent_on: date
-    level_1: str | None
-    level_2: str | None
+    category: str | None
+    subcategory: str | None
     categorized: bool
     amount: Decimal
 
@@ -91,12 +98,12 @@ def allocate(session: Session, company_ids: list[str], window: Period) -> Alloca
             continue
         invoice_id = group_invoice_id(group)
         vendor_id = shared_value([row.vendor_id for row in group if row.vendor_id])
-        for (level_1, level_2), part in split(amount, weights.get(invoice_id, {})).items():
+        for (category, subcategory), part in split(amount, weights.get(invoice_id, {})).items():
             spend.append(AllocatedSpend(
                 company_id=company_id, currency=currency, voucher=voucher,
                 invoice_id=invoice_id, vendor_id=vendor_id, spent_on=spent_on,
-                level_1=level_1, level_2=level_2,
-                categorized=(level_1, level_2) != NOT_CATEGORIZED, amount=part,
+                category=category, subcategory=subcategory,
+                categorized=(category, subcategory) != NOT_CATEGORIZED, amount=part,
             ))
     return Allocation(spend, unconverted)
 
@@ -125,25 +132,31 @@ def _spent_on(group: list[EntryRow]) -> date:
 
 
 def _line_weights(session: Session, invoice_ids: set[str]) -> dict[str, dict[CategoryKey, Decimal]]:
-    """`{invoice_id: {category: the lines' value in it}}`, uncategorized lines under one key."""
+    """`{invoice_id: {category: the lines' value in it}}`, uncategorized lines under one key.
+
+    An uncategorized line below zero, such as a discount, is left out: the posting already nets it,
+    so the voucher's other parts absorb it in proportion rather than "Not categorized" going negative.
+    """
     if not invoice_ids:
         return {}
     lines = session.exec(
-        select(InvoiceLine.invoice_id, InvoiceLine.status, InvoiceLine.level_1,
-               InvoiceLine.level_2, InvoiceLine.base_amount)
+        select(InvoiceLine.invoice_id, InvoiceLine.status, CATEGORY_LEVEL,
+               SUBCATEGORY_LEVEL, InvoiceLine.base_amount)
         .where(InvoiceLine.invoice_id.in_(invoice_ids), InvoiceLine.base_amount.is_not(None))
     ).all()
     weights: dict[str, dict[CategoryKey, Decimal]] = {}
     for line in (_weight(*line) for line in lines):
+        if line.key == NOT_CATEGORIZED and line.amount < 0:
+            continue
         per_invoice = weights.setdefault(line.invoice_id, {})
         per_invoice[line.key] = per_invoice.get(line.key, ZERO) + line.amount
     return weights
 
 
-def _weight(invoice_id: str, status: str, level_1: str | None, level_2: str | None,
+def _weight(invoice_id: str, status: str, category: str | None, subcategory: str | None,
             amount: Decimal) -> _LineWeight:
-    if str(status) in CATEGORIZED and level_1:
-        return _LineWeight(invoice_id, (level_1, level_2), amount)
+    if str(status) in CATEGORIZED and category:
+        return _LineWeight(invoice_id, (category, subcategory), amount)
     return _LineWeight(invoice_id, NOT_CATEGORIZED, amount)
 
 

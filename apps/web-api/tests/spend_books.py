@@ -65,7 +65,7 @@ class Books:
         converted: bool = True,
         invoice_date: date | None = None,
     ) -> Invoice | None:
-        """Post a purchase of `net` on `on`; lines are (amount, level_1, level_2, status)."""
+        """Post a purchase of `net` on `on`; lines are (amount, category, subcategory, status)."""
         self._vouchers += 1
         voucher = f"{self.company.id}-{self._vouchers}"
         invoice = None
@@ -75,11 +75,12 @@ class Books:
                               status="uncategorized")
             self.session.add(invoice)
             self.session.commit()
-            for sequence, (amount, level_1, level_2, status) in enumerate(lines or []):
+            for sequence, (amount, category, subcategory, status) in enumerate(lines or []):
                 self.session.add(InvoiceLine(
                     company_id=self.company.id, invoice_id=invoice.id, sequence=sequence,
                     amount=Decimal(amount), base_amount=Decimal(amount),
-                    base_currency=self.company.base_currency, level_1=level_1, level_2=level_2,
+                    base_currency=self.company.base_currency,
+                    level_1="Indirect" if category else None, level_2=category, level_3=subcategory,
                     status=status, confidence=Decimal("0.9"),
                 ))
         self._post(voucher, self.expense, on, debit=net, invoice=invoice, converted=converted)

@@ -38,8 +38,8 @@ Each endpoint loads one window covering everything it needs (for example the com
 ### A voucher's date is its expense postings' accounting date
 The earliest accounting date among the voucher's expense postings. Invoice dates are not used: some vouchers have no invoice, and the ledger is what the period is about.
 
-### Categories by name, two levels
-Grouping uses `level_1` and `level_2` names, "Not categorized" for uncategorized, failed or missing lines and for vouchers without lines. Names not ids, because companies on different trees should add up where the names match, and the dashboard shows names.
+### Categories by name: the second and third tree levels
+The first level of a spend tree only splits direct from indirect spend (the default template's `Direct`/`Indirect`), so a category is a line's `level_2` and a subcategory its `level_3`, as `GET /reports/spend-by-category` already defaults to. Grouping uses those names, "Not categorized" for uncategorized, failed or missing lines and for vouchers without lines. Names not ids, because companies on different trees should add up where the names match, and the dashboard shows names.
 
 ### New supplier = first invoice to the caller inside the period
 From `min(invoice_date)` over the caller's invoices per vendor, not from the loaded window, so a supplier last used two years ago is not "new".
