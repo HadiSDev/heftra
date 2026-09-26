@@ -1,5 +1,10 @@
 import type { VoucherSelection } from './api/entries'
-import type { EntryFilters, LineOrigin, VoucherTab } from './api/types'
+import type {
+  DocumentFilter,
+  EntryFilters,
+  LineOrigin,
+  VoucherTab,
+} from './api/types'
 
 /** Read one search key, dropping empty values. */
 function str(value: unknown): string | undefined {
@@ -29,6 +34,25 @@ function origin(value: unknown): LineOrigin | undefined {
     : undefined
 }
 
+/** The document states worth filtering by. */
+export const DOCUMENT_FILTERS: ReadonlyArray<DocumentFilter> = [
+  'failed',
+  'mismatch',
+]
+
+/** Read the document filter, ignoring unknown values. */
+function document(value: unknown): DocumentFilter | undefined {
+  return typeof value === 'string' &&
+    (DOCUMENT_FILTERS as ReadonlyArray<string>).includes(value)
+    ? (value as DocumentFilter)
+    : undefined
+}
+
+/** Read a flag that is only ever on, from `true` or `"true"`. */
+function flag(value: unknown): true | undefined {
+  return value === true || value === 'true' ? true : undefined
+}
+
 /** Read the tab, ignoring unknown values. */
 function tab(value: unknown): VoucherTab | undefined {
   return typeof value === 'string' &&
@@ -48,6 +72,8 @@ export function validateEntrySearch(
     status: str(search.status),
     vendor_id: str(search.vendor_id),
     origin: origin(search.origin),
+    needs_review: flag(search.needs_review),
+    document: document(search.document),
     from: str(search.from),
     to: str(search.to),
     page: Number.isInteger(page) && page > 1 ? page : undefined,

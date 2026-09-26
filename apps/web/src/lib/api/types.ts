@@ -533,6 +533,9 @@ export type LineOrigin = 'erp' | 'document_ai' | 'entry_fallback' | 'human'
 export type VoucherTab = 'details' | 'lines' | 'postings' | 'activity'
 
 /** Filters accepted by both entry list endpoints. Unset keys are not sent. */
+/** A voucher's document state worth filtering by. */
+export type DocumentFilter = 'failed' | 'mismatch'
+
 export interface EntryFilters {
   company_id?: string
   entry_type?: string
@@ -542,6 +545,8 @@ export interface EntryFilters {
   origin?: LineOrigin
   /** Only vouchers with a low-confidence AI line. */
   needs_review?: boolean
+  /** Only vouchers whose document failed, or whose document total disagrees with the ERP. */
+  document?: DocumentFilter
   from?: string
   to?: string
   page?: number

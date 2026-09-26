@@ -20,6 +20,7 @@ import { fromIsoDate, humanizeKey, toIsoDate } from '#/lib/format/format'
 import { CountryFlag } from '#/components/fields/country-flag'
 import type {
   CompanyRead,
+  DocumentFilter,
   EntryFilters,
   LineOrigin,
   VendorRead,
@@ -68,6 +69,10 @@ const STATUSES = ['pending', 'posted', 'synced', 'failed'] as const
 const ALL = '__all__'
 const REVIEW = 'needs_review'
 const REVIEW_OPTIONS = [{ value: REVIEW, label: 'Needs review' }]
+const DOCUMENT_OPTIONS: Array<{ value: DocumentFilter; label: string }> = [
+  { value: 'failed', label: 'Document failed' },
+  { value: 'mismatch', label: 'Total disagrees' },
+]
 
 const STATUS_OPTIONS = STATUSES.map((value) => ({
   value,
@@ -106,6 +111,7 @@ export function FilterBar({
       'vendor_id',
       'origin',
       'needs_review',
+      'document',
       'from',
       'to',
     ] as const
@@ -257,6 +263,33 @@ export function FilterBar({
           <SelectContent>
             <SelectItem value={ALL}>Any confidence</SelectItem>
             <SelectItem value={REVIEW}>Needs review</SelectItem>
+          </SelectContent>
+        </Select>
+      </label>
+
+      <label className="flex flex-col gap-1.5">
+        <span className="text-xs font-medium text-muted-foreground">
+          Document
+        </span>
+        <Select
+          value={filters.document ?? ''}
+          onValueChange={(next: string | null) =>
+            onChange({
+              document: DOCUMENT_OPTIONS.find((option) => option.value === next)
+                ?.value,
+            })
+          }
+        >
+          <SelectTrigger className={CONTROL}>
+            <SelectValue placeholder="Any document" items={DOCUMENT_OPTIONS} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ALL}>Any document</SelectItem>
+            {DOCUMENT_OPTIONS.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </label>

@@ -21,7 +21,7 @@
 ## 4. Document filter on vouchers (web-api and web)
 
 - [x] 4.1 Add `document=failed|mismatch` to the vouchers list and summary queries, 422 otherwise, with tests
-- [ ] 4.2 Carry `document` in the Spend Lines URL (`validateEntrySearch`) and offer it in the filter bar as "Document failed" and "Total disagrees", with tests
+- [x] 4.2 Carry `document` in the Spend Lines URL (`validateEntrySearch`) and offer it in the filter bar as "Document failed" and "Total disagrees", with tests
 
 ## 5. Dashboard data layer (web)
 

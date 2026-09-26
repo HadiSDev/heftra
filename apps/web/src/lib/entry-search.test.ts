@@ -50,6 +50,21 @@ describe('validateEntrySearch', () => {
     expect(validateEntrySearch({ page: '4' }).page).toBe(4)
   })
 
+  it('carries the needs-review flag and the document filter', () => {
+    expect(
+      validateEntrySearch({ needs_review: 'true', document: 'mismatch' }),
+    ).toMatchObject({ needs_review: true, document: 'mismatch' })
+    expect(
+      validateEntrySearch({ needs_review: true, document: 'failed' }),
+    ).toMatchObject({ needs_review: true, document: 'failed' })
+  })
+
+  it('drops a document filter or flag it does not know', () => {
+    const parsed = validateEntrySearch({ needs_review: 'no', document: 'lost' })
+    expect(parsed.needs_review).toBeUndefined()
+    expect(parsed.document).toBeUndefined()
+  })
+
   it('carries the open voucher and tab', () => {
     expect(
       validateEntrySearch({ voucher: '4821', tab: 'activity' }),
