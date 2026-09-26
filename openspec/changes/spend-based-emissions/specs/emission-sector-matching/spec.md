@@ -118,7 +118,7 @@ When a human changes a line's item name, description or spend category, a sector
 `python -m ai_api.emissions.runner --company-id <id> [--limit N] [--rematch]` SHALL match the company's eligible lines and print the counts: matched by the agent, matched by the fallback, unmatched, cached and failed.
 
 - `--limit` SHALL cap the number of lines considered.
-- `--rematch` SHALL first clear the company's `ai` sectors. It SHALL leave `human` sectors alone.
+- `--rematch` SHALL first clear the company's `ai` sectors, then ask again rather than reuse cached answers, replacing them. It SHALL leave `human` sectors alone.
 - With no active factor set, it SHALL print that there is nothing to match against and exit successfully without changing a line.
 
 #### Scenario: A company's lines are matched

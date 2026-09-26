@@ -141,3 +141,29 @@ def test_an_unknown_kind_fails(worker_engine, make_tenant):
     with Session(worker_engine) as s:
         with pytest.raises(RunFailed, match="unknown run kind"):
             execute(s, "reindex", tenant["company_id"])
+
+
+def test_match_emissions_without_factors_succeeds_as_skipped(worker_engine, make_tenant):
+    tenant = make_tenant("Acme")
+
+    with Session(worker_engine) as s:
+        summary = execute(s, "match_emissions", tenant["company_id"])
+
+    assert summary == {"skipped": "no active factor set"}
+
+
+def test_match_emissions_runs_the_matcher_for_the_company(worker_engine, make_tenant, monkeypatch):
+    tenant = make_tenant("Acme")
+    seen = []
+
+    def match_company(session, company_id):
+        seen.append(company_id)
+        return {"agent": 2}
+
+    monkeypatch.setattr(executors, "match_company", match_company)
+
+    with Session(worker_engine) as s:
+        summary = execute(s, "match_emissions", tenant["company_id"])
+
+    assert seen == [tenant["company_id"]]
+    assert summary == {"agent": 2}

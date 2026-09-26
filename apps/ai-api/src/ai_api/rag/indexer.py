@@ -6,15 +6,14 @@ from typing import Callable
 
 from qdrant_client import QdrantClient
 from qdrant_client.http import models
-from qdrant_client.http.models import Distance, VectorParams
-from sentence_transformers import SentenceTransformer
 
 from .. import config
+from .collections import collection_exists, recreate_collection
+from .embedding import embed
 
 _COLLECTION_PREFIX = "spend_tree_"
 
 _client: QdrantClient | None = None
-_model: SentenceTransformer | None = None
 
 
 def _get_client() -> QdrantClient:
@@ -28,13 +27,6 @@ def _get_client() -> QdrantClient:
     return _client
 
 
-def _default_embed(texts: list[str]) -> list[list[float]]:
-    global _model
-    if _model is None:
-        _model = SentenceTransformer(config.EMBEDDING_MODEL)
-    return _model.encode(texts, normalize_embeddings=True).tolist()
-
-
 def _collection_name(tenant_id: str) -> str:
     return f"{_COLLECTION_PREFIX}{tenant_id}"
 
@@ -46,25 +38,10 @@ def load_accounts(csv_path: str | None = None) -> list[dict]:
         return list(csv.DictReader(f))
 
 
-def _collection_exists(client: QdrantClient, name: str) -> bool:
-    collections = client.get_collections().collections
-    return any(c.name == name for c in collections)
-
-
-def _recreate_collection(client: QdrantClient, name: str, vector_size: int) -> None:
-    """Drop ``name`` if it exists and create it empty for ``vector_size`` vectors."""
-    if _collection_exists(client, name):
-        client.delete_collection(name)
-    client.create_collection(
-        name,
-        vectors_config=VectorParams(size=vector_size, distance=Distance.COSINE),
-    )
-
-
 def build_index(
     csv_path: str | None = None,
     tenant_id: str | None = None,
-    embed_fn: Callable[[list[str]], list[list[float]]] = _default_embed,
+    embed_fn: Callable[[list[str]], list[list[float]]] = embed,
 ):
     """Embed the chart of accounts into a Qdrant collection for the given tenant."""
     csv_path = csv_path or config.CHART_OF_ACCOUNTS_PATH
@@ -76,7 +53,7 @@ def build_index(
     client = _get_client()
     coll = _collection_name(tid)
 
-    if _collection_exists(client, coll):
+    if collection_exists(client, coll):
         count = client.count(coll).count
         if count == len(rows):
             return
@@ -92,7 +69,7 @@ def build_index(
     embeddings = embed_fn(documents)
     vector_size = len(embeddings[0])
 
-    _recreate_collection(client, coll, vector_size)
+    recreate_collection(client, coll, vector_size)
     client.upsert(
         coll,
         points=[
@@ -110,14 +87,14 @@ def retrieve_accounts(
     query: str,
     top_k: int = 5,
     tenant_id: str | None = None,
-    embed_fn: Callable[[list[str]], list[list[float]]] = _default_embed,
+    embed_fn: Callable[[list[str]], list[list[float]]] = embed,
 ) -> list[dict]:
     """Return the top-K chart-of-accounts rows most relevant to the query."""
     tid = tenant_id or "default"
     client = _get_client()
     coll = _collection_name(tid)
 
-    if not _collection_exists(client, coll):
+    if not collection_exists(client, coll):
         return []
 
     query_vector = embed_fn([query])[0]
@@ -150,7 +127,7 @@ def _node_document(node) -> str:
 def build_tree_index(
     nodes: list,
     tree_id: str,
-    embed_fn: Callable[[list[str]], list[list[float]]] = _default_embed,
+    embed_fn: Callable[[list[str]], list[list[float]]] = embed,
 ) -> None:
     """Embed a spend tree's nodes into a collection of their own."""
     if not nodes:
@@ -159,7 +136,7 @@ def build_tree_index(
     client = _get_client()
     coll = _tree_collection_name(tree_id)
 
-    if _collection_exists(client, coll) and client.count(coll).count == len(nodes):
+    if collection_exists(client, coll) and client.count(coll).count == len(nodes):
         return
 
     documents = [_node_document(node) for node in nodes]
@@ -180,7 +157,7 @@ def build_tree_index(
     ]
     embeddings = embed_fn(documents)
 
-    _recreate_collection(client, coll, len(embeddings[0]))
+    recreate_collection(client, coll, len(embeddings[0]))
     client.upsert(
         coll,
         points=[
@@ -194,12 +171,12 @@ def retrieve_categories(
     query: str,
     tree_id: str,
     top_k: int = 5,
-    embed_fn: Callable[[list[str]], list[list[float]]] = _default_embed,
+    embed_fn: Callable[[list[str]], list[list[float]]] = embed,
 ) -> list[dict]:
     """The top-K nodes of one tree most relevant to a query, best first."""
     client = _get_client()
     coll = _tree_collection_name(tree_id)
-    if not _collection_exists(client, coll):
+    if not collection_exists(client, coll):
         return []
 
     results = client.query_points(

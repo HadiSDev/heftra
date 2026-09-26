@@ -51,21 +51,21 @@
 
 ## 5. Sector matching (ai-api)
 
-- [ ] 5.1 `ai_api/emissions/sector_index.py`: build and query a Qdrant collection per classification from the sector names and descriptions, reusing the `rag/indexer` helpers and an injectable `embed_fn` (tests with a fake embedder)
-- [ ] 5.2 `ai_api/emissions/line_context.py`: load a line's context for matching: its text, amount, category path, supplier name, country, description and website, and the invoice's other lines. Also its question key (tests)
-- [ ] 5.3 `ai_api/emissions/agent/`: the four CrewAI tools (search, sector details, supplier profile, other lines), the agent factory (`max_iter=6`), its prompt, and the parsed answer (code or none, plus confidence and rationale). Validate the code against the classification. Test the tools directly, and the answer parsing
-- [ ] 5.4 `ai_api/emissions/choice/`: the single-shot fallback's numbered prompt and parsed answer, `json_repair` plus pydantic (tests for none, out-of-range and malformed answers)
-- [ ] 5.5 Sector-match cache, following `persistence/categorization_cache` and keyed by question and classification (tests)
-- [ ] 5.6 `ai_api/emissions/lines.py` `match_company(session, company_id, *, limit, rematch, run_agent, choose)`:
-  - [ ] 5.6.1 Select the eligible lines, then use the cache, the agent, or the fallback
-  - [ ] 5.6.2 Store with source `ai`, never touching `human` lines
-  - [ ] 5.6.3 Count agent, fallback, unmatched, cached and failed answers
-  - [ ] 5.6.4 Skip when no set is active
-- [ ] 5.7 Tests for `match_company` with a stub agent and chooser:
-  - [ ] 5.7.1 Human lines untouched; re-match on a new classification
-  - [ ] 5.7.2 Cache hits counted; `--rematch` clears only `ai`
-  - [ ] 5.7.3 Agent failure falls back; both failing counts as failed
-- [ ] 5.8 `ai_api/emissions/runner.py` CLI (`--company-id`, `--limit`, `--rematch`), and a `match_emissions` executor in `worker/executors.py` (tests)
+- [x] 5.1 `ai_api/emissions/sector_index.py`: build and query a Qdrant collection per classification from the sector names and descriptions, reusing the `rag/indexer` helpers and an injectable `embed_fn` (tests with a fake embedder)
+- [x] 5.2 `ai_api/emissions/line_context.py`: load a line's context for matching: its text, amount, category path, supplier name, country, description and website, and the invoice's other lines. Also its question key (tests)
+- [x] 5.3 `ai_api/emissions/agent/`: the four CrewAI tools (search, sector details, supplier profile, other lines), the agent factory (`max_iter=6`), its prompt, and the parsed answer (code or none, plus confidence and rationale). Validate the code against the classification. Test the tools directly, and the answer parsing
+- [x] 5.4 `ai_api/emissions/choice/`: the single-shot fallback's numbered prompt and parsed answer, `json_repair` plus pydantic (tests for none, out-of-range and malformed answers)
+- [x] 5.5 Sector-match cache, following `persistence/categorization_cache` and keyed by question and classification (tests)
+- [x] 5.6 `ai_api/emissions/lines.py` `match_company(session, company_id, *, limit, rematch, run_agent, choose)`:
+  - [x] 5.6.1 Select the eligible lines, then use the cache, the agent, or the fallback
+  - [x] 5.6.2 Store with source `ai`, never touching `human` lines
+  - [x] 5.6.3 Count agent, fallback, unmatched, cached and failed answers
+  - [x] 5.6.4 Skip when no set is active
+- [x] 5.7 Tests for `match_company` with a stub agent and chooser:
+  - [x] 5.7.1 Human lines untouched; re-match on a new classification
+  - [x] 5.7.2 Cache hits counted; `--rematch` clears only `ai`
+  - [x] 5.7.3 Agent failure falls back; both failing counts as failed
+- [x] 5.8 `ai_api/emissions/runner.py` CLI (`--company-id`, `--limit`, `--rematch`), and a `match_emissions` executor in `worker/executors.py` (tests)
 
 ## 6. Frontend
 

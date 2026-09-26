@@ -9,6 +9,7 @@ from web_api.db.models import PipelineRunKind
 
 from ..categorization.company import categorize_company
 from ..documents import runner as documents_runner
+from ..emissions.lines import match_company
 from ..sync import runner as sync_runner
 from ..sync.integrations import connected_integrations
 
@@ -63,10 +64,16 @@ def categorize(session: Session, company_id: str) -> dict:
     return stats
 
 
+def match_emissions(session: Session, company_id: str) -> dict:
+    """Match the company's lines to emission sectors, as the emissions CLI does."""
+    return match_company(session, company_id)
+
+
 EXECUTORS: dict[str, Executor] = {
     PipelineRunKind.SYNC.value: sync,
     PipelineRunKind.READ_DOCUMENTS.value: read_documents,
     PipelineRunKind.CATEGORIZE.value: categorize,
+    PipelineRunKind.MATCH_EMISSIONS.value: match_emissions,
 }
 
 

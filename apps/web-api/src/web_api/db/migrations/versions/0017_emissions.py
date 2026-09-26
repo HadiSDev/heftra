@@ -1,4 +1,4 @@
-"""Emission factor sets, their sectors and factors, and each line's emission sector
+"""Emission factor sets, their sectors and factors, each line's emission sector, and the match cache
 
 Revision ID: 0017_emissions
 Revises: 0016_document_supplier_identity
@@ -83,6 +83,26 @@ def upgrade() -> None:
     op.create_index(
         'ix_emission_country_regions_factor_set_id', 'emission_country_regions', ['factor_set_id'],
     )
+    op.create_table(
+        'emission_sector_cache',
+        sa.Column('id', sa.String(), primary_key=True),
+        sa.Column('question_key', sa.String(), nullable=False),
+        sa.Column('classification', sa.String(), nullable=False),
+        sa.Column('sector_id', sa.String(), nullable=True),
+        sa.Column('confidence', sa.Float(), nullable=True),
+        sa.Column('rationale', sa.String(), nullable=True),
+        sa.Column('question_sample', sa.String(), nullable=True),
+        sa.Column(
+            'created_at', sa.DateTime(timezone=True),
+            server_default=sa.func.now(), nullable=False,
+        ),
+        sa.UniqueConstraint(
+            'question_key', 'classification', name='uq_emission_sector_cache_question',
+        ),
+    )
+    op.create_index(
+        'ix_emission_sector_cache_question_key', 'emission_sector_cache', ['question_key'],
+    )
     op.add_column(
         'invoice_lines',
         sa.Column(
@@ -103,6 +123,8 @@ def downgrade() -> None:
     op.drop_column('invoice_lines', 'emission_sector_confidence')
     op.drop_column('invoice_lines', 'emission_sector_source')
     op.drop_column('invoice_lines', 'emission_sector_id')
+    op.drop_index('ix_emission_sector_cache_question_key', table_name='emission_sector_cache')
+    op.drop_table('emission_sector_cache')
     op.drop_index(
         'ix_emission_country_regions_factor_set_id', table_name='emission_country_regions',
     )
