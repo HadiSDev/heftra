@@ -18,6 +18,7 @@ from web_api.db.models import (
 )
 from .. import config, spend_coverage
 from ..auth.deps import TenantScope, get_session, resolve_company_ids, tenant_scope
+from ..invoice_documents import DocumentFilter, document_condition
 from ..schemas import (
     AuditLogRead,
     CurrencyMode,
@@ -184,6 +185,7 @@ def list_voucher_groups(
     date_to: date | None = Query(default=None, alias="to"),
     vendor_id: str | None = Query(default=None),
     needs_review: bool | None = Query(default=None),
+    document: DocumentFilter | None = Query(default=None),
     currency_mode: CurrencyMode = Query(default="base"),
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=25, ge=1, le=100),
@@ -205,6 +207,8 @@ def list_voucher_groups(
         vendor_id=vendor_id,
         needs_review=needs_review,
     )
+    if document is not None:
+        conditions.append(document_condition(session, company_ids, document))
 
     grouped = (
         select(
@@ -273,6 +277,7 @@ def summarize_voucher_groups(
     date_to: date | None = Query(default=None, alias="to"),
     vendor_id: str | None = Query(default=None),
     needs_review: bool | None = Query(default=None),
+    document: DocumentFilter | None = Query(default=None),
     scope: TenantScope = Depends(tenant_scope),
     session: Session = Depends(get_session),
 ) -> Report[SpendCoverageRow]:
@@ -291,6 +296,8 @@ def summarize_voucher_groups(
         vendor_id=vendor_id,
         needs_review=needs_review,
     )
+    if document is not None:
+        conditions.append(document_condition(session, company_ids, document))
     buckets: dict[tuple[str, str], list[EntryRow]] = {}
     for row in entry_rows(session, entry_select().where(*conditions)):
         buckets.setdefault(bucket_key(row.entry), []).append(row)

@@ -10,8 +10,8 @@ from sqlmodel import Session, select
 
 from web_api import config
 from web_api.db.models import Invoice, InvoiceLine, Vendor
-from web_api.db.models.enums import DocStatus, LineStatus
-from web_api.reconcile import totals_agree
+from web_api.db.models.enums import LineStatus
+from web_api.invoice_documents import failed_invoice_ids, mismatched_invoice_ids
 from web_api.schemas import AttentionCounts, PeriodRead, ReportPeriods
 
 from .allocation import AllocatedSpend
@@ -82,18 +82,8 @@ def attention_counts(session: Session, company_ids: list[str]) -> AttentionCount
             ),
         )
     ).one()
-    failed = session.exec(
-        select(func.count(Invoice.id)).where(
-            Invoice.company_id.in_(company_ids), Invoice.doc_status == DocStatus.FAILED.value,
-        )
-    ).one()
-    documented = session.exec(
-        select(Invoice).where(
-            Invoice.company_id.in_(company_ids),
-            or_(Invoice.document_total.is_not(None), Invoice.document_subtotal.is_not(None)),
-        )
-    ).all()
-    mismatched = sum(1 for invoice in documented if totals_agree(invoice) is False)
+    failed = session.exec(select(func.count()).select_from(failed_invoice_ids(company_ids).subquery())).one()
+    mismatched = len(mismatched_invoice_ids(session, company_ids))
     return AttentionCounts(
         needs_review_lines=needs_review, failed_documents=failed, totals_mismatch=mismatched,
     )
