@@ -18,7 +18,13 @@ from web_api.db.models import (
 )
 from .. import config, spend_coverage
 from ..auth.deps import TenantScope, get_session, resolve_company_ids, tenant_scope
+from ..emissions.factors import active_factor_set
+from ..emissions.reads import with_emissions
+from ..emissions.summary import SummarizedVoucher, summarize
+from ..emissions.vouchers import estimate_vouchers
+from ..fx.service import FxService
 from ..invoice_documents import DocumentFilter, document_condition
+from ..schemas.emissions import EmissionsSummaryRead
 from ..schemas import (
     AuditLogRead,
     CurrencyMode,
@@ -253,17 +259,18 @@ def list_voucher_groups(
     lines_by_invoice = _invoice_lines_for(session, invoice_ids)
     header_by_invoice = _invoice_header_state(session, invoice_ids)
 
+    emissions = estimate_vouchers(session, buckets, FxService(session))
+
     items = []
     for company, key in order:
         invoice_id = group_invoices[(company, key)]
-        items.append(
-            _voucher_group(
-                company, key, last_dates[(company, key)],
-                buckets[(company, key)], currency_mode,
-                lines=lines_by_invoice.get(invoice_id) if invoice_id else None,
-                header=header_by_invoice.get(invoice_id) if invoice_id else None,
-            )
+        group = _voucher_group(
+            company, key, last_dates[(company, key)],
+            buckets[(company, key)], currency_mode,
+            lines=lines_by_invoice.get(invoice_id) if invoice_id else None,
+            header=header_by_invoice.get(invoice_id) if invoice_id else None,
         )
+        items.append(with_emissions(group, emissions.get((company, key))))
     return Page(items=items, page=page, page_size=page_size, total=total)
 
 
@@ -298,9 +305,7 @@ def summarize_voucher_groups(
     )
     if document is not None:
         conditions.append(document_condition(session, company_ids, document))
-    buckets: dict[tuple[str, str], list[EntryRow]] = {}
-    for row in entry_rows(session, entry_select().where(*conditions)):
-        buckets.setdefault(bucket_key(row.entry), []).append(row)
+    buckets = _voucher_buckets(session, conditions)
 
     vouchers = []
     invoice_ids = set()
@@ -316,6 +321,59 @@ def summarize_voucher_groups(
         _line_states(session, invoice_ids),
         _base_currencies(session, company_ids),
     ))
+
+
+@router.get("/erp-entries/vouchers/emissions", response_model=EmissionsSummaryRead)
+def summarize_voucher_emissions(
+    company_id: str | None = Query(default=None),
+    entry_type: str | None = Query(default=None),
+    source_invoice_id: str | None = Query(default=None),
+    status_filter: str | None = Query(default=None, alias="status"),
+    date_from: date | None = Query(default=None, alias="from"),
+    date_to: date | None = Query(default=None, alias="to"),
+    vendor_id: str | None = Query(default=None),
+    needs_review: bool | None = Query(default=None),
+    document: DocumentFilter | None = Query(default=None),
+    scope: TenantScope = Depends(tenant_scope),
+    session: Session = Depends(get_session),
+) -> EmissionsSummaryRead:
+    """Estimated emissions over every voucher the same filters list."""
+    company_ids = resolve_company_ids(scope, company_id)
+    factor_set = active_factor_set(session)
+    if not company_ids:
+        return summarize(factor_set, [])
+
+    conditions = _entry_conditions(
+        company_ids,
+        entry_type=entry_type,
+        source_invoice_id=source_invoice_id,
+        status_filter=status_filter,
+        date_from=date_from,
+        date_to=date_to,
+        vendor_id=vendor_id,
+        needs_review=needs_review,
+    )
+    if document is not None:
+        conditions.append(document_condition(session, company_ids, document))
+    buckets = _voucher_buckets(session, conditions)
+    emissions = estimate_vouchers(session, buckets, FxService(session))
+    currencies = _base_currencies(session, company_ids)
+    return summarize(factor_set, [
+        SummarizedVoucher(
+            currency=currencies[group_company_id],
+            posted_spend=voucher_amount(rows, "base")[0],
+            emissions=emissions[(group_company_id, key)],
+        )
+        for (group_company_id, key), rows in buckets.items()
+    ])
+
+
+def _voucher_buckets(session: Session, conditions: list) -> dict[tuple[str, str], list[EntryRow]]:
+    """Every posting the conditions select, grouped into its voucher."""
+    buckets: dict[tuple[str, str], list[EntryRow]] = {}
+    for row in entry_rows(session, entry_select().where(*conditions)):
+        buckets.setdefault(bucket_key(row.entry), []).append(row)
+    return buckets
 
 
 def _line_states(session: Session, invoice_ids: set[str]) -> list[LineState]:

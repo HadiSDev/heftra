@@ -75,6 +75,8 @@ class VoucherGroupRead(BaseModel):
     document_total: Decimal | None = None
     invoice_total: Decimal | None = None
     invoice_currency: str | None = None
+    kg_co2e: Decimal | None = None
+    emissions_status: str | None = None
 
 
 class VoucherDetailRead(BaseModel):

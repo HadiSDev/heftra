@@ -7,6 +7,7 @@ from decimal import Decimal
 from pydantic import BaseModel, ConfigDict, model_validator
 
 from ... import config
+from ..emissions.sectors import EmissionSectorRead
 
 
 class InvoiceLineRead(BaseModel):
@@ -42,6 +43,14 @@ class InvoiceLineRead(BaseModel):
     verified_fields: list[str] = []
     category_stale: bool = False
     needs_review: bool = False
+    emission_sector_id: str | None = None
+    emission_sector_source: str | None = None
+    emission_sector_confidence: Decimal | None = None
+    emission_sector_rationale: str | None = None
+    emission_sector: EmissionSectorRead | None = None
+    emission_needs_review: bool = False
+    kg_co2e: Decimal | None = None
+    emission_area: str | None = None
 
     @model_validator(mode="after")
     def _derive_category_stale(self) -> "InvoiceLineRead":
@@ -57,6 +66,15 @@ class InvoiceLineRead(BaseModel):
             and (
                 self.confidence is None
                 or float(self.confidence) < config.CATEGORIZATION_REVIEW_THRESHOLD
+            ),
+        )
+        object.__setattr__(
+            self,
+            "emission_needs_review",
+            self.emission_sector_source == "ai"
+            and (
+                self.emission_sector_confidence is None
+                or float(self.emission_sector_confidence) < config.CATEGORIZATION_REVIEW_THRESHOLD
             ),
         )
         return self

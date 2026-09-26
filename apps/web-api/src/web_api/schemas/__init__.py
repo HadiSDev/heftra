@@ -28,7 +28,7 @@ from .erp.integrations import (
 )
 from .invoices.invoice import DocumentRead, InvoiceDetailRead, InvoiceRead
 from .invoices.invoice_edits import InvoiceUpdate, InvoiceVerify
-from .invoices.line_edits import InvoiceLineCreate, InvoiceLineUpdate
+from .invoices.line_edits import InvoiceLineCreate, InvoiceLinePatch, InvoiceLineUpdate
 from .invoices.lines import InvoiceLineRead, InvoiceLineVerify
 from .reports.entries import EntryAccountRow, EntrySummaryRow
 from .reports.spend import CategorySpendRow, VendorSpendRow
@@ -88,6 +88,7 @@ __all__ = [
     "InvoiceDetailRead",
     "InvoiceLineCreate",
     "InvoiceLineRead",
+    "InvoiceLinePatch",
     "InvoiceLineUpdate",
     "InvoiceLineVerify",
     "InvoiceRead",

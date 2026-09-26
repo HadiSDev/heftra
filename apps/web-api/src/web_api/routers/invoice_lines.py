@@ -26,6 +26,12 @@ from ..audit import (
     diff_changes,
     record_audit,
 )
+from ..emissions.line_sector import (
+    EMISSION_SECTOR_FIELDS,
+    SectorNotOffered,
+    choose_sector,
+    forget_stale_ai_sector,
+)
 from ..auth.deps import (
     TenantScope,
     get_session,
@@ -37,8 +43,8 @@ from ..rollup import recompute_invoice_status
 from ..schemas import (
     AuditLogRead,
     InvoiceLineCreate,
+    InvoiceLinePatch,
     InvoiceLineRead,
-    InvoiceLineUpdate,
     InvoiceLineVerify,
     Page,
 )
@@ -160,7 +166,8 @@ def verify_invoice_line(
     """Verify a line's categorization (management only), optionally correcting it."""
     line = _get_scoped_line(session, scope, line_id)
 
-    before = {f: getattr(line, f) for f in LINE_AUDIT_FIELDS}
+    audited = LINE_AUDIT_FIELDS + EMISSION_SECTOR_FIELDS
+    before = {f: getattr(line, f) for f in audited}
 
     corrections = (body.model_dump(exclude_unset=True) if body is not None else {})
     node_id = corrections.get("spend_category_id")
@@ -177,9 +184,10 @@ def verify_invoice_line(
         setattr(line, field, value)
     line.status = LineStatus.VERIFIED
     mark_verified(line, corrections.keys())
+    forget_stale_ai_sector(line, _changed(before, line))
     session.add(line)
 
-    after = {f: getattr(line, f) for f in LINE_AUDIT_FIELDS}
+    after = {f: getattr(line, f) for f in audited}
     corrected_fields = set(corrections) & set(LINE_AUDIT_FIELDS)
     action = "edit" if corrected_fields else "verify"
     record_audit(
@@ -188,7 +196,7 @@ def verify_invoice_line(
         entity_id=line.id,
         action=action,
         actor=scope.user_id,
-        changes=diff_changes(before, after, LINE_AUDIT_FIELDS),
+        changes=diff_changes(before, after, audited),
     )
 
     recompute_invoice_status(session, line.invoice_id)
@@ -200,21 +208,37 @@ def verify_invoice_line(
 _LINE_FX_TRIGGER = "amount"
 
 
+def _changed(before: dict, line: InvoiceLine) -> set[str]:
+    """The fields in `before` whose value on `line` is now different."""
+    return {field for field, value in before.items() if getattr(line, field) != value}
+
+
 @router.patch("/invoice-lines/{line_id}", response_model=InvoiceLineRead)
 def update_invoice_line(
     line_id: str,
-    body: InvoiceLineUpdate,
+    body: InvoiceLinePatch,
     scope: TenantScope = Depends(require_management),
     session: Session = Depends(get_session),
 ) -> InvoiceLine:
-    """Correct what a line says was bought (management only)."""
+    """Correct what a line says was bought, or choose its emission sector (management only)."""
     line = _get_scoped_line(session, scope, line_id)
-    fields = LINE_VALUE_AUDIT_FIELDS + LINE_BASE_FX_FIELDS
+    fields = LINE_VALUE_AUDIT_FIELDS + LINE_BASE_FX_FIELDS + EMISSION_SECTOR_FIELDS
 
     corrections = body.model_dump(exclude_unset=True)
+    choosing_sector = "emission_sector_id" in corrections
+    sector_id = corrections.pop("emission_sector_id", None)
     before = {f: getattr(line, f) for f in fields}
     for field, value in corrections.items():
         setattr(line, field, value)
+    if choosing_sector:
+        try:
+            choose_sector(session, line, sector_id)
+        except SectorNotOffered as error:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(error)
+            ) from error
+    else:
+        forget_stale_ai_sector(line, _changed(before, line))
 
     if getattr(line, _LINE_FX_TRIGGER) != before[_LINE_FX_TRIGGER]:
         line.base_currency = None

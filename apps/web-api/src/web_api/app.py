@@ -12,6 +12,7 @@ import uvicorn
 from web_api import config
 from web_api.routers import (
     companies,
+    emission_sectors,
     erp_entries,
     erp_integrations,
     invoice_lines,
@@ -62,6 +63,7 @@ def create_app() -> FastAPI:
     app.include_router(invoices.router)
     app.include_router(invoice_lines.router)
     app.include_router(erp_entries.router)
+    app.include_router(emission_sectors.router)
     app.include_router(erp_integrations.router)
     app.include_router(organization.router)
     app.include_router(pipeline_runs.router)

@@ -39,15 +39,15 @@
 
 ## 4. API (web-api)
 
-- [ ] 4.1 Add the emissions fields to `VoucherGroupRead` and `InvoiceLineRead`, and fill them in `list_voucher_groups`
-- [ ] 4.2 `GET /erp-entries/vouchers/emissions`: same filters and scoping as `/summary`, returning the factor set, the total, spend per currency and counts per status (schema in `schemas/erp/`)
-- [ ] 4.3 `GET /emission-sectors?q=&limit=`: a new router, searching the active classification (limit default 20, max 50)
-- [ ] 4.4 `PATCH /invoice-lines/{id}` accepts `emission_sector_id`:
-  - [ ] 4.4.1 A sector sets source `human`; null clears; a sector of another classification gets 422
-  - [ ] 4.4.2 Audited
-  - [ ] 4.4.3 Editing item name, description or category clears an `ai` sector
-- [ ] 4.5 API tests for 4.1–4.4, including tenant scoping and the no-factor-set case
-- [ ] 4.6 Accept `match_emissions` in `POST /companies/{id}/runs` (test)
+- [x] 4.1 Add the emissions fields to `VoucherGroupRead` and `InvoiceLineRead`, and fill them in `list_voucher_groups`
+- [x] 4.2 `GET /erp-entries/vouchers/emissions`: same filters and scoping as `/summary`, returning the factor set, the total, spend per currency and counts per status (schema in `schemas/erp/`)
+- [x] 4.3 `GET /emission-sectors?q=&limit=`: a new router, searching the active classification (limit default 20, max 50)
+- [x] 4.4 `PATCH /invoice-lines/{id}` accepts `emission_sector_id`:
+  - [x] 4.4.1 A sector sets source `human`; null clears; a sector of another classification gets 422
+  - [x] 4.4.2 Audited
+  - [x] 4.4.3 Editing item name, description or category clears an `ai` sector
+- [x] 4.5 API tests for 4.1–4.4, including tenant scoping and the no-factor-set case
+- [x] 4.6 Accept `match_emissions` in `POST /companies/{id}/runs` (test)
 
 ## 5. Sector matching (ai-api)
 
