@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import base64
 import logging
-import re
 
 from pydantic import BaseModel, Field
 
@@ -14,34 +13,12 @@ from .errors import VisionUnreadableError
 from .images import DocumentImage
 from .numbers import parse_amount
 from .prompts import SUPPLIER_WEBSITE, TOTALS_BLOCK_CHARGES
+from .summary_rows import without_summary_rows
 
 logger = logging.getLogger("ai_api.documents")
 
 
 _NOT_STATED = {"", "null", "none", "n/a", "na", "nil", "-", "—", "–", "unknown"}
-
-_SUMMARY_LABELS = {
-    "samlet pris", "pris i alt", "i alt", "at betale", "total dkk", "subtotal",
-    "moms", "beløb", "beløb i alt", "total i alt", "sum i alt",
-    "total", "sub total", "sub-total", "grand total", "sum", "amount due",
-    "balance due", "order total", "total amount", "net total", "total due",
-    "vat", "tax", "total excl. vat", "total incl. vat", "items subtotal",
-    "item(s) subtotal",
-    "gesamt", "gesamtbetrag", "zwischensumme", "summe", "mwst", "nettobetrag",
-    "rechnungsbetrag",
-}
-
-
-def _is_summary_row(description: str | None) -> bool:
-    """Is this row a total rather than a thing bought?"""
-    text = (description or "").strip().lower()
-    if not text:
-        return False
-    text = re.sub(r"[\s:.\-–—]+$", "", text)
-    text = re.sub(r"\s*\(?\d+([.,]\d+)?\s*%\)?$", "", text).strip()
-    text = re.sub(r"\s+(dkk|eur|usd|gbp|sek|nok)$", "", text).strip()
-    return text in _SUMMARY_LABELS
-
 
 def _clean(value: str | None) -> str | None:
     """A stated string, or ``None`` when the model wrote a word meaning nothing."""
@@ -236,11 +213,7 @@ def _merge(pages: list[VisionPage]) -> ExtractedInvoice:
         )
     merged["vendor_name"] = merged.get("vendor_name") or ""
     stated = [item for page in pages for item in page.line_items]
-    itemised = [
-        item for item in stated
-        if not _is_summary_row(item.item_name or item.description)
-    ]
-    merged["line_items"] = [item.to_line_item() for item in (itemised or stated)]
+    merged["line_items"] = [item.to_line_item() for item in without_summary_rows(stated)]
     return ExtractedInvoice(**merged)
 
 

@@ -21,6 +21,7 @@ from .images import (
 )
 from .numbers import normalize_numbers
 from .prompts import SUPPLIER_WEBSITE, TOTALS_BLOCK_CHARGES
+from .summary_rows import without_summary_rows
 from .vision import look_at
 
 logger = logging.getLogger("ai_api.documents")
@@ -110,7 +111,7 @@ def extract_lines(payload: DocumentPayload, *, kickoff=None, look=None) -> Extra
         )
 
     return ExtractedLines(
-        lines=list(extracted.line_items),
+        lines=without_summary_rows(list(extracted.line_items)),
         currency=extracted.currency,
         invoice_number=(extracted.invoice_number or "").strip() or None,
         supplier_website=site_root(extracted.supplier_website),

@@ -1,4 +1,4 @@
-"""The supplier's website as its invoice prints it: read on either path, reduced to the site, kept on the invoice."""
+"""What a document says beside its lines: the supplier's website, country and VAT number, and which rows are totals."""
 from __future__ import annotations
 
 import io
@@ -93,3 +93,24 @@ def test_a_country_that_is_not_a_code_is_not_kept():
         return ExtractedInvoice(vendor_name="Revolut Bank UAB", supplier_country_code="Lithuania")
 
     assert extract_lines(_pdf(["INVOICE"]), kickoff=kickoff).supplier_country_code is None
+
+
+def test_the_text_path_drops_a_total_row_too():
+    def kickoff(prompt: str) -> ExtractedInvoice:
+        return ExtractedInvoice(vendor_name="DSB", line_items=[
+            LineItem(description="1 Voksen", amount=58.0),
+            LineItem(description="Samlet pris", amount=58.0),
+        ])
+
+    result = extract_lines(_pdf(["KVITTERING"]), kickoff=kickoff)
+
+    assert [line.description for line in result.lines] == ["1 Voksen"]
+
+
+def test_a_document_stating_only_its_total_keeps_it_as_its_line():
+    def kickoff(prompt: str) -> ExtractedInvoice:
+        return ExtractedInvoice(vendor_name="DSB", line_items=[LineItem(description="Samlet pris", amount=58.0)])
+
+    result = extract_lines(_pdf(["KVITTERING"]), kickoff=kickoff)
+
+    assert [line.amount for line in result.lines] == [58.0]
