@@ -1,12 +1,17 @@
 """Destroying a company, and the things a deletion must leave alone."""
 from __future__ import annotations
 
+from decimal import Decimal
 
 from sqlmodel import Session, select
 
 from web_api.db.models import (
     AuditLog,
     Company,
+    EmissionFactor,
+    EmissionFactorSet,
+    EmissionSector,
+    EmissionSectorSource,
     ErpAccount,
     ErpCredential,
     ErpEntry,
@@ -204,6 +209,34 @@ def test_a_vendor_only_this_company_referenced_survives(client, seed, engine):
 
     with Session(engine) as s:
         assert s.get(Vendor, vendor_id) is not None
+
+
+def test_emission_factors_and_sectors_its_lines_used_survive(client, seed, engine):
+    with Session(engine) as s:
+        factor_set = EmissionFactorSet(
+            source="open_ceda", version="CEDA 2025", classification="ceda-bea", currency="USD",
+            price_year=2023, price_basis="purchaser", licence="CC BY-SA 4.0",
+            attribution="CEDA by Watershed", active=True,
+        )
+        sector = EmissionSector(classification="ceda-bea", code="518200", name="Hosting")
+        s.add(factor_set)
+        s.add(sector)
+        s.commit()
+        s.add(EmissionFactor(factor_set_id=factor_set.id, sector_id=sector.id,
+                             country_code="DE", kg_co2e_per_unit=Decimal("0.08")))
+        line = s.get(InvoiceLine, seed["line_a1"])
+        line.emission_sector_id = sector.id
+        line.emission_sector_source = EmissionSectorSource.AI
+        s.add(line)
+        s.commit()
+        set_id, sector_id = factor_set.id, sector.id
+
+    assert _delete(client, seed["comp_a"], confirm=True).status_code == 200
+
+    with Session(engine) as s:
+        assert s.get(EmissionFactorSet, set_id) is not None
+        assert s.get(EmissionSector, sector_id) is not None
+        assert _count(engine, EmissionFactor) == 1
 
 
 def test_a_shared_spend_tree_survives(client, seed, engine):

@@ -34,6 +34,7 @@ Each voucher SHALL have an `emissions_status`:
 - `estimated`: every line was estimated.
 - `partial`: some lines were.
 - One reason when none were:
+  - `no_spend`: the voucher posted no net expense.
   - `no_lines`: the voucher has no invoice lines.
   - `unmatched`: no line has a sector.
   - `no_factor`: no factor for any country tried.

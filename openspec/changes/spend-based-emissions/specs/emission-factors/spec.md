@@ -50,7 +50,7 @@ At most one factor set SHALL be `active`, and every emission estimate and sector
 - Sheets SHALL be found by their names, and columns by their header labels. A missing sheet or label SHALL fail the import with a message naming it, and write nothing.
 - It SHALL read:
   - the country factors from `GHG_t_Raw`;
-  - the region averages from `Regional Average EFs`;
+  - the region averages from `Regional Average EFs`, and the `ROW` row of `GHG_t_Raw` as the region "Rest of World";
   - the country-to-region map from `Country to region mapping`;
   - the sectors, with their descriptions, from `Metadata`;
   - the version from the Cover sheet.
@@ -87,7 +87,8 @@ Looking up a factor for a sector SHALL try, in order:
 1. the supplier's country;
 2. the supplier's country's region;
 3. the company's country;
-4. the company's country's region.
+4. the company's country's region;
+5. the rest-of-world average, when the set has one.
 
 It SHALL return the factor together with the country or region it came from. When none has a factor, it SHALL return no factor.
 
@@ -108,5 +109,5 @@ It SHALL return the factor together with the country or region it came from. Whe
 
 #### Scenario: No factor anywhere
 
-- **WHEN** neither the supplier's nor the company's country or region has a factor for the sector
+- **WHEN** neither the supplier's nor the company's country or region has a factor for the sector, and the set has no rest-of-world factor for it
 - **THEN** no factor is returned

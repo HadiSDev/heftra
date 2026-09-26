@@ -21,6 +21,13 @@ class InvoiceStatus(str, Enum):
     VERIFIED = "verified"
 
 
+class EmissionSectorSource(str, Enum):
+    """Who chose a line's emission sector."""
+
+    AI = "ai"
+    HUMAN = "human"
+
+
 EXPENSE_ACCOUNT_TYPE = "expense"
 
 

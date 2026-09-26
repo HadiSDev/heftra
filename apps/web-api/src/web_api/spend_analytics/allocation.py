@@ -12,7 +12,9 @@ from typing import NamedTuple
 from sqlmodel import Session, select
 
 from web_api.db.models import Company, ErpEntry, InvoiceLine
-from web_api.db.models.enums import EXPENSE_ACCOUNT_TYPE, LineStatus
+from web_api.db.models.enums import LineStatus
+from web_api.vouchers import shares
+from web_api.vouchers.dates import spent_on as voucher_date
 from web_api.vouchers.amounts import ZERO, bucket_key, group_invoice_id, shared_value, voucher_amount
 from web_api.vouchers.query import entry_rows, entry_select, visible_entry_conditions
 from web_api.vouchers.rows import EntryRow
@@ -23,7 +25,6 @@ CATEGORIZED = {LineStatus.AI_CATEGORIZED.value, LineStatus.VERIFIED.value}
 
 CATEGORY_LEVEL = InvoiceLine.level_2
 SUBCATEGORY_LEVEL = InvoiceLine.level_3
-_CENT = Decimal("0.01")
 
 CategoryKey = tuple[str | None, str | None]
 NOT_CATEGORIZED: CategoryKey = (None, None)
@@ -89,7 +90,7 @@ def allocate(session: Session, company_ids: list[str], window: Period) -> Alloca
     spend: list[AllocatedSpend] = []
     unconverted: list[UnconvertedVoucher] = []
     for (company_id, voucher), group in vouchers.items():
-        spent_on = _spent_on(group)
+        spent_on = voucher_date(group)
         currency = currencies[company_id]
         amount, _, _, _, unconverted_count = voucher_amount(group, "base")
         if unconverted_count:
@@ -109,26 +110,8 @@ def allocate(session: Session, company_ids: list[str], window: Period) -> Alloca
 
 
 def split(amount: Decimal, weights: dict[CategoryKey, Decimal]) -> dict[CategoryKey, Decimal]:
-    """`amount` shared out in proportion to `weights`, in cents that add up to it exactly.
-
-    With no weights, or weights adding up to nothing or less, it all goes to "Not categorized".
-    The cent left over by rounding goes to the largest part.
-    """
-    total = sum(weights.values(), ZERO)
-    if total <= 0:
-        return {NOT_CATEGORIZED: amount}
-    parts = {key: (amount * weight / total).quantize(_CENT) for key, weight in weights.items()}
-    remainder = amount - sum(parts.values(), ZERO)
-    if remainder:
-        largest = max(parts, key=lambda key: abs(parts[key]))
-        parts[largest] += remainder
-    return parts
-
-
-def _spent_on(group: list[EntryRow]) -> date:
-    """The earliest accounting date among the voucher's expense postings, else among all of them."""
-    expense = [row.entry.accounting_date for row in group if row.account_type == EXPENSE_ACCOUNT_TYPE]
-    return min(expense or [row.entry.accounting_date for row in group])
+    """`amount` shared out across categories by `weights`; with none, all of it is uncategorized."""
+    return shares.split(amount, weights) or {NOT_CATEGORIZED: amount}
 
 
 def _line_weights(session: Session, invoice_ids: set[str]) -> dict[str, dict[CategoryKey, Decimal]]:

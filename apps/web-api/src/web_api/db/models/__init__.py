@@ -1,6 +1,17 @@
 from .audit_log import AuditLog
 from .company import Company
-from .enums import DocStatus, InvoiceStatus, LineOrigin, LineStatus, SpendTreeSource
+from .emission_country_region import EmissionCountryRegion
+from .emission_factor import EmissionFactor
+from .emission_factor_set import EmissionFactorSet
+from .emission_sector import EmissionSector
+from .enums import (
+    DocStatus,
+    EmissionSectorSource,
+    InvoiceStatus,
+    LineOrigin,
+    LineStatus,
+    SpendTreeSource,
+)
 from .erp_account import ErpAccount
 from .erp_credential import ErpCredential
 from .erp_entry import ErpEntry
@@ -32,6 +43,11 @@ __all__ = [
     "AuditLog",
     "Company",
     "DocStatus",
+    "EmissionCountryRegion",
+    "EmissionFactor",
+    "EmissionFactorSet",
+    "EmissionSector",
+    "EmissionSectorSource",
     "InvoiceStatus",
     "LineOrigin",
     "LineStatus",

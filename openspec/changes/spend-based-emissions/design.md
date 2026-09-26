@@ -129,6 +129,7 @@ A human choice sets the source to `human` and clears the confidence. The matcher
 2. The supplier's country's UN subregion average.
 3. The company's country.
 4. The company's subregion.
+5. The rest-of-world average: `GHG_t_Raw`'s `ROW` row, stored as the region "Rest of World".
 
 A supplier country in none of CEDA's 149 countries still gets its region: Taiwan maps to "Eastern Asia", for instance.
 

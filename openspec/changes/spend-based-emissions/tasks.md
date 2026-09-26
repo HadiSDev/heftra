@@ -1,41 +1,41 @@
 ## 1. Data model
 
-- [ ] 1.1 Add `EmissionFactorSet`, `EmissionSector`, `EmissionFactor` and `EmissionCountryRegion` models (one file each under `db/models/`) with the uniques and the country-or-region check from the design, and export them
-- [ ] 1.2 Add `emission_sector_id`, `emission_sector_source` (`EmissionSectorSource` enum: ai, human), `emission_sector_confidence` and `emission_sector_rationale` to `InvoiceLine`
-- [ ] 1.3 Add `MATCH_EMISSIONS = "match_emissions"` to `PipelineRunKind`
-- [ ] 1.4 Write migration `0017_emissions` (the tables, the line columns, and the run kind if it is a DB enum); the downgrade drops them. Do not run it
-- [ ] 1.5 Make company deletion leave factor sets and sectors alone (they are global), and cover it with a test
+- [x] 1.1 Add `EmissionFactorSet`, `EmissionSector`, `EmissionFactor` and `EmissionCountryRegion` models (one file each under `db/models/`) with the uniques and the country-or-region check from the design, and export them
+- [x] 1.2 Add `emission_sector_id`, `emission_sector_source` (`EmissionSectorSource` enum: ai, human), `emission_sector_confidence` and `emission_sector_rationale` to `InvoiceLine`
+- [x] 1.3 Add `MATCH_EMISSIONS = "match_emissions"` to `PipelineRunKind`
+- [x] 1.4 Write migration `0017_emissions` (the tables, the line columns, and the run kind if it is a DB enum); the downgrade drops them. Do not run it
+- [x] 1.5 Make company deletion leave factor sets and sectors alone (they are global), and cover it with a test
 
 ## 2. Factor sets and import (web-api)
 
 - [x] 2.1 Confirm the Open CEDA workbook's layout from a downloaded copy (done: sheets, 2023 USD, producer price, ISO3, regional averages; recorded in the design)
-- [ ] 2.2 `web_api/emissions/countries.py`: a static ISO 3166 alpha-3 → alpha-2 table, with tests. Also a local check against the real workbook that every code it holds is known
-- [ ] 2.3 `web_api/emissions/workbook.py`:
-  - [ ] 2.3.1 Read the sheets by name and the labels by text
-  - [ ] 2.3.2 Return the sectors with descriptions, the producer factors per country and region, the purchaser ratios, the country-to-region map, and the set's fields
-  - [ ] 2.3.3 Name any missing sheet or label
-- [ ] 2.4 `web_api/emissions/import_factors.py`:
-  - [ ] 2.4.1 Convert to purchaser prices
-  - [ ] 2.4.2 Upsert the sectors and replace the version's factors and regions
-  - [ ] 2.4.3 `--activate` deactivates the rest in one transaction
-  - [ ] 2.4.4 Print the counts
-  - [ ] 2.4.5 Tests with a small generated workbook: the happy path, a missing sheet, a purchaser conversion, a re-import
-  - [ ] 2.4.6 Declare `openpyxl` in web-api's dependencies (the user runs the sync)
-- [ ] 2.5 `web_api/emissions/factors.py`: `active_factor_set(session)`, plus a `FactorLookup` that loads a set's factors and regions once, then finds a factor for a sector with the four-step fallback and says which area it used (tests)
+- [x] 2.2 `web_api/emissions/countries.py`: a static ISO 3166 alpha-3 → alpha-2 table, with tests. Also a local check against the real workbook that every code it holds is known
+- [x] 2.3 `web_api/emissions/workbook.py`:
+  - [x] 2.3.1 Read the sheets by name and the labels by text
+  - [x] 2.3.2 Return the sectors with descriptions, the producer factors per country and region, the purchaser ratios, the country-to-region map, and the set's fields
+  - [x] 2.3.3 Name any missing sheet or label
+- [x] 2.4 `web_api/emissions/import_factors.py`:
+  - [x] 2.4.1 Convert to purchaser prices
+  - [x] 2.4.2 Upsert the sectors and replace the version's factors and regions
+  - [x] 2.4.3 `--activate` deactivates the rest in one transaction
+  - [x] 2.4.4 Print the counts
+  - [x] 2.4.5 Tests with a small generated workbook: the happy path, a missing sheet, a purchaser conversion, a re-import
+  - [x] 2.4.6 Declare `openpyxl` in web-api's dependencies (the user runs the sync)
+- [x] 2.5 `web_api/emissions/factors.py`: `active_factor_set(session)`, plus a `FactorLookup` that loads a set's factors and regions once, then finds a factor for a sector with the four-step fallback and says which area it used (tests)
 
 ## 3. Estimate (web-api)
 
-- [ ] 3.1 Move `split` out of `spend_analytics/allocation.py` into a shared module both packages import, and keep allocation's behaviour and tests unchanged
-- [ ] 3.2 `web_api/emissions/estimate.py`:
-  - [ ] 3.2.1 Split a voucher's net spend across its lines, absorbing discounts
-  - [ ] 3.2.2 Convert to the set's currency at the voucher date through `FxService`
-  - [ ] 3.2.3 Multiply by the factor, with the supplier country taken from the vendor, else the printed country, else the company
-  - [ ] 3.2.4 Return per-line kg, the country used, and the voucher's total and `emissions_status`
-- [ ] 3.3 Tests on the `Books` builder:
-  - [ ] 3.3.1 Single line; posted net vs VAT-inclusive lines; discount absorbed
-  - [ ] 3.3.2 Partial; `no_lines`; `unmatched`; `no_factor`; `unconverted` (stub provider failing); `no_factor_set`
-  - [ ] 3.3.3 Country fallback
-- [ ] 3.4 Batch the lookups for a page of vouchers: one query for the lines' sectors and factors, and rates memoized per (currency, date)
+- [x] 3.1 Move `split` out of `spend_analytics/allocation.py` into a shared module both packages import, and keep allocation's behaviour and tests unchanged
+- [x] 3.2 `web_api/emissions/estimate.py`:
+  - [x] 3.2.1 Split a voucher's net spend across its lines, absorbing discounts
+  - [x] 3.2.2 Convert to the set's currency at the voucher date through `FxService`
+  - [x] 3.2.3 Multiply by the factor, with the supplier country taken from the vendor, else the printed country, else the company
+  - [x] 3.2.4 Return per-line kg, the country used, and the voucher's total and `emissions_status`
+- [x] 3.3 Tests on the `Books` builder:
+  - [x] 3.3.1 Single line; posted net vs VAT-inclusive lines; discount absorbed
+  - [x] 3.3.2 Partial; `no_lines`; `unmatched`; `no_factor`; `unconverted` (stub provider failing); `no_factor_set`
+  - [x] 3.3.3 Country fallback
+- [x] 3.4 Batch the lookups for a page of vouchers: one query for the lines' sectors and factors, and rates memoized per (currency, date)
 
 ## 4. API (web-api)
 

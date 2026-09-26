@@ -19,6 +19,7 @@ class PipelineRunKind(str, Enum):
     SYNC = "sync"
     READ_DOCUMENTS = "read_documents"
     CATEGORIZE = "categorize"
+    MATCH_EMISSIONS = "match_emissions"
 
 
 class PipelineRunStatus(str, Enum):
