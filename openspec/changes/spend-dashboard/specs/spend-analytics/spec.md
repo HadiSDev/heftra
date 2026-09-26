@@ -80,7 +80,7 @@ Every spend report SHALL take `from` and `to` dates (inclusive) and an optional 
 
 #### Scenario: Many categories
 
-- **WHEN** nine top-level categories have spend
+- **WHEN** nine categories have spend
 - **THEN** the five largest are named and the other four are summed as "Other"
 
 ### Requirement: The breakdown SHALL give spend by category and by supplier with their change

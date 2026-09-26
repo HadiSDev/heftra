@@ -26,7 +26,7 @@ Data volumes are small (tens to low thousands of vouchers per organization); rep
 
 ### Allocate once, report many times
 A `web_api/spend_analytics/` package holds:
-- `allocation.py`: loads the expense postings in scope for a date window, groups them into vouchers, nets them, and splits each voucher across its lines' categories, producing `AllocatedSpend` rows (company, currency, voucher key, invoice id, vendor id, date, `level_1`, `level_2`, categorized flag, amount). Allocated amounts of a voucher are rounded to cents with the remainder given to its largest part, so they add up exactly.
+- `allocation.py`: loads the expense postings in scope for a date window, groups them into vouchers, nets them, and splits each voucher across its lines' categories, producing `AllocatedSpend` rows (company, currency, voucher key, invoice id, vendor id, date, category, subcategory, categorized flag, amount). Allocated amounts of a voucher are rounded to cents with the remainder given to its largest part, so they add up exactly.
 - `periods.py`: `Period(start, end)`, its comparison period (same number of days, ending the day before), and the twelve calendar months ending with a date.
 - `overview.py`, `trend.py`, `breakdown.py`, `insights.py`: pure functions over allocated rows plus the few extra facts they need (first invoice date per supplier, attention counts).
 
