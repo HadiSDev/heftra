@@ -345,8 +345,8 @@ def summarize_voucher_groups(
     invoice_ids = set()
     for (group_company_id, _), rows in buckets.items():
         amount, _, _, _, unconverted_count = _voucher_amount(rows, "base")
-        vouchers.append(VoucherSpend(group_company_id, amount, unconverted_count > 0))
         invoice_id = _group_invoice_id(rows)
+        vouchers.append(VoucherSpend(group_company_id, amount, unconverted_count > 0, invoice_id))
         if invoice_id is not None:
             invoice_ids.add(invoice_id)
 
@@ -374,6 +374,7 @@ def _line_states(session: Session, invoice_ids: set[str]) -> list[LineState]:
             InvoiceLine.status,
             InvoiceLine.confidence,
             InvoiceLine.base_amount,
+            InvoiceLine.invoice_id,
         ).where(InvoiceLine.invoice_id.in_(invoice_ids))  # type: ignore[union-attr]
     ).all()
     return [
@@ -382,6 +383,7 @@ def _line_states(session: Session, invoice_ids: set[str]) -> list[LineState]:
             status=str(row.status),
             confidence=row.confidence,
             base_amount=row.base_amount,
+            invoice_id=row.invoice_id,
         )
         for row in rows
     ]

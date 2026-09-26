@@ -6,6 +6,7 @@ from decimal import Decimal
 import pytest
 from sqlmodel import Session, select
 
+from web_api import spend_coverage
 from web_api.db.models import ErpEntry, InvoiceLine
 
 from web_api_testkit import auth
@@ -108,3 +109,49 @@ def test_another_tenant_sees_none_of_it(client, converted):
 
     assert res.status_code == 200
     assert all(row["voucher_count"] == 0 for row in res.json()["rows"])
+
+
+def _voucher(amount: str, invoice_id: str | None = "inv") -> "spend_coverage.VoucherSpend":
+    return spend_coverage.VoucherSpend("c1", Decimal(amount), False, invoice_id)
+
+
+def _line(amount: str, status: str = "ai_categorized", invoice_id: str = "inv") -> "spend_coverage.LineState":
+    return spend_coverage.LineState("c1", status, Decimal("0.9"), Decimal(amount), invoice_id)
+
+
+def _tally(vouchers, lines) -> dict:
+    (row,) = spend_coverage.tally(vouchers, lines, {"c1": "DKK"})
+    return row
+
+
+def test_lines_printed_with_vat_count_no_more_than_was_posted():
+    row = _tally([_voucher("295.20")], [_line("369.00"), _line("0.00")])
+
+    assert row.categorized_spend == Decimal("295.20")
+    assert row.posted_spend == Decimal("295.20")
+
+
+def test_the_posted_spend_is_split_as_the_lines_split_it():
+    row = _tally([_voucher("430.46")], [
+        _line("484.00"), _line("39.00", status="uncategorized"), _line("15.07"),
+    ])
+
+    assert row.categorized_spend == Decimal("399.26")
+
+
+def test_a_discount_the_lines_leave_out_cannot_take_the_share_past_the_whole():
+    row = _tally([_voucher("539.86")], [_line("478.09"), _line("164.35"), _line("170.85")])
+
+    assert row.categorized_spend == Decimal("539.86")
+
+
+def test_a_voucher_without_lines_has_nothing_categorized():
+    row = _tally([_voucher("100.00", invoice_id=None)], [])
+
+    assert row.categorized_spend == Decimal("0")
+
+
+def test_a_negative_line_lowers_the_share_but_never_below_nothing():
+    row = _tally([_voucher("46.40")], [_line("58.00"), _line("-11.60", status="uncategorized")])
+
+    assert row.categorized_spend == Decimal("46.40")

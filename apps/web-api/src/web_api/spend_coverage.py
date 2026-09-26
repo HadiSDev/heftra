@@ -1,4 +1,9 @@
-"""Tally how much of the posted spend has been categorized, per base currency."""
+"""Tally how much of the posted spend has been categorized, per base currency.
+
+A voucher's categorized spend is its posted spend in the share its categorized lines hold of its lines'
+value. The lines give the split and the ledger the amount, so lines printed with VAT, a discount the
+lines leave out, or conversion rounding cannot take the categorized spend past the posted spend.
+"""
 from __future__ import annotations
 
 from decimal import Decimal
@@ -9,6 +14,8 @@ from .db.models.enums import LineStatus
 from .schemas import SpendCoverageRow
 
 _CATEGORIZED = {LineStatus.AI_CATEGORIZED.value, LineStatus.VERIFIED.value}
+_ZERO = Decimal("0")
+_CENT = Decimal("0.01")
 
 
 class VoucherSpend(NamedTuple):
@@ -17,6 +24,7 @@ class VoucherSpend(NamedTuple):
     company_id: str
     amount: Decimal | None
     unconverted: bool
+    invoice_id: str | None = None
 
 
 class LineState(NamedTuple):
@@ -26,6 +34,7 @@ class LineState(NamedTuple):
     status: str
     confidence: Decimal | None
     base_amount: Decimal | None
+    invoice_id: str | None = None
 
 
 def needs_review(line: LineState) -> bool:
@@ -37,11 +46,21 @@ def needs_review(line: LineState) -> bool:
     return line.confidence < Decimal(str(config.CATEGORIZATION_REVIEW_THRESHOLD))
 
 
+def categorized_share(lines: list[LineState]) -> Decimal:
+    """The share, between 0 and 1, of the lines' value that is categorized."""
+    total = sum((line.base_amount or _ZERO for line in lines), _ZERO)
+    if total <= 0:
+        return _ZERO
+    categorized = sum(
+        (line.base_amount or _ZERO for line in lines if line.status in _CATEGORIZED), _ZERO
+    )
+    return min(max(categorized / total, _ZERO), Decimal("1"))
+
+
 def _count_line(row: SpendCoverageRow, line: LineState) -> None:
     row.line_count += 1
     if line.status in _CATEGORIZED:
         row.categorized_lines += 1
-        row.categorized_spend += line.base_amount or Decimal("0")
     if line.status == LineStatus.VERIFIED.value:
         row.verified_lines += 1
     if line.status == LineStatus.UNCATEGORIZED.value:
@@ -66,6 +85,11 @@ def tally(
             rows[currency] = SpendCoverageRow(currency=currency)
         return rows[currency]
 
+    lines_by_invoice: dict[str, list[LineState]] = {}
+    for line in lines:
+        if line.invoice_id is not None:
+            lines_by_invoice.setdefault(line.invoice_id, []).append(line)
+
     for voucher in vouchers:
         row = row_for(voucher.company_id)
         row.voucher_count += 1
@@ -73,6 +97,9 @@ def tally(
             row.unconverted_vouchers += 1
         if voucher.amount is not None:
             row.posted_spend += voucher.amount
+            if voucher.invoice_id is not None:
+                share = categorized_share(lines_by_invoice.get(voucher.invoice_id, []))
+                row.categorized_spend += (voucher.amount * share).quantize(_CENT)
     for line in lines:
         _count_line(row_for(line.company_id), line)
     return sorted(rows.values(), key=lambda row: row.currency)
