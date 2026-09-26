@@ -10,7 +10,8 @@ from ai_api.enrichment.supplier_profile import (
     SupplierProfile,
     describe_supplier,
     search_supplier,
-    site_description,
+    search_supplier_site,
+    read_site_answer,
     summarize_site,
 )
 from ai_api.web_context import summarize_supplier
@@ -26,9 +27,14 @@ class _Calls:
         self.crawled: list[str] = []
         self.snippets: list[str] = []
         self.searched: list[str] = []
+        self.site_searched: list[str] = []
 
     def search(self, query: str) -> list[dict]:
         self.searched.append(query)
+        return RESULTS
+
+    def site_search(self, query: str) -> list[dict]:
+        self.site_searched.append(query)
         return RESULTS
 
     def crawl(self, root: str) -> str:
@@ -45,8 +51,9 @@ def _describe(calls: _Calls, tmp_path, *, site_answer: str, crawl=None, crawling
     return describe_supplier(
         "Dansk Kaffe ApS", "DK",
         search_fn=calls.search,
+        site_search_fn=calls.site_search,
         crawl_fn=crawl_fn,
-        summarize_site_fn=lambda name, country, text: site_description(site_answer),
+        summarize_site_fn=lambda name, country, text: read_site_answer(site_answer),
         summarize_snippets_fn=calls.snippet_summary,
         cache_dir=str(tmp_path),
     )
@@ -139,15 +146,23 @@ def test_the_search_is_cached_with_its_links(tmp_path):
     ('["a list"]', ""),
 ])
 def test_the_site_answer_is_read_strictly(reply, expected):
-    assert site_description(reply) == expected
+    assert read_site_answer(reply).description == expected
+
+
+def test_a_site_confirmed_without_a_description_is_still_the_suppliers():
+    verdict = read_site_answer('{"is_supplier_site": true, "description": ""}')
+
+    assert verdict.is_supplier_site is True
+    assert verdict.description == ""
 
 
 def _describe_stated(calls: _Calls, tmp_path, *, site_answer: str, crawl=None, crawling: bool = True):
     return describe_supplier(
         "Dansk Kaffe ApS", "DK", "https://www.danskkaffe.dk/",
         search_fn=calls.search,
+        site_search_fn=calls.site_search,
         crawl_fn=(crawl or calls.crawl) if crawling else None,
-        summarize_site_fn=lambda name, country, text: site_description(site_answer),
+        summarize_site_fn=lambda name, country, text: read_site_answer(site_answer),
         summarize_snippets_fn=calls.snippet_summary,
         cache_dir=str(tmp_path),
     )
@@ -161,6 +176,7 @@ def test_a_stated_website_is_crawled_without_searching(tmp_path):
     assert profile == SupplierProfile("Roasts coffee.", "https://www.danskkaffe.dk/")
     assert calls.crawled == ["https://www.danskkaffe.dk/"]
     assert calls.searched == []
+    assert calls.site_searched == []
 
 
 def test_a_stated_website_is_kept_when_its_site_cannot_describe_the_supplier(tmp_path):
@@ -188,7 +204,8 @@ def test_without_a_stated_website_the_name_is_searched_for_one(tmp_path):
 
     profile = _describe(calls, tmp_path, site_answer=_answer(True, "Roasts coffee."))
 
-    assert len(calls.searched) == 1
+    assert calls.site_searched == ["Dansk Kaffe ApS official website"]
+    assert calls.searched == []
     assert calls.crawled == ["https://danskkaffe.dk/"]
     assert profile.website == "https://danskkaffe.dk/"
 
@@ -207,9 +224,10 @@ def test_the_site_is_described_in_english_and_a_product_site_does_not_count(monk
     llm = _RecordingLlm(_answer(True, "Runs trains."))
     monkeypatch.setattr(config, "get_llm", lambda: llm)
 
-    assert summarize_site("DSB", "DK", "DSB kører tog i Danmark.") == "Runs trains."
+    assert summarize_site("DSB", "DK", "DSB kører tog i Danmark.").description == "Runs trains."
     assert "in English" in llm.prompts[0]
-    assert "one of its products or services" in llm.prompts[0]
+    assert "just one of its products or services" in llm.prompts[0]
+    assert "brand or group" in llm.prompts[0]
 
 
 def test_the_snippets_are_described_in_english(monkeypatch):
@@ -218,3 +236,13 @@ def test_the_snippets_are_described_in_english(monkeypatch):
 
     assert summarize_supplier("DSB", "DSB er et jernbaneselskab.") == "Runs trains in Denmark."
     assert "in English" in llm.prompts[0]
+
+
+def test_the_site_is_searched_for_by_its_own_query_and_cached(tmp_path):
+    calls = _Calls()
+
+    first = search_supplier_site("EKWB", search_fn=calls.site_search, cache_dir=str(tmp_path))
+    second = search_supplier_site("EKWB", search_fn=calls.site_search, cache_dir=str(tmp_path))
+
+    assert first == second == RESULTS
+    assert calls.site_searched == ["EKWB official website"]

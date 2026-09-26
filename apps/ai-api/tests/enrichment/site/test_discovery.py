@@ -148,3 +148,9 @@ def test_a_skipped_word_inside_another_word_does_not_skip_the_page():
     assert pages_to_crawl("https://danskkaffe.dk/", links, limit=5) == [
         "https://danskkaffe.dk/produkter/espresso",
     ]
+
+
+def test_a_blocked_host_that_is_the_suppliers_own_name_is_its_website():
+    results = _results("https://www.amazon.com/", "https://www.linkedin.com/company/amazon")
+
+    assert find_website("Amazon.com, Inc.", results) == "https://www.amazon.com/"

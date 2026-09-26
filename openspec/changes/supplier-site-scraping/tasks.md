@@ -48,3 +48,4 @@
 - [x] 8.7 Add `--websites` to find websites for described suppliers
 - [x] 8.8 Keep the printed supplier country and VAT number on the invoice (migration `0016`)
 - [x] 8.4 Add `--reprocess` to the documents CLI to read documents again in bulk, with its requeue in `documents/requeue.py`
+- [x] 8.9 Search for the website on its own, accept a domain that is the supplier's whole name, and confirm other sites by the LLM's verdict alone

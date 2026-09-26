@@ -7,7 +7,7 @@ import pytest
 from sqlalchemy.pool import StaticPool
 from sqlmodel import Session, SQLModel, create_engine, select
 
-from ai_api.enrichment.supplier_profile import locate_website, site_description
+from ai_api.enrichment.supplier_profile import locate_website, read_site_answer
 from ai_api.enrichment.websites import find_vendor_websites, vendors_needing_website
 from web_api.db.models import Company, Invoice, Organization, Vendor
 
@@ -109,27 +109,53 @@ def test_a_known_website_is_returned_as_it_is(tmp_path):
     searched: list[str] = []
 
     site = locate_website("EKWB", "SI", "https://www.ekwb.com/",
-                          search_fn=lambda q: searched.append(q) or RESULTS, cache_dir=str(tmp_path))
+                          site_search_fn=lambda q: searched.append(q) or RESULTS, cache_dir=str(tmp_path))
 
     assert site == "https://www.ekwb.com/"
     assert searched == []
 
 
-def test_a_searched_website_is_kept_only_when_its_site_confirms_it(tmp_path):
-    confirmed = locate_website(
-        "EKWB", "SI", search_fn=lambda q: RESULTS, crawl_fn=lambda root: "EK makes water blocks.",
-        summarize_site_fn=lambda name, country, text: site_description(_answer(True)),
-        cache_dir=str(tmp_path / "a"),
+REVOLUT_RESULTS = [
+    {"title": "Revolut", "body": "Banking app.", "href": "https://www.revolut.com/en-DK/"},
+]
+
+
+def test_a_found_domain_that_is_the_suppliers_name_is_taken_without_reading_it(tmp_path):
+    crawled: list[str] = []
+
+    site = locate_website(
+        "EKWB", "SI", site_search_fn=lambda q: RESULTS,
+        crawl_fn=lambda root: crawled.append(root) or "", cache_dir=str(tmp_path),
     )
-    rejected = locate_website(
-        "EKWB", "SI", search_fn=lambda q: RESULTS, crawl_fn=lambda root: "Someone else.",
-        summarize_site_fn=lambda name, country, text: site_description(_answer(False)),
-        cache_dir=str(tmp_path / "b"),
+
+    assert site == "https://www.ekwb.com/"
+    assert crawled == []
+
+
+def test_any_other_found_site_is_kept_only_when_reading_it_confirms_it(tmp_path):
+    def locate(answer: str, folder: str):
+        return locate_website(
+            "Revolut Bank UAB", "LT", site_search_fn=lambda q: REVOLUT_RESULTS,
+            crawl_fn=lambda root: "Banking & Beyond.",
+            summarize_site_fn=lambda name, country, text: read_site_answer(answer),
+            cache_dir=str(tmp_path / folder),
+        )
+
+    assert locate(_answer(True), "a") == "https://www.revolut.com/"
+    assert locate(_answer(False), "b") is None
+
+
+def test_a_site_that_cannot_be_read_is_not_confirmed(tmp_path):
+    site = locate_website(
+        "Revolut Bank UAB", "LT", site_search_fn=lambda q: REVOLUT_RESULTS,
+        crawl_fn=lambda root: "", cache_dir=str(tmp_path),
     )
 
-    assert confirmed == "https://www.ekwb.com/"
-    assert rejected is None
+    assert site is None
 
 
-def test_without_a_crawler_a_search_finds_nothing(tmp_path):
-    assert locate_website("EKWB", "SI", search_fn=lambda q: RESULTS, cache_dir=str(tmp_path)) is None
+def test_without_a_crawler_only_an_exact_name_domain_is_found(tmp_path):
+    assert locate_website("EKWB", "SI", site_search_fn=lambda q: RESULTS,
+                          cache_dir=str(tmp_path / "a")) == "https://www.ekwb.com/"
+    assert locate_website("Revolut Bank UAB", "LT", site_search_fn=lambda q: REVOLUT_RESULTS,
+                          cache_dir=str(tmp_path / "b")) is None

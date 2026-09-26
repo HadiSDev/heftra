@@ -4,7 +4,7 @@ from __future__ import annotations
 import re
 from urllib.parse import urlsplit
 
-from web_api.website import host_names_supplier
+from web_api.website import host_is_supplier_name, host_names_supplier
 
 BLOCKED_HOSTS = frozenset({
     "amazon.com", "bing.com", "bloomberg.com", "cvr.dk", "cvrapi.dk",
@@ -32,7 +32,7 @@ def find_website(name: str, results: list[dict]) -> str | None:
     for result in results:
         parts = urlsplit(result.get("href") or "")
         host = (parts.hostname or "").lower()
-        if not host or _is_blocked(host):
+        if not host or _is_blocked(host, name):
             continue
         if host_names_supplier(host, name):
             return f"{parts.scheme or 'https'}://{host}/"
@@ -62,7 +62,9 @@ def pages_to_crawl(root: str, links: list[str], limit: int) -> list[str]:
     return [url for _, _, _, url in ranked[:limit]]
 
 
-def _is_blocked(host: str) -> bool:
+def _is_blocked(host: str, name: str) -> bool:
+    if host_is_supplier_name(host, name):
+        return False
     return any(host == domain or host.endswith(f".{domain}") for domain in BLOCKED_HOSTS)
 
 

@@ -4,6 +4,7 @@ from __future__ import annotations
 import pytest
 
 from web_api.website import (
+    host_is_supplier_name,
     name_keys,
     name_words,
     printed_website_names_supplier,
@@ -66,3 +67,16 @@ def test_a_search_result_must_still_name_the_supplier_strictly():
 
 def test_name_words_drop_legal_forms_and_split_on_punctuation():
     assert name_words("CS-Online A/S") == ["cs", "online"]
+
+
+@pytest.mark.parametrize("host, name, expected", [
+    ("www.ekwb.com", "EKWB", True),
+    ("www.elgiganten.dk", "ELGIGANTEN A/S", True),
+    ("www.anthropic.com", "Anthropic, PBC", True),
+    ("www.amazon.com", "Amazon.com, Inc.", True),
+    ("www.revolut.com", "Revolut Bank UAB", False),
+    ("shop.ekwb.com", "EKWB", True),
+    ("ekwb.shop.com", "EKWB", False),
+])
+def test_a_domain_is_the_suppliers_name_only_when_it_is_the_whole_name(host, name, expected):
+    assert host_is_supplier_name(host, name) is expected

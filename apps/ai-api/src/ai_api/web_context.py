@@ -41,12 +41,19 @@ def _scrape(url: str) -> str:
         return ""
 
 
-def ddg_search(query: str) -> list[dict]:
+def ddg_search(query: str, max_results: int | None = None) -> list[dict]:
     """Keyless DuckDuckGo text search; returns [{title, body, href}, ...]."""
+    if max_results is None:
+        max_results = config.PRODUCT_SEARCH_MAX_RESULTS
     try:
-        return list(DDGS().text(query, max_results=config.PRODUCT_SEARCH_MAX_RESULTS))
+        return list(DDGS().text(query, max_results=max_results))
     except Exception:  # noqa: BLE001
         return []
+
+
+def ddg_site_search(query: str) -> list[dict]:
+    """A wider DuckDuckGo search, for finding a company's own site among many results."""
+    return ddg_search(query, max_results=config.SUPPLIER_SITE_SEARCH_RESULTS)
 
 
 def _summarize_buyer(name: str, text: str) -> str:

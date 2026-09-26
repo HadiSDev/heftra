@@ -10,8 +10,10 @@ MIN_WORD_LENGTH = 2
 LEGAL_FORMS = frozenset({
     "ab", "ag", "amba", "aps", "as", "bv", "co", "corp", "gmbh", "inc", "is",
     "ivs", "ks", "limited", "llc", "ltd", "nv", "oy", "plc", "ps", "sa",
-    "sarl", "sas", "smba", "spa", "srl", "uab",
+    "pbc", "sarl", "sas", "smba", "spa", "srl", "uab",
 })
+
+DOMAIN_WORDS = frozenset({"com", "net", "org", "io"})
 
 _DANISH_LETTERS = str.maketrans({"æ": "ae", "ø": "oe", "å": "aa", "ä": "ae", "ö": "oe", "ü": "ue"})
 _SCHEMES = ("http", "https")
@@ -35,9 +37,9 @@ def site_root(website: str | None) -> str | None:
 def name_keys(name: str) -> list[str]:
     """The supplier's name words joined cumulatively: "Dansk Kaffe ApS" gives dansk, danskkaffe."""
     words = []
-    for token in name.lower().translate(_DANISH_LETTERS).split():
+    for token in re.split(r"[\s.]+", name.lower().translate(_DANISH_LETTERS)):
         word = re.sub(r"[^a-z0-9]", "", token)
-        if word and word not in LEGAL_FORMS:
+        if word and word not in LEGAL_FORMS and word not in DOMAIN_WORDS:
             words.append(word)
     keys = ["".join(words[:count]) for count in range(1, len(words) + 1)]
     return [key for key in keys if len(key) >= MIN_KEY_LENGTH]
@@ -84,3 +86,12 @@ def printed_website_names_supplier(website: str, name: str) -> bool:
         if joined in words or joined.startswith(words[0]):
             return True
     return False
+
+
+def host_is_supplier_name(host: str, name: str) -> bool:
+    """Whether the host's domain is exactly the supplier's name, as `ekwb.com` is EKWB's."""
+    keys = name_keys(name)
+    labels = host.lower().rstrip(".").split(".")
+    if not keys or len(labels) < 2:
+        return False
+    return labels[-2].replace("-", "") == keys[-1]

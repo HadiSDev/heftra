@@ -85,3 +85,17 @@ A supplier's description SHALL be written in English whatever the language of th
 
 - **WHEN** the crawled site is `ai.studio`, a product of Google Cloud EMEA Limited
 - **THEN** it is not taken as the supplier's website
+
+### Requirement: The supplier's website SHALL be searched for on its own, and a domain that is its name SHALL need no confirmation
+
+Finding a supplier's website SHALL use its own search, for "<name> official website", keeping more results (default 10) than the snippet search, cached apart from it. A found site whose domain, before its top-level domain, is exactly the supplier's whole name (legal forms and words such as `com` dropped, e.g. `ekwb.com` for EKWB, `amazon.com` for Amazon.com, Inc.) SHALL be taken as the supplier's website without reading it, and SHALL NOT be excluded by the list of blocked hosts. Any other found site SHALL be taken only when reading it yields the LLM's verdict that it is the supplier's own, whether or not a description came with the verdict. The main site of the brand or group the supplier belongs to SHALL count as its own.
+
+#### Scenario: A site behind a bot check
+
+- **WHEN** the search finds `ekwb.com` for EKWB and the site cannot be read
+- **THEN** `ekwb.com` is EKWB's website
+
+#### Scenario: A group's site for one of its entities
+
+- **WHEN** the search finds `revolut.com` for Revolut Bank UAB and reading it confirms it is the Revolut brand's site
+- **THEN** `revolut.com` is Revolut Bank UAB's website
