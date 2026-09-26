@@ -536,3 +536,76 @@ question, not a reason for two kinds of line.
 - **THEN** it is not written as a charge line, since it reduces spend rather than
   being spend
 
+### Requirement: A document read categorizes the lines it created
+
+The document stage SHALL categorize an invoice's `uncategorized` lines after a
+successful extraction replaces them, using the same categorizer and candidates
+the sync uses, so a read no longer leaves its lines waiting for the next sync.
+
+- Categorization SHALL run only for an invoice whose extraction succeeded. A
+  `failed` extraction keeps its provisional lines as they were.
+- A categorization failure SHALL NOT undo the extraction: the invoice stays
+  `processed`, and the affected lines follow the usual
+  `uncategorized → ai_categorized | ai_failed` lifecycle.
+- When the company has no usable spend tree, the lines SHALL stay
+  `uncategorized` and the stage's report SHALL say categorization was skipped,
+  as the sync does.
+- This SHALL hold wherever the stage runs: the CLI, a requested run, or the
+  worker's automatic reads.
+
+#### Scenario: Extracted lines leave the read categorized
+
+- **WHEN** the stage reads a pending document for a company with a spend tree
+- **THEN** the invoice is `processed` and its extracted lines are
+  `ai_categorized` or `ai_failed`, none left `uncategorized`
+
+#### Scenario: A failed extraction categorizes nothing
+
+- **WHEN** an extraction is rejected and the invoice becomes `failed`
+- **THEN** no categorization is attempted for that invoice
+
+#### Scenario: No tree, no categorization
+
+- **WHEN** the stage reads a document for a company with no usable spend tree
+- **THEN** the invoice is `processed`, its lines stay `uncategorized`, and the
+  report says categorization was skipped
+
+### Requirement: Extraction SHALL read the supplier's website the document prints
+
+Both extraction paths, from a document's text and from its page images, SHALL read the supplier's own website when the document prints one, such as in its header, footer or beside the supplier's address. The buyer's website, a payment portal, an email address, and an address printed in a legal or regulatory note (a deposit guarantee scheme, a financial regulator, a complaints body, a parent group) SHALL NOT be read as the supplier's website. On a document of several pages, the first page that prints a website states it.
+
+The website read SHALL be reduced to the root of its site (`scheme://host/`, `https` when the document prints no scheme) and stored on the invoice as `document_supplier_website`, beside the invoice's other document readings. A value that names no site, such as an email address or a bare name, SHALL be stored as none.
+
+#### Scenario: A website printed in the footer
+
+- **WHEN** a document's footer prints `DanskKaffe.dk/kontakt`
+- **THEN** the invoice's `document_supplier_website` is `https://danskkaffe.dk/`
+
+#### Scenario: Only an email address
+
+- **WHEN** the document prints `info@danskkaffe.dk` and no website
+- **THEN** the invoice's `document_supplier_website` is none
+
+### Requirement: Documents SHALL be readable again in bulk from the command line
+
+The document-processing CLI SHALL accept `--reprocess`, which first puts the selected invoices whose documents were already read or failed back in the queue, exactly as the API's reprocess does (pending, error cleared, attempts reset, audited as `reprocess_document`), and then reads them in the same run. It SHALL honour `--company-id`, `--invoice-id` and `--limit`, and SHALL leave alone documents being read, absent, or already waiting. Without `--reprocess`, a document already read SHALL NOT be read again.
+
+#### Scenario: Reading a company's documents again
+
+- **WHEN** the CLI runs with `--reprocess --company-id <id>`
+- **THEN** that company's read and failed documents are read again, and other companies' are untouched
+
+#### Scenario: A document being read is left alone
+
+- **WHEN** an invoice's document is being read and the CLI runs with `--reprocess`
+- **THEN** that invoice is not put back in the queue
+
+### Requirement: Extraction SHALL keep the supplier country and VAT number the document prints
+
+Extraction SHALL store the supplier's country and VAT number as the document prints them on the invoice, as `document_supplier_country_code` (a two-letter code, upper case, or none when what was read is not one) and `document_supplier_vat_number` (in its international form, with the country prefix), beside the ERP's facts about the supplier, which they never overwrite.
+
+#### Scenario: A Lithuanian bank's statement
+
+- **WHEN** a document prints the supplier's country as `lt` and its VAT number as `100 011 747 16`
+- **THEN** the invoice's `document_supplier_country_code` is `LT` and its `document_supplier_vat_number` is `LT10001174716`
+

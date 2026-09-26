@@ -139,6 +139,11 @@ placeholder: the page lists invoice lines grouped by voucher, so its URL names
 the lines rather than the ERP entries behind them. No Invoices entry SHALL be
 shown until an invoice review page exists.
 
+The navigation SHALL offer a **Suppliers** entry linking to the `/suppliers`
+route. It replaces the previous disabled **Vendors** placeholder; the product
+calls the businesses a company buys from suppliers throughout, so the entry
+does too. No Vendors entry SHALL be shown.
+
 #### Scenario: Shell is shared by every authenticated page
 
 - **WHEN** a signed-in user navigates from the dashboard to another
@@ -163,34 +168,34 @@ shown until an invoice review page exists.
 - **THEN** the router navigates to `/invoice-lines`, the entry is marked active,
   and no disabled Invoices entry is present
 
+#### Scenario: Suppliers is a working navigation entry
+
+- **WHEN** a signed-in user activates the Suppliers entry
+- **THEN** the router navigates to `/suppliers`, the entry is marked active,
+  and no Vendors entry is present
+
 ### Requirement: Dashboard renders live reporting data
 
-The dashboard SHALL render inside the themed AppShell and display live figures
-from `GET /reports/*` (org-wide, no company filter) — stat cards plus one
-breakdown table — with loading, empty, and error states. Monetary figures SHALL
-be presented grouped by currency and never summed across currencies.
+The dashboard SHALL render inside the themed AppShell and display live spend figures from the spend reports (`GET /api/v1/reports/spend-*`), for the period and company chosen on the page, as defined by the `frontend-dashboard` capability: tiles, a monthly trend, breakdowns by category and supplier, and insights, with loading, empty, and error states. Monetary figures SHALL be presented grouped by base currency and never summed across currencies. It SHALL NOT show ledger aggregates that net every account (such as a "net ledger"), posting counts, or entry-type counts.
 
 #### Scenario: Data is shown
 
-- **WHEN** the org has reportable data and the dashboard loads
-- **THEN** stat cards and a breakdown table display values from the reporting
-  endpoints, with amounts grouped by currency
+- **WHEN** the org has spend in the chosen period and the dashboard loads
+- **THEN** the tiles, trend, breakdowns and insights display values from the spend reports, with amounts grouped by base currency
 
 #### Scenario: Loading state
 
-- **WHEN** the reporting queries are in flight
-- **THEN** the dashboard shows loading placeholders (skeletons) rather than empty
-  or broken content
+- **WHEN** the reports are in flight
+- **THEN** the dashboard shows loading placeholders (skeletons) rather than empty or broken content
 
 #### Scenario: Empty state
 
-- **WHEN** the org has no reportable data yet
-- **THEN** the dashboard shows an explicit empty state instead of zeros that look
-  like an error
+- **WHEN** the org has no spend in the chosen period
+- **THEN** the dashboard shows an explicit empty state instead of zeros that look like an error
 
 #### Scenario: Currency separation
 
-- **WHEN** entries or spend span multiple currencies
+- **WHEN** spend spans multiple base currencies
 - **THEN** totals are shown per currency and are not combined into a single sum
 
 ### Requirement: Organization switcher in the app shell
