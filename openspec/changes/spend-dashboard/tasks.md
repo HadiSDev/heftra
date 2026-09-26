@@ -31,15 +31,15 @@
 
 ## 6. Dashboard page (web)
 
-- [ ] 6.1 Build `components/dashboard/controls/`: period presets with a custom range, and the company filter
-- [ ] 6.2 Build `components/dashboard/tiles/`: Spend (change and sparkline), Categorized, Needs attention (links to the filtered Spend Lines, "All clear"), Suppliers (links to Suppliers); change shown as a percentage, "New", or nothing
-- [ ] 6.3 Build `components/dashboard/trend/`: stacked monthly bars per currency with legend, tooltip and a text summary for assistive technology
-- [ ] 6.4 Build `components/dashboard/breakdown/`: categories with share bars, change and expandable children; top suppliers opening the supplier page
-- [ ] 6.5 Build `components/dashboard/insights/`: the four lists, headings with nothing under them left out, items linking to the supplier or the voucher
-- [ ] 6.6 Rebuild `routes/_authed/index.tsx` on the new sections, each with its own placeholder of final size and error state; empty period offers "Last 12 months"; delete the old `stats.tsx`, `category-table.tsx` and `body.tsx`
-- [ ] 6.7 Component tests covering each scenario in `frontend-dashboard`, and update the shell test for the dashboard requirement
+- [x] 6.1 Build `components/dashboard/controls/`: period presets with a custom range, and the company filter
+- [x] 6.2 Build `components/dashboard/tiles/`: Spend (change and sparkline), Categorized, Needs attention (links to the filtered Spend Lines, "All clear"), Suppliers (links to Suppliers); change shown as a percentage, "New", or nothing
+- [x] 6.3 Build `components/dashboard/trend/`: stacked monthly bars per currency with legend, tooltip and a text summary for assistive technology
+- [x] 6.4 Build `components/dashboard/breakdown/`: categories with share bars, change and expandable children; top suppliers opening the supplier page
+- [x] 6.5 Build `components/dashboard/insights/`: the four lists, headings with nothing under them left out, items linking to the supplier or the voucher
+- [x] 6.6 Rebuild `routes/_authed/index.tsx` on the new sections, each with its own placeholder of final size and error state; empty period offers "Last 12 months"; delete the old `stats.tsx`, `category-table.tsx` and `body.tsx`
+- [x] 6.7 Component tests covering each scenario in `frontend-dashboard`, and update the shell test for the dashboard requirement
 
 ## 7. Verify
 
-- [ ] 7.1 Run web-api and ai-api pytest, and vitest, tsc, eslint and prettier on the web app, with no regressions
+- [x] 7.1 Run web-api and ai-api pytest, and vitest, tsc, eslint and prettier on the web app, with no regressions
 - [ ] 7.2 Check the dashboard in the browser at desktop and phone width against real data: figures agree with Spend Lines' coverage card and the supplier pages, no horizontal scroll, no layout shift on changing the period

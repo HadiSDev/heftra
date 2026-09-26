@@ -337,17 +337,6 @@ export interface SpendCoverageRow {
   failed_lines: number
 }
 
-/** Row of `GET /reports/spend-by-category`. */
-export interface CategorySpendRow {
-  level_2: string | null
-  level_3: string | null
-  currency: string | null
-  amount_total: Money
-  count: number
-  /** Rows left out of the totals for lacking a base amount. */
-  unconverted_count: number
-}
-
 /** Row of `GET /reports/spend-by-vendor`. */
 export interface VendorSpendRow {
   vendor_id: string

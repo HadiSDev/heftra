@@ -1,61 +1,50 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
-import { Card, Skeleton } from '#/components/ui'
-import { DashboardBody } from '#/components/dashboard/body'
+import { DashboardView } from '#/components/dashboard/dashboard-view'
 import { useApi } from '#/lib/auth/auth'
+import { companiesQueryOptions } from '#/lib/api/companies'
 import {
-  entriesSummaryOptions,
-  spendByCategoryOptions,
-} from '#/lib/api/reports'
+  spendBreakdownOptions,
+  spendInsightsOptions,
+  spendOverviewOptions,
+  spendTrendOptions,
+} from '#/lib/api/spend-reports'
+import {
+  resolvePeriod,
+  spendScope,
+  validateDashboardSearch,
+} from '#/lib/dashboard-search'
 
 export const Route = createFileRoute('/_authed/')({
   component: DashboardPage,
   staticData: { title: 'Dashboard' },
+  validateSearch: validateDashboardSearch,
 })
-
-function LoadingState() {
-  return (
-    <div className="flex flex-col gap-6">
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <Skeleton key={i} className="h-24 rounded-card" />
-        ))}
-      </div>
-      <Skeleton className="h-72 rounded-card" />
-    </div>
-  )
-}
-
-function ErrorState() {
-  return (
-    <Card className="p-8 text-center">
-      <h2 className="font-display text-base font-medium">
-        Couldn’t load your dashboard
-      </h2>
-      <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-        The reporting API request failed. Check that the web API is running and
-        reachable, then reload the page.
-      </p>
-    </Card>
-  )
-}
 
 function DashboardPage() {
   const api = useApi()
-  const entries = useQuery(entriesSummaryOptions(api))
-  const categories = useQuery(spendByCategoryOptions(api))
+  const navigate = useNavigate({ from: Route.fullPath })
+  const search = Route.useSearch()
+  const scope = spendScope(search)
 
-  if (entries.isPending || categories.isPending) {
-    return <LoadingState />
-  }
-  if (entries.isError || categories.isError) {
-    return <ErrorState />
-  }
+  const companies = useQuery(companiesQueryOptions(api))
+  const overview = useQuery(spendOverviewOptions(api, scope))
+  const trend = useQuery(spendTrendOptions(api, scope))
+  const breakdown = useQuery(spendBreakdownOptions(api, scope))
+  const insights = useQuery(spendInsightsOptions(api, scope))
 
   return (
-    <DashboardBody
-      entryRows={entries.data.rows}
-      categoryRows={categories.data.rows}
+    <DashboardView
+      search={search}
+      resolved={resolvePeriod(search)}
+      companies={companies.data ?? []}
+      overview={{ data: overview.data, error: overview.isError }}
+      trend={{ data: trend.data, error: trend.isError }}
+      breakdown={{ data: breakdown.data, error: breakdown.isError }}
+      insights={{ data: insights.data, error: insights.isError }}
+      onSearchChange={(next) => {
+        void navigate({ search: next })
+      }}
     />
   )
 }
