@@ -1,17 +1,27 @@
 ## 1. Data model
 
-- [ ] 1.1 Add `EmissionFactorSet`, `EmissionSector` and `EmissionFactor` models (one file each under `db/models/`) with the uniques from the design, and export them
-- [ ] 1.2 Add `emission_sector_id`, `emission_sector_source` (`EmissionSectorSource` enum: ai, human) and `emission_sector_confidence` to `InvoiceLine`
+- [ ] 1.1 Add `EmissionFactorSet`, `EmissionSector`, `EmissionFactor` and `EmissionCountryRegion` models (one file each under `db/models/`) with the uniques and the country-or-region check from the design, and export them
+- [ ] 1.2 Add `emission_sector_id`, `emission_sector_source` (`EmissionSectorSource` enum: ai, human), `emission_sector_confidence` and `emission_sector_rationale` to `InvoiceLine`
 - [ ] 1.3 Add `MATCH_EMISSIONS = "match_emissions"` to `PipelineRunKind`
-- [ ] 1.4 Write migration `0017_emissions` (the tables, the line columns, and the run kind if it is a DB enum); downgrade drops them. Do not run it
+- [ ] 1.4 Write migration `0017_emissions` (the tables, the line columns, and the run kind if it is a DB enum); the downgrade drops them. Do not run it
 - [ ] 1.5 Make company deletion leave factor sets and sectors alone (they are global), and cover it with a test
 
 ## 2. Factor sets and import (web-api)
 
-- [ ] 2.1 Confirm the Open CEDA workbook's layout, sheet, headers, dollar year, price basis and GWP basis from a downloaded copy (ask the user for the file); record them in the importer's column spec and the design's open questions
-- [ ] 2.2 `web_api/emissions/countries.py`: map the workbook's country names to ISO alpha-2 codes, reporting unmapped ones (tests)
-- [ ] 2.3 `web_api/emissions/import_factors.py`: read the workbook by header names with `openpyxl`, upsert sectors, replace the version's factors, `--activate` deactivating the rest in one transaction, and print the counts. Tests with a small generated workbook: happy path, a missing column, a duplicate factor, a re-import. Ask the user to add `openpyxl` to web-api
-- [ ] 2.4 `web_api/emissions/factors.py`: `active_factor_set(session)` and `factor_for(session, set, sector_id, countries)` returning the factor and the country used, with the fallback order (tests)
+- [x] 2.1 Confirm the Open CEDA workbook's layout from a downloaded copy (done: sheets, 2023 USD, producer price, ISO3, regional averages; recorded in the design)
+- [ ] 2.2 `web_api/emissions/countries.py`: a static ISO 3166 alpha-3 → alpha-2 table, with tests. Also a local check against the real workbook that every code it holds is known
+- [ ] 2.3 `web_api/emissions/workbook.py`:
+  - [ ] 2.3.1 Read the sheets by name and the labels by text
+  - [ ] 2.3.2 Return the sectors with descriptions, the producer factors per country and region, the purchaser ratios, the country-to-region map, and the set's fields
+  - [ ] 2.3.3 Name any missing sheet or label
+- [ ] 2.4 `web_api/emissions/import_factors.py`:
+  - [ ] 2.4.1 Convert to purchaser prices
+  - [ ] 2.4.2 Upsert the sectors and replace the version's factors and regions
+  - [ ] 2.4.3 `--activate` deactivates the rest in one transaction
+  - [ ] 2.4.4 Print the counts
+  - [ ] 2.4.5 Tests with a small generated workbook: the happy path, a missing sheet, a purchaser conversion, a re-import
+  - [ ] 2.4.6 Declare `openpyxl` in web-api's dependencies (the user runs the sync)
+- [ ] 2.5 `web_api/emissions/factors.py`: `active_factor_set(session)`, plus a `FactorLookup` that loads a set's factors and regions once, then finds a factor for a sector with the four-step fallback and says which area it used (tests)
 
 ## 3. Estimate (web-api)
 
@@ -41,16 +51,21 @@
 
 ## 5. Sector matching (ai-api)
 
-- [ ] 5.1 `ai_api/emissions/sector_index.py`: build and query a Qdrant collection per classification from `emission_sectors`, reusing the `rag/indexer` helpers and an injectable `embed_fn` (tests with a fake embedder)
-- [ ] 5.2 `ai_api/emissions/prompt.py` and `choice.py`: the numbered-candidate prompt and the pydantic answer (number or none, plus confidence) parsed with `json_repair`, without guided decoding (tests for none, out-of-range and malformed answers)
-- [ ] 5.3 Sector-match cache, following `persistence/categorization_cache`: keyed by question, offered-sector hash and classification (tests)
-- [ ] 5.4 `ai_api/emissions/lines.py` `match_company(session, company_id, *, limit, rematch, complete, retrieve)`:
-  - [ ] 5.4.1 Select the eligible lines and build each query from the line, category path, supplier description and country
-  - [ ] 5.4.2 Retrieve 12 candidates, then use the cache or the LLM
-  - [ ] 5.4.3 Store the result with source `ai`, never touching `human` lines
-  - [ ] 5.4.4 Return the counts, and skip when no set is active
-- [ ] 5.5 Tests for `match_company`: human lines untouched, re-match on a new classification, cache hits counted, `--rematch` clears only `ai`
-- [ ] 5.6 `ai_api/emissions/runner.py` CLI (`--company-id`, `--limit`, `--rematch`), and a `match_emissions` executor in `worker/executors.py` (tests)
+- [ ] 5.1 `ai_api/emissions/sector_index.py`: build and query a Qdrant collection per classification from the sector names and descriptions, reusing the `rag/indexer` helpers and an injectable `embed_fn` (tests with a fake embedder)
+- [ ] 5.2 `ai_api/emissions/line_context.py`: load a line's context for matching: its text, amount, category path, supplier name, country, description and website, and the invoice's other lines. Also its question key (tests)
+- [ ] 5.3 `ai_api/emissions/agent/`: the four CrewAI tools (search, sector details, supplier profile, other lines), the agent factory (`max_iter=6`), its prompt, and the parsed answer (code or none, plus confidence and rationale). Validate the code against the classification. Test the tools directly, and the answer parsing
+- [ ] 5.4 `ai_api/emissions/choice/`: the single-shot fallback's numbered prompt and parsed answer, `json_repair` plus pydantic (tests for none, out-of-range and malformed answers)
+- [ ] 5.5 Sector-match cache, following `persistence/categorization_cache` and keyed by question and classification (tests)
+- [ ] 5.6 `ai_api/emissions/lines.py` `match_company(session, company_id, *, limit, rematch, run_agent, choose)`:
+  - [ ] 5.6.1 Select the eligible lines, then use the cache, the agent, or the fallback
+  - [ ] 5.6.2 Store with source `ai`, never touching `human` lines
+  - [ ] 5.6.3 Count agent, fallback, unmatched, cached and failed answers
+  - [ ] 5.6.4 Skip when no set is active
+- [ ] 5.7 Tests for `match_company` with a stub agent and chooser:
+  - [ ] 5.7.1 Human lines untouched; re-match on a new classification
+  - [ ] 5.7.2 Cache hits counted; `--rematch` clears only `ai`
+  - [ ] 5.7.3 Agent failure falls back; both failing counts as failed
+- [ ] 5.8 `ai_api/emissions/runner.py` CLI (`--company-id`, `--limit`, `--rematch`), and a `match_emissions` executor in `worker/executors.py` (tests)
 
 ## 6. Frontend
 
@@ -65,7 +80,7 @@
   - [ ] 6.3.2 Not-estimated counts with reasons
   - [ ] 6.3.3 Its own loading, error and retry states, fixed height, and the no-factor-set state
   - [ ] 6.3.4 Placed beside the coverage card in `entries-panel.tsx`
-- [ ] 6.4 A CO₂e column in the voucher table (partial mark, "—" with reason). Each expanded line shows its sector with an AI/human mark, a needs-review mark below the threshold, its CO₂e, and the factor country on hover and focus
+- [ ] 6.4 A CO₂e column in the voucher table (partial mark, "—" with reason). Each expanded line shows its sector with an AI/human mark, a needs-review mark below the threshold, its CO₂e, and the rationale and factor area on hover and focus
 - [ ] 6.5 An emission sector picker in the line editor: a debounced server search, name and code shown, clearable, disabled with an explanation when no set is active; saving invalidates the voucher list and the emissions summary
 - [ ] 6.6 Component tests for the card, the column and line display, and the picker. Then run vitest, tsc, eslint and prettier on the changed files
 
@@ -74,6 +89,6 @@
 - [ ] 7.1 Run the web-api and ai-api suites in full
 - [ ] 7.2 With the user's go-ahead:
   - [ ] 7.2.1 Import the real Open CEDA workbook and match one company's lines
-  - [ ] 7.2.2 Review the 20 largest-emission lines' sectors for plausibility
+  - [ ] 7.2.2 Review the 20 largest-emission lines' sectors for plausibility, and compare the agent's matches with the fallback's
   - [ ] 7.2.3 Check that the emissions card's estimated spend agrees with the coverage card's posted spend under the same filters
 - [ ] 7.3 Browser check of Spend Lines at desktop and phone width: the card doesn't shift the layout, the column fits without horizontal scroll, and the picker works

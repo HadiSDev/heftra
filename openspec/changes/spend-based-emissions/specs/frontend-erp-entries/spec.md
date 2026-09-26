@@ -5,7 +5,7 @@
 Beside the coverage card, Spend Lines SHALL show an emissions card fed by the emissions summary under the page's current filters. The card SHALL show:
 - the total estimated emissions;
 - the share of posted spend that was estimated, per base currency;
-- a method line naming the factor set, its version and its price year and currency (for example "Spend-based estimate · Open CEDA 2025 · 2022 USD");
+- a method line naming the factor set, its version and its price year and currency (for example "Spend-based estimate · Open CEDA 2025 · 2023 USD");
 - the factor set's attribution;
 - the number of vouchers not estimated, broken down by reason on hover or focus.
 
@@ -43,7 +43,7 @@ Each expanded line SHALL show:
 - a mark distinguishing an AI match from a human choice;
 - for an AI match below the review threshold, a needs-review mark like a low-confidence category.
 
-The country whose factor was used SHALL be available on hover and focus.
+The AI's rationale and the country or region whose factor was used SHALL be available on hover and focus.
 
 #### Scenario: A voucher row shows its emissions
 

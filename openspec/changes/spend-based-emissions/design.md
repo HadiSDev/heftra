@@ -15,7 +15,17 @@
 
 **Nothing about emissions exists yet.**
 
-**The factor source.** Open CEDA publishes a single workbook of spend-based factors: kgCO₂e per USD for about 400 industries (US BEA/NAICS-derived codes and names) in each of 148 countries. It is licensed CC BY-SA and requires the attribution "CEDA by Watershed".
+**The factor source.** Open CEDA 2025 (`Open CEDA 2025 by Watershed.xlsx`, public at `s3://open-ceda/data/`, released 2025-11-11, CC BY-SA 4.0) was inspected. Its sheets:
+
+- **`GHG_t_Raw`**: the base factors in kgCO₂e per 2023 USD at producer price. There are 400 sectors, keyed by BEA codes such as `541511`, with names in the row above the codes. There are 149 countries, keyed by ISO 3166 alpha-3 codes, with no blank cells.
+- **`GHG_t`**: the same factors re-expressed through the Cover sheet's currency and year selectors, so its cached values depend on how the file was last saved. We don't read it.
+- **`Purchaser - producer conversion`**: a BEA ratio per sector, between 0.47 and 0.99. It gives the producer value of one dollar paid by a purchaser.
+- **`Regional Average EFs`**: 21 UN-subregion averages in the same unit.
+- **`Country to region mapping`**: 250 ISO alpha-3 codes, each mapped to its subregion.
+- **`Metadata`**: each sector's code, name and a paragraph of description.
+- **`Sector level Price Index`**: 2018–2024, with 2023 = 100.
+
+The attribution text requires "CEDA by Watershed" wherever calculations are shown.
 
 ## Goals / Non-Goals
 
@@ -35,10 +45,13 @@
 ## Decisions
 
 ### Open CEDA as the first factor set, behind a generic factor-set model
-Three tables:
-- `emission_factor_sets`: id, source, version, classification, currency, price_year, gwp (e.g. "AR5 GWP100"), licence, attribution, imported_at, active.
-- `emission_sectors`: id, classification, code, name, unique on (classification, code).
-- `emission_factors`: factor_set_id, sector_id, country_code, kg_co2e_per_unit as Numeric(18, 8), unique on (set, sector, country).
+Four tables:
+- `emission_factor_sets`: id, source, version, classification, currency, price_year, price_basis, licence, attribution, imported_at, active.
+- `emission_sectors`: id, classification, code, name, description, unique on (classification, code).
+- `emission_factors`: factor_set_id, sector_id, `country_code` or `region` (exactly one set, by a check constraint), kg_co2e_per_unit as Numeric(18, 8), unique on (set, sector, country, region).
+- `emission_country_regions`: factor_set_id, country_code, region.
+
+Country codes are stored as ISO alpha-2, which is what vendors and companies carry.
 
 Sectors belong to a classification rather than a set. A new release of the same classification keeps line matches valid; a set on a different classification makes lines re-match. Exactly one set is active: importing with `--activate` deactivates the others in the same transaction.
 
@@ -49,9 +62,19 @@ Sectors belong to a classification rather than a set. A new release of the same 
 - **EPA USEEIO.** US only.
 
 ### Importer as a web-api CLI
-`python -m web_api.emissions.import_factors --file <openceda.xlsx> --version <v> [--activate]` reads the workbook with `openpyxl` and upserts sectors and factors in one transaction. It is idempotent: importing the same version again replaces that set's factors.
+`python -m web_api.emissions.import_factors --file <openceda.xlsx> [--activate]` reads the workbook with `openpyxl` (read-only, values only) and writes everything in one transaction. It is idempotent: importing the same version again replaces that set's factors. It reads:
 
-The column layout is read from the header row by name, not by position. If an expected column is missing, it fails with a message naming the column.
+- **The set's fields:** version from the Cover sheet's "Version" cell, and year, price type and currency from the header rows of `GHG_t_Raw`.
+- **Sectors:** from `Metadata`, including their descriptions.
+- **Country factors:** from `GHG_t_Raw`.
+- **Region factors:** from `Regional Average EFs`.
+- **The country-to-region map:** from `Country to region mapping`.
+
+Sheets and header cells are found by their names and labels, not by position. If an expected sheet or label is missing, it fails with a message naming it.
+
+**Purchaser prices.** Our spend is what the company paid, a purchaser price, while CEDA's factors are per producer-price dollar. The importer multiplies each factor by its sector's purchaser-to-producer ratio and stores the result with `price_basis = "purchaser"`. The estimate then needs no margin logic.
+
+**Country codes.** Alpha-3 codes are turned into alpha-2 through a static ISO 3166 table in `web_api/emissions/countries.py`. We use a static table because no country library is installed, and the list is stable. A code the table doesn't know is reported and skipped. A local check against the real workbook confirms every code it holds is known.
 
 The file is not committed to the repo. The user downloads it (the licence stays with the file) and runs the import, as with the other runners.
 
@@ -64,16 +87,31 @@ A spend category is too coarse to pick a factor from. "Direct Costs / Cost of Go
 
 The spend category is a strong hint, not the key. Alternative considered: a static map from the default template's leaves to sectors. Rejected because custom trees would have no map and the template's leaves are too broad. Its idea survives as the category path in the prompt.
 
-**Retrieval.** Sector names are embedded into a Qdrant collection per classification, using the same embedding function and helpers as the tree index. The query is the line text plus the category path plus the supplier description. The top 12 sectors are offered.
+**An agent with tools, falling back to a single choice.** The matcher is the first CrewAI agent here that uses tools, an "Emission Sector Analyst". It is told the line (item name, description, amount), its spend category path, and the supplier's name and country, and it gets four tools:
 
-**The choice.** The LLM answers in JSON with a number and a confidence. It may also answer "none of these", and the line then stays unmatched with the reason `no_sector`. We use prompt-for-JSON parsed with `json_repair` and pydantic, not guided decoding, as elsewhere.
+- `search_sectors(query)`: the 8 sectors closest to a free-text query, each with code, name and the first sentence of its description. It searches a Qdrant collection per classification, embedding name plus description with the same embedding and helpers as the tree index.
+- `sector_details(code)`: a sector's full description, to tell apart near neighbours such as "Software publishers" and "Custom computer programming services".
+- `supplier_profile()`: the supplier's enrichment description and website, as stored on the vendor.
+- `other_lines()`: the other lines of the same invoice, as context for a line that says only "Service fee".
 
-**Cache.** A persisted cache keyed on (question key, candidate-set hash, classification) means identical lines (such as monthly subscriptions) cost one call.
+It may search several times with its own wording, which a single embedding query can't do. For example, "Hetzner AX41" becomes a search for "data center hosting". It must answer in JSON with:
+- `code`: a code it saw in a tool result;
+- `confidence`: 0–1;
+- `rationale`: one sentence.
+
+Its budget is bounded: `max_iter=6` and the configured LLM timeout.
+
+**Fallback.** With a 4B local model, tool use will sometimes fail: a malformed tool call, a hit iteration limit, a timeout, or a code that isn't in the classification. In each of those cases the matcher falls back to the single-shot path. That path retrieves the top 12 sectors for the line's text, category and supplier description, and the LLM picks a number with a confidence, or answers "none". The run summary counts agent answers and fallback answers apart, so their quality can be compared. Both paths use prompt-for-JSON parsed with `json_repair` and pydantic, not guided decoding, as elsewhere. The agent's model and prompts live in `ai_api/emissions/agent/`, one module per concern (tools, prompt, answer), and the fallback in `ai_api/emissions/choice/`.
+
+**Low confidence is suggested, not withheld.** Every match is stored with its confidence and rationale. Below `CATEGORIZATION_REVIEW_THRESHOLD`, the line is shown as needing review, the way a low-confidence category is. Only "none fits" leaves a line unmatched.
+
+**Cache.** A persisted cache keyed on (question key, classification) means identical lines, such as monthly subscriptions, cost one run. The question key covers the line text, category path and supplier. The agent picks its own candidates, so there is no candidate-set hash.
 
 **Stored on the line.** Three new columns:
 - `emission_sector_id`: FK to `emission_sectors`, nullable.
 - `emission_sector_source`: `ai` or `human`.
 - `emission_sector_confidence`: Numeric(4,3), nullable.
+- `emission_sector_rationale`: text, nullable.
 
 A human choice sets the source to `human` and clears the confidence. The matcher only ever touches lines with no sector, or whose source is `ai` and whose classification differs from the active set's.
 
@@ -86,13 +124,15 @@ A human choice sets the source to `human` and clears the confidence. The matcher
 2. **Convert.** It converts each line's share to the set's currency with `FxService.get_rate(base, set.currency, spent_on)`. The voucher date is the one allocation uses: the earliest expense posting.
 3. **Multiply.** It multiplies by the factor for (sector, country).
 
-**Country fallback.**
-1. The vendor's `country_code`.
-2. Otherwise the invoice's `document_supplier_country_code`.
-3. Otherwise the company's `country_code`.
-4. If the set has no factor for that country, it tries the company's country before giving up.
+**Country fallback.** The supplier's country is the vendor's `country_code`, else the invoice's `document_supplier_country_code`. The factor is looked up in this order:
+1. The supplier's country.
+2. The supplier's country's UN subregion average.
+3. The company's country.
+4. The company's subregion.
 
-The country actually used is returned, so the UI can say "factor for DE".
+A supplier country in none of CEDA's 149 countries still gets its region: Taiwan maps to "Eastern Asia", for instance.
+
+The country actually used is returned, so the UI can say "factor for DE" or "factor for Eastern Asia".
 
 **What can't be estimated** is reported per voucher, with one reason each:
 - `no_lines`: journal-only vouchers.
@@ -107,7 +147,7 @@ Nothing is persisted, so a correction, a re-categorized line, a new FX rate or a
 ### API shape
 - `GET /erp-entries/vouchers`:
   - each voucher gains `kg_co2e` (null when nothing could be estimated) and `emissions_status` (`estimated`, `partial`, or one of the reasons);
-  - each `InvoiceLineRead` gains `emission_sector` (`{id, code, name}`), `emission_sector_source`, `emission_sector_confidence`, `kg_co2e` and `emission_country`.
+  - each `InvoiceLineRead` gains `emission_sector` (`{id, code, name}`), `emission_sector_source`, `emission_sector_confidence`, `kg_co2e` and `emission_area`.
 - `GET /erp-entries/vouchers/emissions` takes the same filters as `/summary` and returns:
   - `factor_set`: source, version, price year, currency, attribution; null if no set is active;
   - a total `kg_co2e`;
@@ -130,13 +170,13 @@ The API returns kg with 3 decimals. The UI shows:
 - `t CO₂e` with one decimal above that;
 - "—" with the reason on hover when nothing was estimated.
 
-The emissions card carries a method line such as "Spend-based estimate · Open CEDA 2025 · 2022 USD" and the attribution "CEDA by Watershed", as the licence requires.
+The emissions card carries a method line such as "Spend-based estimate · Open CEDA 2025 · 2023 USD" and the attribution "CEDA by Watershed", as the licence requires.
 
 ## Risks / Trade-offs
 
 - **[Spend-based factors are averages; a precise-looking number misleads]** → The card is labelled an estimate, shows the method and price year, and rounds to meaningful precision. Values are never shown to more than 3 significant figures in tiles.
 - **[Wrong sector match inflates or deflates by 10×]** → The confidence is stored. Low-confidence matches (below the categorization review threshold) are marked like needing review, and a human can correct them in one picker. The top sectors by emissions are what a reviewer should check first. The drawer shows the sector and country used.
-- **[No inflation adjustment]** → Spend is 2024–2026 money against 2022 USD factors, so estimates run a few percent high. Accepted and stated in the method line; a deflator can be added to the estimate without schema change.
+- **[No inflation adjustment]** → Spend is 2024–2026 money against 2023 USD factors, so estimates run a few percent high. Accepted and stated in the method line; a deflator can be added to the estimate without schema change.
 - **[FX lookups on read]** → They go through FxService's DB cache. A cold date fetches once, then it's cached. A failed fetch marks the voucher `unconverted` rather than failing the page.
 - **[Workbook layout changes between releases]** → The importer finds columns by header name, fails loudly on a missing column, and reports counts.
 - **[Licence: CC BY-SA share-alike on derived factor data]** → We redistribute nothing. Factors stay in our DB and are shown with attribution. Exporting factor tables to customers would need share-alike terms; that is out of scope.
@@ -151,5 +191,5 @@ The emissions card carries a method line such as "Spend-based estimate · Open C
 
 ## Open Questions
 
-- The exact Open CEDA 2025 workbook layout, dollar year and price basis (purchaser vs basic). To be confirmed from the downloaded file in task 2.1 and written into the set's fields, not assumed in code.
-- Whether Open CEDA offers a world-average row to use as a last-resort fallback. If it does, the fallback order gains it after the company's country.
+- The price index could deflate spend to 2023 dollars per sector, since the workbook carries it for 2018–2024. It is left out for now, and the method line states "2023 USD".
+- Whether the agent path beats the single-shot path on real lines. The run summary separates them, and task 7.2 compares them.

@@ -70,7 +70,7 @@ claims the oldest `queued` run, executes it, and records the outcome.
 - **WHEN** a `match_emissions` run is `queued`, a factor set is active, and the
   worker polls
 - **THEN** the company's eligible lines are matched and the run ends `succeeded`
-  with the matched, unmatched, cached and failed counts
+  with the agent, fallback, unmatched, cached and failed counts
 
 #### Scenario: A failing run does not stop the worker
 

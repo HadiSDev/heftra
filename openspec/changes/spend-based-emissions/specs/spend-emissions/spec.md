@@ -63,21 +63,21 @@ A failed rate lookup SHALL mark the voucher `unconverted` and SHALL NOT fail the
 - **on each voucher:** `kg_co2e` (empty when nothing was estimated) and `emissions_status`;
 - **on each line:**
   - `emission_sector` as `{id, code, name}`, or empty;
-  - `emission_sector_source` and `emission_sector_confidence`;
+  - `emission_sector_source`, `emission_sector_confidence` and `emission_sector_rationale`;
   - `kg_co2e`;
-  - `emission_country`, the country whose factor was used.
+  - `emission_area`, the country or region whose factor was used.
 
 Amounts of kg SHALL be given to three decimals.
 
 #### Scenario: A listed voucher shows its emissions
 
 - **WHEN** the voucher list includes an estimated voucher
-- **THEN** the voucher has its `kg_co2e` and status `estimated`, and each line has its sector, its kg and the country used
+- **THEN** the voucher has its `kg_co2e` and status `estimated`, and each line has its sector, its kg and the area whose factor was used
 
 ### Requirement: Spend Lines' emissions SHALL be summarized under its filters
 
 `GET /api/v1/erp-entries/vouchers/emissions` SHALL accept the same filters as `GET /api/v1/erp-entries/vouchers/summary` and SHALL return:
-- `factor_set`: the active set's source, version, currency, price year, GWP basis and attribution, or empty when none is active;
+- `factor_set`: the active set's source, version, currency, price year, price basis and attribution, or empty when none is active;
 - `kg_co2e`: the total over the filtered vouchers;
 - per base currency, `posted_spend` and `estimated_spend`;
 - the number of vouchers with each `emissions_status`.
@@ -107,8 +107,8 @@ It SHALL be scoped to the caller's companies exactly as the voucher list is. It 
 
 `PATCH /api/v1/invoice-lines/{id}` SHALL accept `emission_sector_id`.
 
-- **Setting a sector** SHALL store it with source `human` and no confidence.
-- **Clearing it** (null) SHALL remove the sector, source and confidence, so the matcher may match the line again.
+- **Setting a sector** SHALL store it with source `human` and no confidence or rationale.
+- **Clearing it** (null) SHALL remove the sector, source, confidence and rationale, so the matcher may match the line again.
 - A sector outside the active set's classification SHALL be refused with `422 Unprocessable Entity`, and nothing changed.
 - The change SHALL be written to the audit log with the old and new sector, like other line edits.
 - The same permissions SHALL apply as to other line edits.
