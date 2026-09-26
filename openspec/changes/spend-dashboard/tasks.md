@@ -25,9 +25,9 @@
 
 ## 5. Dashboard data layer (web)
 
-- [ ] 5.1 Ask the user to install `recharts` (`bun add recharts` in `apps/web`); add `--chart-1`…`--chart-6` and muted chart tokens for light and dark
-- [ ] 5.2 Add the response types and `lib/api/spend-reports.ts` query options (keyed by resolved period and company, `keepPreviousData`), with tests of keys and requests
-- [ ] 5.3 Add `lib/dashboard-search.ts`: validate `period`, `from`, `to`, `company_id`; resolve presets against today; describe the comparison period for display; with tests
+- [x] 5.1 Ask the user to install `recharts` (`bun add recharts` in `apps/web`); add `--chart-1`…`--chart-6` and muted chart tokens for light and dark
+- [x] 5.2 Add the response types and `lib/api/spend-reports.ts` query options (keyed by resolved period and company, `keepPreviousData`), with tests of keys and requests
+- [x] 5.3 Add `lib/dashboard-search.ts`: validate `period`, `from`, `to`, `company_id`; resolve presets against today; describe the comparison period for display; with tests
 
 ## 6. Dashboard page (web)
 

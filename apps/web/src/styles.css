@@ -42,6 +42,13 @@
   --destructive-foreground: #ffffff;
   --info: #1960e9;
   --info-foreground: #ffffff;
+  --chart-1: #2563eb;
+  --chart-2: #0d9488;
+  --chart-3: #d97706;
+  --chart-4: #7c3aed;
+  --chart-5: #db2777;
+  --chart-other: #94a3b8;
+  --chart-uncategorized: #d4d4d4;
 
   --radius: 0.75rem;
 }
@@ -83,6 +90,13 @@
   --destructive-foreground: #0a0a0a;
   --info: #4e85ee;
   --info-foreground: #0a0a0a;
+  --chart-1: #60a5fa;
+  --chart-2: #2dd4bf;
+  --chart-3: #fbbf24;
+  --chart-4: #a78bfa;
+  --chart-5: #f472b6;
+  --chart-other: #64748b;
+  --chart-uncategorized: #404040;
 }
 
 @theme inline {
@@ -115,6 +129,13 @@
   --color-destructive-foreground: var(--destructive-foreground);
   --color-info: var(--info);
   --color-info-foreground: var(--info-foreground);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-chart-other: var(--chart-other);
+  --color-chart-uncategorized: var(--chart-uncategorized);
 
   --font-sans: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
   --font-display: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
