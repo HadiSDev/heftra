@@ -86,7 +86,7 @@
 
 ## 7. Verification
 
-- [ ] 7.1 Run the web-api and ai-api suites in full
+- [x] 7.1 Run the web-api and ai-api suites in full
 - [ ] 7.2 With the user's go-ahead:
   - [ ] 7.2.1 Import the real Open CEDA workbook and match one company's lines
   - [ ] 7.2.2 Review the 20 largest-emission lines' sectors for plausibility, and compare the agent's matches with the fallback's
