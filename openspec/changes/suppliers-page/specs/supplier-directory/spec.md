@@ -70,7 +70,7 @@ The endpoint SHALL accept `q` (a case-insensitive substring of the name or the V
 
 ### Requirement: A supplier's detail SHALL be readable by the organizations that bought from it
 
-`GET /api/v1/vendors/{vendor_id}/detail`, optionally narrowed by `company_id`, SHALL return the supplier's name, country, VAT number, description with its source, and website, together with figures over the caller's invoices only: invoice count, first and last invoice date, spend net of VAT per base currency with unconverted invoices counted, line spend grouped by category and base currency largest first, and the ten latest invoices, newest first with undated ones last. A supplier the caller has no invoice from, an unknown supplier, or a foreign `company_id` SHALL be 404.
+`GET /api/v1/vendors/{vendor_id}/detail`, optionally narrowed by `company_id`, SHALL return the supplier's name, country, VAT number, description with its source, and website, together with figures over the caller's invoices only: invoice count, first and last invoice date, spend net of VAT per base currency with unconverted invoices counted, spend by category and base currency largest first (each invoice's net spend split across its lines' categories by their share of its lines' value, so the categories add up to the supplier's spend even when the document printed its lines with VAT), and the ten latest invoices, newest first with undated ones last. A supplier the caller has no invoice from, an unknown supplier, or a foreign `company_id` SHALL be 404.
 
 #### Scenario: Only the caller's figures
 

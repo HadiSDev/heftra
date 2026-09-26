@@ -8,7 +8,7 @@ from sqlalchemy import func, nulls_last
 from sqlmodel import Session, select
 
 from web_api.db.models import Company, ErpEntry, Invoice, InvoiceLine, SpendCategory, Vendor
-from web_api.vendor_spend import spend_by_vendor
+from web_api.vendor_spend import NET_SPEND, spend_by_vendor
 from web_api.vendor_website import known_website
 from ..auth.deps import TenantScope, get_session, resolve_company_ids, tenant_scope
 from ..schemas import VendorCategorySpendRead, VendorDetailRead, VendorInvoiceRead
@@ -16,6 +16,10 @@ from ..schemas import VendorCategorySpendRead, VendorDetailRead, VendorInvoiceRe
 router = APIRouter(prefix="/api/v1", tags=["vendors"])
 
 RECENT_INVOICE_LIMIT = 10
+_ZERO = Decimal("0")
+_CENT = Decimal("0.01")
+
+CategoryKey = tuple[str | None, str | None, str | None]
 
 
 @router.get("/vendors/{vendor_id}/detail", response_model=VendorDetailRead)
@@ -75,30 +79,54 @@ def _most_printed(session: Session, column, company_ids: list[str], vendor_id: s
 def _category_spend(
     session: Session, company_ids: list[str], vendor_id: str
 ) -> list[VendorCategorySpendRead]:
-    """The supplier's lines grouped by category and base currency, largest spend first."""
-    amount = func.coalesce(func.sum(InvoiceLine.base_amount), 0)
+    """The supplier's spend by category and base currency, largest first.
+
+    Each invoice's net spend is split across its lines by their share of its lines' value, so the
+    categories add up to the supplier's spend however the document printed its lines.
+    """
     rows = session.exec(
         select(
-            InvoiceLine.spend_category_id, SpendCategory.name, Company.base_currency,
-            amount, func.count(InvoiceLine.id),
+            InvoiceLine.invoice_id, InvoiceLine.spend_category_id, SpendCategory.name,
+            Company.base_currency, InvoiceLine.base_amount, NET_SPEND,
         )
         .join(Invoice, Invoice.id == InvoiceLine.invoice_id)
         .join(Company, Company.id == Invoice.company_id)
         .outerjoin(SpendCategory, SpendCategory.id == InvoiceLine.spend_category_id)
         .where(Invoice.vendor_id == vendor_id, Invoice.company_id.in_(company_ids))
-        .group_by(InvoiceLine.spend_category_id, SpendCategory.name, Company.base_currency)
-        .order_by(amount.desc(), SpendCategory.name)
     ).all()
-    return [
+
+    line_totals: dict[str, Decimal] = {}
+    for invoice_id, _, _, _, line_amount, _ in rows:
+        line_totals[invoice_id] = line_totals.get(invoice_id, _ZERO) + (line_amount or _ZERO)
+
+    amounts: dict[CategoryKey, Decimal] = {}
+    line_counts: dict[CategoryKey, int] = {}
+    for invoice_id, category_id, category_name, currency, line_amount, net in rows:
+        key = (category_id, category_name, currency)
+        line_counts[key] = line_counts.get(key, 0) + 1
+        amounts[key] = amounts.get(key, _ZERO) + _share_of_net(net, line_amount, line_totals[invoice_id])
+
+    categories = [
         VendorCategorySpendRead(
             category_id=category_id,
             category_name=category_name,
             currency=currency,
-            amount=Decimal(str(total)),
+            amount=amounts[(category_id, category_name, currency)].quantize(_CENT),
             line_count=line_count,
         )
-        for category_id, category_name, currency, total, line_count in rows
+        for (category_id, category_name, currency), line_count in line_counts.items()
     ]
+    return sorted(
+        categories,
+        key=lambda c: (-c.amount, c.category_name is None, c.category_name or ""),
+    )
+
+
+def _share_of_net(net, line_amount: Decimal | None, line_total: Decimal) -> Decimal:
+    """The part of an invoice's net spend one line accounts for; none when it cannot be told."""
+    if net is None or line_amount is None or line_total <= 0:
+        return _ZERO
+    return Decimal(str(net)) * line_amount / line_total
 
 
 def _recent_invoices(

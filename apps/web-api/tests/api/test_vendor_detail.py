@@ -237,3 +237,16 @@ def test_nothing_printed_is_none(client, supplier):
 
     assert body["document_country_code"] is None
     assert body["document_vat_number"] is None
+
+
+def test_lines_printed_with_vat_are_scaled_to_the_invoices_net_spend(client, engine, supplier):
+    with Session(engine) as s:
+        for line in s.exec(select(InvoiceLine).where(InvoiceLine.invoice_id == supplier["inv_a"])).all():
+            line.base_amount = line.base_amount * Decimal("1.25")
+        s.commit()
+
+    body = _detail(client, supplier["acme"])
+
+    amounts = {c["category_name"]: Decimal(c["amount"]) for c in body["categories"]}
+    assert amounts == {"Cloud hosting": Decimal("260.00"), None: Decimal("80.00")}
+    assert sum(amounts.values()) == Decimal(body["spend"][0]["amount"])
