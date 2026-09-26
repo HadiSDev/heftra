@@ -4,7 +4,7 @@ import type { VoucherSelection } from '#/lib/api/entries'
 import type {
   CompanyRead,
   EntryFilters,
-  InvoiceLineUpdate,
+  InvoiceLinePatch,
   InvoiceUpdate,
   LineCorrections,
   Page,
@@ -17,6 +17,9 @@ import type {
   SpendCoverageRow,
 } from '#/lib/api/types'
 import { SpendCoverage } from './summary/spend-coverage'
+import { EmissionsCard } from './emissions/emissions-card'
+import type { EmissionsCardProps } from './emissions/emissions-card'
+import type { SectorSearch } from './emissions/sector-field'
 import { FilterBar } from './filter-bar'
 import { VoucherDrawer } from './voucher/voucher-drawer'
 import { VoucherTable } from './voucher-table'
@@ -122,7 +125,11 @@ export interface EntriesPanelProps {
   /** Verify the header, applying any pending edits first. */
   onVerifyHeader: (invoiceId: string, changes: InvoiceUpdate) => Promise<void>
   /** Correct what a line says was bought. */
-  onUpdateLine: (lineId: string, changes: InvoiceLineUpdate) => Promise<void>
+  onUpdateLine: (lineId: string, changes: InvoiceLinePatch) => Promise<void>
+  /** The listed vouchers' estimated emissions, and how to retry them. */
+  emissions: EmissionsCardProps
+  /** The emission sector search for the line editor. */
+  sectorSearch?: SectorSearch
   /** Add a line to, or delete one from, the open invoice. */
   onCreateLine: (invoiceId: string) => Promise<void>
   onDeleteLine: (lineId: string) => Promise<void>
@@ -159,6 +166,8 @@ export function EntriesPanel({
   onUpdateHeader,
   onVerifyHeader,
   onUpdateLine,
+  emissions,
+  sectorSearch,
   onCreateLine,
   onDeleteLine,
   onReprocess,
@@ -184,6 +193,7 @@ export function EntriesPanel({
       />
 
       {error ? null : <SpendCoverage rows={coverage} />}
+      {error ? null : <EmissionsCard {...emissions} />}
 
       {error ? (
         <Card className="p-8 text-center">
@@ -243,6 +253,7 @@ export function EntriesPanel({
         onUpdateHeader={onUpdateHeader}
         onVerifyHeader={onVerifyHeader}
         onUpdateLine={onUpdateLine}
+        sectorSearch={sectorSearch}
         onCreateLine={onCreateLine}
         onDeleteLine={onDeleteLine}
         vendors={vendors}

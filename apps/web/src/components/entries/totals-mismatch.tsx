@@ -67,7 +67,7 @@ export function TotalsMismatchRow({ group }: { group: VoucherGroupRead }) {
   return (
     <TableRow className="bg-warning/5 hover:bg-warning/5">
       <TableCell />
-      <TableCell colSpan={7} className="pl-8">
+      <TableCell colSpan={8} className="pl-8">
         <p role="note" className="flex items-start gap-2 text-sm">
           <TriangleAlert
             className="mt-0.5 size-4 shrink-0 text-warning"

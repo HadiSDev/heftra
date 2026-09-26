@@ -1,8 +1,8 @@
-import * as React from 'react'
 import { Card, Progress, Skeleton } from '#/components/ui'
 import { formatCount, formatMoney, toNumber } from '#/lib/format/format'
 import type { SpendCoverageRow } from '#/lib/api/types'
 import { LineMix } from './line-mix'
+import { Metric } from './metric'
 
 const percentFormatter = new Intl.NumberFormat('en-GB', {
   style: 'percent',
@@ -18,36 +18,11 @@ export function categorizedShare(row: SpendCoverageRow): number | null {
   return toNumber(row.categorized_spend) / posted
 }
 
-function formatShare(share: number): string {
+export function formatShare(share: number): string {
   if (share > 0 && share < 0.01) {
     return '<1%'
   }
   return percentFormatter.format(share)
-}
-
-function Metric({
-  caption,
-  value,
-  children,
-}: {
-  caption: string
-  value: React.ReactNode
-  children: React.ReactNode
-}) {
-  return (
-    <section
-      aria-label={caption}
-      className="flex min-w-0 flex-col gap-1 px-5 py-4"
-    >
-      <h3 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-        {caption}
-      </h3>
-      <div className="font-display text-2xl font-semibold tracking-tight tabular-nums">
-        {value}
-      </div>
-      <div className="text-sm text-muted-foreground">{children}</div>
-    </section>
-  )
 }
 
 function vouchersText(row: SpendCoverageRow): string {

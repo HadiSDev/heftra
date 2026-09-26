@@ -2,10 +2,11 @@ import * as React from 'react'
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react'
 import { Button, cn } from '#/components/ui'
 import { serverErrorMessage } from '#/lib/form-errors'
+import type { SectorSearch } from '../emissions/sector-field'
 import type {
   InvoiceDetailRead,
   InvoiceLineRead,
-  InvoiceLineUpdate,
+  InvoiceLinePatch,
   SpendCategoryRead,
 } from '#/lib/api/types'
 import { LineEditor } from '#/components/entries/lines/line-editor'
@@ -23,7 +24,9 @@ export interface VoucherLinesTabProps {
   /** The line to show first. */
   initialLineId?: string | null
   onVerifyLine: (lineId: string, corrections: LineCorrections) => Promise<void>
-  onUpdateLine: (lineId: string, changes: InvoiceLineUpdate) => Promise<void>
+  onUpdateLine: (lineId: string, changes: InvoiceLinePatch) => Promise<void>
+  /** The emission sector search; omit to leave the sector out of the editor. */
+  sectorSearch?: SectorSearch
   onCreateLine: (invoiceId: string) => Promise<void>
   onDeleteLine: (lineId: string) => Promise<void>
 }
@@ -50,6 +53,7 @@ export function VoucherLinesTab({
   initialLineId,
   onVerifyLine,
   onUpdateLine,
+  sectorSearch,
   onCreateLine,
   onDeleteLine,
 }: VoucherLinesTabProps) {
@@ -218,6 +222,7 @@ export function VoucherLinesTab({
               canManage={canManage}
               onVerify={onVerifyLine}
               onUpdate={onUpdateLine}
+              sectorSearch={sectorSearch}
               onDelete={canManage ? onDeleteLine : undefined}
               onDirtyChange={setDirty}
             />

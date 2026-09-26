@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   ChevronDown,
   FileText,
+  Leaf,
   Loader2,
   Play,
   RefreshCw,
@@ -41,6 +42,7 @@ const RUN_KIND_ICONS: Record<PipelineRunKind, LucideIcon> = {
   sync: RefreshCw,
   read_documents: FileText,
   categorize: Tags,
+  match_emissions: Leaf,
 }
 
 export interface CompanyRunMenuProps {

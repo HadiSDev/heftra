@@ -11,11 +11,14 @@ import {
 } from '#/components/ui'
 import { TreeSelector } from '#/components/spend-tree/tree-selector'
 import { LineStatusBadge } from './line-status'
+import { EmissionSectorField } from '../emissions/sector-field'
+import type { SectorSearch } from '../emissions/sector-field'
 import { formatMoney, toNumber } from '#/lib/format/format'
 import { lineName } from '#/lib/format/line'
 import { serverErrorMessage } from '#/lib/form-errors'
 import type {
   InvoiceLineRead,
+  InvoiceLinePatch,
   InvoiceLineUpdate,
   LineCorrections,
   SpendCategoryRead,
@@ -36,7 +39,9 @@ export interface LineEditorProps {
   /** An empty object accepts the AI result as-is. */
   onVerify: (lineId: string, corrections: LineCorrections) => Promise<void>
   /** Correct what the line says was bought. */
-  onUpdate: (lineId: string, changes: InvoiceLineUpdate) => Promise<void>
+  onUpdate: (lineId: string, changes: InvoiceLinePatch) => Promise<void>
+  /** The emission sector search; omit to leave the sector out. */
+  sectorSearch?: SectorSearch
   /** Reports whether the line has unsaved edits. */
   onDirtyChange?: (dirty: boolean) => void
   /** Delete the line; omit to hide the control. */
@@ -112,6 +117,7 @@ export function LineEditor({
   onUpdate,
   onDelete,
   onDirtyChange,
+  sectorSearch,
 }: LineEditorProps) {
   const [chosen, setChosen] = React.useState<SpendCategoryRead | null>(null)
   const [submitting, setSubmitting] = React.useState(false)
@@ -328,6 +334,16 @@ export function LineEditor({
           />
         </Field>
       )}
+
+      {canManage && sectorSearch !== undefined ? (
+        <EmissionSectorField
+          line={line}
+          search={sectorSearch}
+          onChoose={(sectorId) =>
+            onUpdate(line.id, { emission_sector_id: sectorId })
+          }
+        />
+      ) : null}
 
       {stale && previous.length > 0 && nodes !== null && nodes.length > 0 ? (
         <p className="text-sm text-muted-foreground">

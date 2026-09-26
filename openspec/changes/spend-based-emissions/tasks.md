@@ -69,20 +69,20 @@
 
 ## 6. Frontend
 
-- [ ] 6.1 Types and queries:
-  - [ ] 6.1.1 Emissions fields on vouchers and lines
-  - [ ] 6.1.2 `voucherEmissionsQueryOptions` (keyed on the filters, `keepPreviousData`) and `emissionSectorsQueryOptions`
-  - [ ] 6.1.3 `emission_sector_id` on the line update
-  - [ ] 6.1.4 `match_emissions` in the run kinds and labels
-- [ ] 6.2 `formatEmissions(kg)`: kg below 1,000, t with one decimal above, at most 3 significant figures (tests)
-- [ ] 6.3 `components/entries/summary/emissions-card.tsx`:
-  - [ ] 6.3.1 Total, share estimated per currency, method line and attribution
-  - [ ] 6.3.2 Not-estimated counts with reasons
-  - [ ] 6.3.3 Its own loading, error and retry states, fixed height, and the no-factor-set state
-  - [ ] 6.3.4 Placed beside the coverage card in `entries-panel.tsx`
-- [ ] 6.4 A CO₂e column in the voucher table (partial mark, "—" with reason). Each expanded line shows its sector with an AI/human mark, a needs-review mark below the threshold, its CO₂e, and the rationale and factor area on hover and focus
-- [ ] 6.5 An emission sector picker in the line editor: a debounced server search, name and code shown, clearable, disabled with an explanation when no set is active; saving invalidates the voucher list and the emissions summary
-- [ ] 6.6 Component tests for the card, the column and line display, and the picker. Then run vitest, tsc, eslint and prettier on the changed files
+- [x] 6.1 Types and queries:
+  - [x] 6.1.1 Emissions fields on vouchers and lines
+  - [x] 6.1.2 `voucherEmissionsQueryOptions` (keyed on the filters, `keepPreviousData`) and `emissionSectorsQueryOptions`
+  - [x] 6.1.3 `emission_sector_id` on the line update
+  - [x] 6.1.4 `match_emissions` in the run kinds and labels
+- [x] 6.2 `formatEmissions(kg)`: kg below 1,000, t with one decimal above, at most 3 significant figures (tests)
+- [x] 6.3 `components/entries/summary/emissions-card.tsx`:
+  - [x] 6.3.1 Total, share estimated per currency, method line and attribution
+  - [x] 6.3.2 Not-estimated counts with reasons
+  - [x] 6.3.3 Its own loading, error and retry states, fixed height, and the no-factor-set state
+  - [x] 6.3.4 Placed beside the coverage card in `entries-panel.tsx`
+- [x] 6.4 A CO₂e column in the voucher table (partial mark, "—" with reason). Each expanded line shows its sector with an AI/human mark, a needs-review mark below the threshold, its CO₂e, and the rationale and factor area on hover and focus
+- [x] 6.5 An emission sector picker in the line editor: a debounced server search, name and code shown, clearable, disabled with an explanation when no set is active; saving invalidates the voucher list and the emissions summary
+- [x] 6.6 Component tests for the card, the column and line display, and the picker. Then run vitest, tsc, eslint and prettier on the changed files
 
 ## 7. Verification
 

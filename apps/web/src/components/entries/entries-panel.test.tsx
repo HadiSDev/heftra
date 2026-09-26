@@ -435,6 +435,7 @@ function common() {
     spendTreeNodes: TREE_NODES,
     onUpdateHeader: vi.fn().mockResolvedValue(undefined),
     onReprocess: vi.fn().mockResolvedValue(undefined),
+    emissions: { summary: undefined, error: false, onRetry: vi.fn() },
     canManage: true,
     onVerifyHeader: vi.fn().mockResolvedValue(undefined),
     onUpdateLine: vi.fn().mockResolvedValue(undefined),
@@ -548,11 +549,11 @@ describe('EntriesPanel — voucher rows', () => {
     const columns = table.querySelectorAll('colgroup > col')
 
     expect(table.className).toContain('table-fixed')
-    expect(columns).toHaveLength(8)
+    expect(columns).toHaveLength(9)
     fireEvent.click(
       screen.getByRole('button', { name: /Expand voucher V-SPLIT/ }),
     )
-    expect(table.querySelectorAll('colgroup > col')).toHaveLength(8)
+    expect(table.querySelectorAll('colgroup > col')).toHaveLength(9)
   })
 
   it('gives a voucherless posting no expand affordance', () => {

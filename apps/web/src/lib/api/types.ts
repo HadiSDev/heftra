@@ -1,5 +1,11 @@
 /** Response types mirroring the web API's Pydantic schemas (`web_api/schemas.py`). */
 
+import type {
+  EmissionSectorRead,
+  EmissionSectorSource,
+  EmissionsStatus,
+} from './emission-types'
+
 /** A decimal field, as a string or a number. */
 export type Money = string | number
 
@@ -263,7 +269,8 @@ export interface RecategorizeResult {
 }
 
 /** A pipeline stage a system admin can run for one company. */
-export type PipelineRunKind = 'sync' | 'read_documents' | 'categorize'
+export type PipelineRunKind =
+  'sync' | 'read_documents' | 'categorize' | 'match_emissions'
 
 /** Where a pipeline run is in its life: `queued → running → succeeded | failed`. */
 export type PipelineRunStatus = 'queued' | 'running' | 'succeeded' | 'failed'
@@ -509,6 +516,9 @@ export interface VoucherGroupRead {
   /** The total the ERP posted for the invoice, in the invoice's currency. */
   invoice_total: Money | null
   invoice_currency: string | null
+  /** Estimated kg CO2e; null when nothing could be estimated. */
+  kg_co2e?: Money | null
+  emissions_status?: EmissionsStatus | null
 }
 
 /** Whether an invoice's attached document has been turned into lines. */
@@ -624,6 +634,17 @@ export interface InvoiceLineRead {
   needs_review: boolean
   /** Which of this line's fields a human has settled. */
   verified_fields: Array<string>
+  emission_sector_id?: string | null
+  emission_sector_source?: EmissionSectorSource | null
+  emission_sector_confidence?: Money | null
+  emission_sector_rationale?: string | null
+  emission_sector?: EmissionSectorRead | null
+  /** The AI matched the sector with low confidence. */
+  emission_needs_review?: boolean
+  /** Estimated kg CO2e; set only on the voucher list. */
+  kg_co2e?: Money | null
+  /** The country code or region whose factor was used. */
+  emission_area?: string | null
 }
 
 /** An invoice header. */
@@ -708,6 +729,11 @@ export interface InvoiceLineUpdate {
   unit?: string | null
   unit_price?: number | null
   amount?: number | null
+}
+
+/** `PATCH /invoice-lines/{id}` may also choose or clear the line's emission sector. */
+export interface InvoiceLinePatch extends InvoiceLineUpdate {
+  emission_sector_id?: string | null
 }
 
 /** `POST /invoices/{id}/lines` — a line a reviewer adds by hand. */

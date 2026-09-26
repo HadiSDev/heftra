@@ -20,6 +20,10 @@ import {
   verifyInvoiceLineMutation,
   verifyInvoiceMutation,
 } from '#/lib/api/invoices'
+import {
+  emissionSectorsQueryOptions,
+  voucherEmissionsQueryOptions,
+} from '#/lib/api/emissions'
 import { entriesSummaryOptions } from '#/lib/api/reports'
 import { spendTreeQueryOptions } from '#/lib/api/spend-trees'
 import {
@@ -29,6 +33,7 @@ import {
   validateEntrySearch,
 } from '#/lib/entry-search'
 import { vendorsQueryOptions } from '#/lib/api/vendors'
+import { useDebouncedValue } from '#/lib/use-debounced-value'
 
 export const Route = createFileRoute('/_authed/invoice-lines')({
   component: EntriesPage,
@@ -44,6 +49,8 @@ function EntriesPage() {
   const filters = Route.useSearch()
 
   const [vendorQuery, setVendorQuery] = React.useState('')
+  const [sectorQuery, setSectorQuery] = React.useState('')
+  const sectorSearchText = useDebouncedValue(sectorQuery, 250)
 
   const voucherKey: VoucherKey = {
     voucher: filters.voucher,
@@ -54,6 +61,7 @@ function EntriesPage() {
 
   const groups = useQuery(voucherGroupsQueryOptions(api, filters))
   const coverage = useQuery(voucherSummaryQueryOptions(api, filters))
+  const emissions = useQuery(voucherEmissionsQueryOptions(api, filters))
   const companies = useQuery(companiesQueryOptions(api))
   const vendors = useQuery(vendorsQueryOptions(api, { q: vendorQuery }))
   const summary = useQuery(entriesSummaryOptions(api))
@@ -62,6 +70,10 @@ function EntriesPage() {
 
   const openCompanyId = voucherDetail.data?.invoice?.company_id ?? null
   const openCompany = companies.data?.find((c) => c.id === openCompanyId)
+  const sectors = useQuery({
+    ...emissionSectorsQueryOptions(api, sectorSearchText),
+    enabled: voucherOpen,
+  })
   const spendTree = useQuery(
     spendTreeQueryOptions(api, openCompany?.spend_tree_id ?? null),
   )
@@ -91,6 +103,19 @@ function EntriesPage() {
     <EntriesPanel
       result={groups.data}
       coverage={coverage.isError ? [] : coverage.data?.rows}
+      emissions={{
+        summary: emissions.data,
+        error: emissions.isError,
+        onRetry: () => void emissions.refetch(),
+      }}
+      sectorSearch={{
+        available:
+          emissions.data === undefined
+            ? undefined
+            : emissions.data.factor_set !== null,
+        sectors: sectors.data,
+        onSearch: setSectorQuery,
+      }}
       loading={groups.isPending}
       error={groups.isError}
       filters={filters}

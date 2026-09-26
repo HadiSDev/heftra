@@ -4,7 +4,7 @@ import { entriesKey } from './entries'
 import type {
   InvoiceLineCreate,
   InvoiceLineRead,
-  InvoiceLineUpdate,
+  InvoiceLinePatch,
   InvoiceRead,
   InvoiceUpdate,
   InvoiceVerify,
@@ -46,7 +46,7 @@ export function updateInvoiceLineMutation(
 ): UseMutationOptions<
   InvoiceLineRead,
   Error,
-  { id: string; body: InvoiceLineUpdate }
+  { id: string; body: InvoiceLinePatch }
 > {
   return {
     mutationFn: ({ id, body }) =>

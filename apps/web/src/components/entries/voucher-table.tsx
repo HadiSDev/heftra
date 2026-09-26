@@ -18,6 +18,8 @@ import type { VoucherSelection } from '#/lib/api/entries'
 import { formatDay, formatMoney, toNumber } from '#/lib/format/format'
 import type { InvoiceLineRead, VoucherGroupRead } from '#/lib/api/types'
 import { ConvertedAmount } from './converted-amount'
+import { LineEmissions, LineSector } from './emissions/line-emissions'
+import { VoucherEmissions } from './emissions/voucher-emissions'
 import { LineStatusBadge } from './lines/line-status'
 import { ProvenanceMark } from './lines/provenance-mark'
 import { SpendCategory } from './lines/spend-category'
@@ -131,13 +133,14 @@ function VoucherColumns() {
   return (
     <colgroup>
       <col className="w-10" />
+      <col className="w-[20%]" />
+      <col className="w-[9%]" />
+      <col className="w-[6%]" />
+      <col className="w-[9%]" />
       <col className="w-[22%]" />
-      <col className="w-[10%]" />
-      <col className="w-[7%]" />
-      <col className="w-[10%]" />
-      <col className="w-[23%]" />
+      <col className="w-[11%]" />
       <col className="w-[13%]" />
-      <col className="w-[15%]" />
+      <col className="w-[10%]" />
     </colgroup>
   )
 }
@@ -154,6 +157,7 @@ function LineHeaderRow() {
       <TableHead className="h-8">Spend category</TableHead>
       <TableHead className="h-8">Status</TableHead>
       <TableHead className="h-8 text-right">Amount</TableHead>
+      <TableHead className="h-8 text-right">CO₂e</TableHead>
     </TableRow>
   )
 }
@@ -204,6 +208,7 @@ function LineRow({
       </TableCell>
       <TableCell>
         <SpendCategory line={line} />
+        <LineSector line={line} />
       </TableCell>
       <TableCell>
         <LineStatusBadge line={line} />
@@ -216,6 +221,9 @@ function LineRow({
           postedCurrency={line.currency}
           signed
         />
+      </TableCell>
+      <TableCell className="text-right">
+        <LineEmissions line={line} />
       </TableCell>
     </TableRow>
   )
@@ -254,6 +262,7 @@ export function VoucherTable({ groups, onSelectEntry }: VoucherTableProps) {
           <TableHead colSpan={3}>Supplier</TableHead>
           <TableHead>Date</TableHead>
           <TableHead className="text-right">Total Spend</TableHead>
+          <TableHead className="text-right">CO₂e</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -325,6 +334,9 @@ export function VoucherTable({ groups, onSelectEntry }: VoucherTableProps) {
                     <TotalsMismatchMarker group={group} />
                     <GroupAmount group={group} />
                   </span>
+                </TableCell>
+                <TableCell className="text-right">
+                  <VoucherEmissions group={group} />
                 </TableCell>
               </TableRow>
               {isOpen ? (

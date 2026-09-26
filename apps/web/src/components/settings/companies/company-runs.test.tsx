@@ -152,7 +152,7 @@ describe('CompaniesPanel — layout', () => {
 })
 
 describe('CompaniesPanel — pipeline runs for a system admin', () => {
-  it('offers the three actions on the company row', async () => {
+  it('offers the four actions on the company row', async () => {
     renderPanel()
 
     await openRunMenu()
@@ -166,6 +166,9 @@ describe('CompaniesPanel — pipeline runs for a system admin', () => {
     expect(
       screen.getByRole('menuitem', { name: 'Categorize lines' }),
     ).toBeTruthy()
+    expect(
+      screen.getByRole('menuitem', { name: 'Match emission sectors' }),
+    ).toBeTruthy()
     expect(get).toHaveBeenCalledWith('/api/v1/companies/c1/runs', {
       limit: 20,
     })
@@ -175,6 +178,7 @@ describe('CompaniesPanel — pipeline runs for a system admin', () => {
     ['Sync from ERP', 'sync'],
     ['Read documents', 'read_documents'],
     ['Categorize lines', 'categorize'],
+    ['Match emission sectors', 'match_emissions'],
   ] as const)('%s requests a %s run', async (label, kind) => {
     renderPanel()
 

@@ -22,9 +22,10 @@ import {
   cn,
 } from '#/components/ui'
 import { formatMoney } from '#/lib/format/format'
+import type { SectorSearch } from '../emissions/sector-field'
 import type {
   ErpEntryRead,
-  InvoiceLineUpdate,
+  InvoiceLinePatch,
   InvoiceUpdate,
   SpendCategoryRead,
   VendorRead,
@@ -68,7 +69,9 @@ export interface VoucherDrawerProps {
   /** Verify the header, applying any pending edits first. */
   onVerifyHeader: (invoiceId: string, changes: InvoiceUpdate) => Promise<void>
   /** Correct what a line says was bought. */
-  onUpdateLine: (lineId: string, changes: InvoiceLineUpdate) => Promise<void>
+  onUpdateLine: (lineId: string, changes: InvoiceLinePatch) => Promise<void>
+  /** The emission sector search for the line editor. */
+  sectorSearch?: SectorSearch
   /** Add a line to the open invoice. */
   onCreateLine: (invoiceId: string) => Promise<void>
   /** Delete a line from the open invoice. */
@@ -159,6 +162,7 @@ export function VoucherDrawer({
   onUpdateHeader,
   onVerifyHeader,
   onUpdateLine,
+  sectorSearch,
   onCreateLine,
   onDeleteLine,
   initialLineId,
@@ -284,6 +288,7 @@ export function VoucherDrawer({
                             canManage={canManage}
                             onVerifyLine={onVerifyLine}
                             onUpdateLine={onUpdateLine}
+                            sectorSearch={sectorSearch}
                             onCreateLine={onCreateLine}
                             onDeleteLine={onDeleteLine}
                           />

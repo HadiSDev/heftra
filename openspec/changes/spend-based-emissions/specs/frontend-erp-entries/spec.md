@@ -2,12 +2,12 @@
 
 ### Requirement: Spend Lines SHALL show the estimated emissions of what it lists
 
-Beside the coverage card, Spend Lines SHALL show an emissions card fed by the emissions summary under the page's current filters. The card SHALL show:
+Below the coverage card, Spend Lines SHALL show an emissions card fed by the emissions summary under the page's current filters. The card SHALL show:
 - the total estimated emissions;
 - the share of posted spend that was estimated, per base currency;
-- a method line naming the factor set, its version and its price year and currency (for example "Spend-based estimate · Open CEDA 2025 · 2023 USD");
+- a method line naming the factor set, its version and its price year and currency (for example "Spend-based estimate · CEDA 2025 · 2023 USD");
 - the factor set's attribution;
-- the number of vouchers not estimated, broken down by reason on hover or focus.
+- the number of vouchers not estimated, broken down by reason, and how many were estimated from only some of their lines.
 
 Totals SHALL be shown in kg CO₂e below 1,000 kg and in t CO₂e with one decimal from 1,000 kg. With no active factor set, the card SHALL say that no emission factors are imported and show no figure. The card SHALL load, fail and retry independently of the coverage card, and SHALL keep its size while loading so the page does not shift.
 
@@ -65,7 +65,7 @@ The AI's rationale and the country or region whose factor was used SHALL be avai
 The line editor SHALL offer an emission sector picker that:
 - searches the active factor set's sectors as the user types;
 - shows each sector's name and code;
-- saves the choice through the line update, then refreshes the voucher list and the emissions card.
+- saves a pick at once through the line update, then refreshes the voucher list and the emissions card.
 
 The picker SHALL offer to clear the sector. It SHALL be disabled, with an explanation, when no factor set is active.
 

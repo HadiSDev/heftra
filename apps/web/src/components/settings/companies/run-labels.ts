@@ -12,6 +12,7 @@ export const RUN_KINDS: ReadonlyArray<PipelineRunKind> = [
   'sync',
   'read_documents',
   'categorize',
+  'match_emissions',
 ]
 
 /** What each run kind is called in the UI. */
@@ -19,6 +20,7 @@ export const RUN_KIND_LABELS: Record<PipelineRunKind, string> = {
   sync: 'Sync from ERP',
   read_documents: 'Read documents',
   categorize: 'Categorize lines',
+  match_emissions: 'Match emission sectors',
 }
 
 /** What each run status is called in the UI. */
