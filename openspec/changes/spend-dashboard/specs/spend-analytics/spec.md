@@ -97,7 +97,7 @@ Every spend report SHALL take `from` and `to` dates (inclusive) and an optional 
 `GET /api/v1/reports/spend-insights` SHALL return per base currency, each list at most five items:
 
 - new suppliers: first invoice to the caller inside the period, with their spend in it;
-- largest increases: suppliers whose spend rose most from the comparison period to the period, by amount, only rises;
+- largest increases: suppliers whose spend rose most from the comparison period to the period, by amount, only rises, leaving out the new suppliers listed above;
 - recurring suppliers: suppliers with spend in at least three of the six calendar months ending with the month of `to`, with their average spend over the months they had spend, largest first;
 - largest uncategorized spend: the vouchers in the period with the most spend attributed to "Not categorized", with their supplier and invoice.
 

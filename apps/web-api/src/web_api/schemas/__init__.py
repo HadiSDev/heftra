@@ -32,6 +32,11 @@ from .invoices.line_edits import InvoiceLineCreate, InvoiceLineUpdate
 from .invoices.lines import InvoiceLineRead, InvoiceLineVerify
 from .reports.entries import EntryAccountRow, EntrySummaryRow
 from .reports.spend import CategorySpendRow, VendorSpendRow
+from .reports.breakdown import CategorySpendRead, SpendBreakdown, SpendBreakdownRow, SupplierSpendRead
+from .reports.insights import SpendInsights, SpendInsightsRow, SupplierInsight, UncategorizedInsight
+from .reports.overview import AttentionCounts, MonthSpend, SpendOverview, SpendOverviewRow
+from .reports.period import PeriodRead, ReportPeriods
+from .reports.trend import SpendTrend, SpendTrendRow, TrendSeries
 from .spend_trees.categories import (
     SpendCategoryCreate,
     SpendCategoryRead,
@@ -50,7 +55,9 @@ from .vendor_detail import VendorCategorySpendRead, VendorDetailRead, VendorInvo
 from .vendor_overview import VendorOverviewRead, VendorSpendRead
 
 __all__ = [
+    "AttentionCounts",
     "AuditLogRead",
+    "CategorySpendRead",
     "CategorySpendRow",
     "CompanyCreate",
     "CompanyCreateResult",
@@ -86,19 +93,28 @@ __all__ = [
     "InvoiceRead",
     "InvoiceUpdate",
     "InvoiceVerify",
+    "MonthSpend",
     "OrganizationRead",
     "OrganizationUpdate",
     "Page",
+    "PeriodRead",
     "PipelineRunCreate",
     "PipelineRunRead",
     "RecategorizeResult",
     "RefreshAccountsResult",
     "Report",
+    "ReportPeriods",
+    "SpendBreakdown",
+    "SpendBreakdownRow",
     "SpendCategoryCreate",
     "SpendCategoryRead",
     "SpendCategorySuggestionRead",
     "SpendCategoryUpdate",
     "SpendCoverageRow",
+    "SpendInsights",
+    "SpendInsightsRow",
+    "SpendOverview",
+    "SpendOverviewRow",
     "SpendTreeCreate",
     "SpendTreeDeleteResult",
     "SpendTreeDetailRead",
@@ -106,8 +122,14 @@ __all__ = [
     "SpendTreeImportResult",
     "SpendTreeRead",
     "SpendTreeUpdate",
+    "SpendTrend",
+    "SpendTrendRow",
     "SuggestionEvidenceRead",
     "SuggestionResolveResult",
+    "SupplierInsight",
+    "SupplierSpendRead",
+    "TrendSeries",
+    "UncategorizedInsight",
     "UserRead",
     "VendorCategorySpendRead",
     "VendorDetailRead",

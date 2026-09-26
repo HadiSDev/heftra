@@ -19,6 +19,7 @@ from web_api.routers import (
     organization,
     pipeline_runs,
     reports,
+    spend_reports,
     spend_trees,
     users,
     vendor_detail,
@@ -65,6 +66,7 @@ def create_app() -> FastAPI:
     app.include_router(organization.router)
     app.include_router(pipeline_runs.router)
     app.include_router(reports.router)
+    app.include_router(spend_reports.router)
     app.include_router(spend_trees.router)
     app.include_router(users.router)
     app.include_router(vendors.router)

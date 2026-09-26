@@ -11,12 +11,12 @@
 
 ## 3. Reports (web-api)
 
-- [ ] 3.1 Add schemas for the overview, trend, breakdown and insights responses, per base currency
-- [ ] 3.2 Write failing tests and implement `overview.py`: period and comparison spend, twelve months, categorized spend, active and new suppliers (new by first invoice date to the caller), and attention counts (lines needing review, failed documents, disagreeing totals)
-- [ ] 3.3 Write failing tests and implement `trend.py`: twelve months with zeros, five top categories named, the rest as "Other", "Not categorized" apart
-- [ ] 3.4 Write failing tests and implement `breakdown.py`: top-level categories with second-level children and both periods, largest first; top suppliers with both periods, `limit` default 10, max 50, ties by name
-- [ ] 3.5 Write failing tests and implement `insights.py`: new suppliers, largest increases (rises only), recurring suppliers (spend in at least three of six months, average over active months), largest uncategorized vouchers; each at most five
-- [ ] 3.6 Add `routers/spend_reports.py` with the four endpoints, `from`/`to`/`company_id` validation (422 for an inverted period, 404 for a foreign company), registered in the app; API tests for scoping and currency separation
+- [x] 3.1 Add schemas for the overview, trend, breakdown and insights responses, per base currency
+- [x] 3.2 Write failing tests and implement `overview.py`: period and comparison spend, twelve months, categorized spend, active and new suppliers (new by first invoice date to the caller), and attention counts (lines needing review, failed documents, disagreeing totals)
+- [x] 3.3 Write failing tests and implement `trend.py`: twelve months with zeros, five top categories named, the rest as "Other", "Not categorized" apart
+- [x] 3.4 Write failing tests and implement `breakdown.py`: top-level categories with second-level children and both periods, largest first; top suppliers with both periods, `limit` default 10, max 50, ties by name
+- [x] 3.5 Write failing tests and implement `insights.py`: new suppliers, largest increases (rises only), recurring suppliers (spend in at least three of six months, average over active months), largest uncategorized vouchers; each at most five
+- [x] 3.6 Add `routers/spend_reports.py` with the four endpoints, `from`/`to`/`company_id` validation (422 for an inverted period, 404 for a foreign company), registered in the app; API tests for scoping and currency separation
 
 ## 4. Document filter on vouchers (web-api and web)
 
