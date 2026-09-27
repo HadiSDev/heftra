@@ -10,7 +10,10 @@ export interface AppShellProps {
   className?: string
 }
 
-/** The dashboard layout: sidebar and content. */
+/** The id of the element the page content scrolls in; the router restores and resets it. */
+export const APP_SCROLL_ID = 'app-main'
+
+/** The dashboard layout: a sidebar and top bar that stay put, and content that scrolls. */
 export function AppShell({
   sidebar,
   header,
@@ -18,12 +21,16 @@ export function AppShell({
   className,
 }: AppShellProps) {
   return (
-    <div className={cn('min-h-screen bg-background', className)}>
-      <div className="mx-auto flex min-h-screen w-full max-w-[1600px] gap-4 p-3 sm:p-4">
+    <div className={cn('h-dvh overflow-hidden bg-background', className)}>
+      <div className="mx-auto flex h-full w-full max-w-[1600px] gap-4 p-3 sm:p-4">
         {sidebar}
-        <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
           {header}
-          <main className="min-w-0 flex-1 px-2 pt-2 pb-6 sm:px-4">
+          <main
+            id={APP_SCROLL_ID}
+            data-scroll-restoration-id={APP_SCROLL_ID}
+            className="min-h-0 min-w-0 flex-1 overflow-y-auto [scrollbar-gutter:stable] px-2 pt-2 pb-6 sm:px-4"
+          >
             {children}
           </main>
         </div>

@@ -32,7 +32,12 @@ export function SidebarContent({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('flex-1 overflow-y-auto', className)} {...props} />
+  return (
+    <div
+      className={cn('min-h-0 flex-1 overflow-y-auto', className)}
+      {...props}
+    />
+  )
 }
 
 export function SidebarFooter({

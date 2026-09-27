@@ -172,4 +172,4 @@ export {
   type SidebarNavItemProps,
 } from './layout/sidebar'
 export { Topbar, TopbarTitle, TopbarActions } from './layout/topbar'
-export { AppShell, type AppShellProps } from './layout/app-shell'
+export { AppShell, APP_SCROLL_ID, type AppShellProps } from './layout/app-shell'

@@ -1,6 +1,7 @@
 import { createRouter as createTanStackRouter } from '@tanstack/react-router'
 import { QueryClient } from '@tanstack/react-query'
 import { setupRouterSsrQueryIntegration } from '@tanstack/react-router-ssr-query'
+import { APP_SCROLL_ID } from '#/components/ui'
 import { routeTree } from './routeTree.gen'
 
 export function getRouter() {
@@ -11,6 +12,7 @@ export function getRouter() {
   const router = createTanStackRouter({
     routeTree,
     scrollRestoration: true,
+    scrollToTopSelectors: ['window', `#${APP_SCROLL_ID}`],
     defaultPreload: 'intent',
     defaultPreloadStaleTime: 0,
   })
