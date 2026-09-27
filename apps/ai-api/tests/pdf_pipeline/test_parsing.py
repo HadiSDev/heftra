@@ -33,6 +33,12 @@ def test_parse_repairs_malformed_json():
     assert parse_model(text, AccountChoice).account_code == "6010"
 
 
+def test_parse_takes_the_last_answer_when_the_object_is_repeated():
+    draft = _CLEAN.replace('"6010"', '"6000"')
+    text = f"Thinking it over, a first idea: {draft}\nConstructing the JSON:\n{_CLEAN}{_CLEAN}"
+    assert parse_model(text, AccountChoice).account_code == "6010"
+
+
 def test_parse_unwraps_single_nested_object():
     text = '{"AccountChoice": ' + _CLEAN + "}"
     assert parse_model(text, AccountChoice).account_code == "6010"

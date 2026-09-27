@@ -70,6 +70,22 @@ def _extract_json(text: str) -> str:
     return text.strip()
 
 
+def _json_objects(text: str) -> list[object]:
+    """Every complete JSON object in ``text``, in the order they appear."""
+    decoder = json.JSONDecoder()
+    found: list[object] = []
+    position = text.find("{")
+    while position != -1:
+        try:
+            obj, end = decoder.raw_decode(text, position)
+        except ValueError:
+            position = text.find("{", position + 1)
+            continue
+        found.append(obj)
+        position = text.find("{", end)
+    return found
+
+
 def parse_model(text: str, model: type[T]) -> T:
     """Parse ``text`` into ``model``, repairing malformed JSON when needed."""
     candidate = _extract_json(text)
@@ -77,6 +93,12 @@ def parse_model(text: str, model: type[T]) -> T:
         return model.model_validate_json(candidate)
     except (ValidationError, ValueError):
         pass
+
+    for obj in reversed(_json_objects(text)):
+        try:
+            return model.model_validate(obj)
+        except (ValidationError, ValueError):
+            continue
 
     obj: object = None
     try:
