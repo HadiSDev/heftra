@@ -116,10 +116,18 @@ function AgreementPage() {
     <div className="flex flex-col gap-6">
       <AgreementHeading
         agreement={current}
-        canDelete={canEdit}
+        canEdit={canEdit}
         onDelete={async () => {
           await remove.mutateAsync(current.id)
           await navigate({ to: '/agreements' })
+        }}
+        onReadAgain={async () => {
+          try {
+            await readAgain.mutateAsync(current.id)
+          } catch (error) {
+            throw message(error, 'Not queued')
+          }
+          await navigate({ search: { ...search, tab: 'terms' } })
         }}
       />
       <Tabs

@@ -16,6 +16,7 @@ import type {
   FindingRead,
   TermRead,
 } from '#/lib/api/agreement-types'
+import { AgreementHeading } from './detail/agreement-heading'
 import { AgreementsPanel } from './list/agreements-panel'
 import { ReportTab } from './report/report-tab'
 import { TermCard } from './terms/term-card'
@@ -266,6 +267,47 @@ describe('AgreementsPanel', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Try again' }))
     expect(onRetry).toHaveBeenCalled()
+  })
+})
+
+describe('AgreementHeading', () => {
+  function heading(overrides: Partial<AgreementRead>, canEdit = true) {
+    const onReadAgain = vi.fn(async () => {})
+    render(
+      <AgreementHeading
+        agreement={{ ...AGREEMENT, ...overrides }}
+        canEdit={canEdit}
+        onDelete={vi.fn(async () => {})}
+        onReadAgain={onReadAgain}
+      />,
+    )
+    return onReadAgain
+  }
+
+  it('reads an agreement again once the manager confirms', async () => {
+    const onReadAgain = heading({ status: 'review' })
+
+    fireEvent.click(screen.getByRole('button', { name: /Read again/ }))
+    const dialog = screen.getByRole('alertdialog')
+    expect(dialog.textContent).toContain('confirmed or rejected are')
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Read again' }))
+
+    await waitFor(() => {
+      expect(onReadAgain).toHaveBeenCalledOnce()
+    })
+  })
+
+  it('offers no re-read while the agreement is being read', () => {
+    heading({ status: 'reading' })
+
+    expect(screen.queryByRole('button', { name: /Read again/ })).toBeNull()
+  })
+
+  it('offers a viewer neither a re-read nor a delete', () => {
+    heading({ status: 'active' }, false)
+
+    expect(screen.queryByRole('button', { name: /Read again/ })).toBeNull()
+    expect(screen.queryByRole('button', { name: /Delete/ })).toBeNull()
   })
 })
 

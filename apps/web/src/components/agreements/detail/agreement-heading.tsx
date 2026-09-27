@@ -13,21 +13,25 @@ import {
 import type { AgreementRead } from '#/lib/api/agreement-types'
 import { formatDay } from '#/lib/format/format'
 import { AgreementStatusBadge } from '../status-badge'
+import { ReadAgainButton } from './read-again-button'
 
 export interface AgreementHeadingProps {
   agreement: AgreementRead
-  canDelete: boolean
+  canEdit: boolean
   onDelete: () => Promise<void>
+  onReadAgain: () => Promise<void>
 }
 
-/** The agreement's title, supplier, validity and state, with a way back and a delete. */
+/** The agreement's title, supplier, validity and state, with a way back, a re-read and a delete. */
 export function AgreementHeading({
   agreement,
-  canDelete,
+  canEdit,
   onDelete,
+  onReadAgain,
 }: AgreementHeadingProps) {
   const [confirming, setConfirming] = React.useState(false)
   const [busy, setBusy] = React.useState(false)
+  const reading = ['pending', 'reading'].includes(agreement.status)
   const supplier = agreement.supplier?.name ?? agreement.supplier_name
   const validity = agreement.starts_on
     ? `${formatDay(agreement.starts_on)} – ${agreement.ends_on ? formatDay(agreement.ends_on) : 'open-ended'}`
@@ -68,17 +72,25 @@ export function AgreementHeading({
             <p className="mt-2 max-w-3xl text-sm">{agreement.summary}</p>
           ) : null}
         </div>
-        {canDelete ? (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              setConfirming(true)
-            }}
-          >
-            <Trash2 />
-            Delete
-          </Button>
+        {canEdit ? (
+          <div className="flex items-center gap-2">
+            {reading ? null : (
+              <ReadAgainButton
+                title={agreement.title}
+                onReadAgain={onReadAgain}
+              />
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setConfirming(true)
+              }}
+            >
+              <Trash2 />
+              Delete
+            </Button>
+          </div>
         ) : null}
       </div>
       <AlertDialog open={confirming} onOpenChange={setConfirming}>
