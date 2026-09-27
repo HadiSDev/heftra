@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import {
   spendBreakdownOptions,
+  spendEmissionsOptions,
   spendInsightsOptions,
   spendOverviewOptions,
   spendTrendOptions,
@@ -20,6 +21,7 @@ describe('spend report queries', () => {
     [spendTrendOptions, 'spend-trend'],
     [spendBreakdownOptions, 'spend-breakdown'],
     [spendInsightsOptions, 'spend-insights'],
+    [spendEmissionsOptions, 'spend-emissions'],
   ] as const)('asks its endpoint for the scope', async (options, report) => {
     const { api, get } = fakeApi()
     const query = options(api, SCOPE)

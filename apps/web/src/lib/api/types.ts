@@ -1,6 +1,7 @@
 /** Response types mirroring the web API's Pydantic schemas (`web_api/schemas.py`). */
 
 import type {
+  EmissionCalculationRead,
   EmissionSectorRead,
   EmissionSectorSource,
   EmissionsStatus,
@@ -645,6 +646,8 @@ export interface InvoiceLineRead {
   kg_co2e?: Money | null
   /** The country code or region whose factor was used. */
   emission_area?: string | null
+  /** The figures the line's emissions were multiplied out from. */
+  emission_calculation?: EmissionCalculationRead | null
 }
 
 /** An invoice header. */

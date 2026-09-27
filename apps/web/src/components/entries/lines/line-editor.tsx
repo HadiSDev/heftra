@@ -12,6 +12,7 @@ import {
 import { TreeSelector } from '#/components/spend-tree/tree-selector'
 import { LineStatusBadge } from './line-status'
 import { EmissionSectorField } from '../emissions/sector-field'
+import { LineEmissionsPanel } from '../emissions/line-emissions-panel'
 import type { SectorSearch } from '../emissions/sector-field'
 import { formatMoney, toNumber } from '#/lib/format/format'
 import { lineName } from '#/lib/format/line'
@@ -334,6 +335,8 @@ export function LineEditor({
           />
         </Field>
       )}
+
+      <LineEmissionsPanel line={line} />
 
       {canManage && sectorSearch !== undefined ? (
         <EmissionSectorField

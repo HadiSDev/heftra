@@ -5,6 +5,7 @@ import { describePeriod } from '#/lib/dashboard-search'
 import type { DashboardSearch } from '#/lib/dashboard-search'
 import type {
   SpendBreakdown,
+  SpendEmissions,
   SpendInsights,
   SpendOverview,
   SpendTrend,
@@ -15,6 +16,7 @@ import { TopSuppliers } from './breakdown/top-suppliers'
 import { DashboardControls } from './controls/dashboard-controls'
 import { InsightLists } from './insights/insight-lists'
 import { DashboardSection } from './section'
+import { EmissionsFigures } from './emissions/emissions-section'
 import { OverviewTiles } from './tiles/overview-tiles'
 import { TrendChart } from './trend/trend-chart'
 
@@ -32,6 +34,7 @@ export interface DashboardViewProps {
   trend: ReportState<SpendTrend>
   breakdown: ReportState<SpendBreakdown>
   insights: ReportState<SpendInsights>
+  emissions: ReportState<SpendEmissions>
   onSearchChange: (next: DashboardSearch) => void
 }
 
@@ -75,6 +78,7 @@ export function DashboardView({
   trend,
   breakdown,
   insights,
+  emissions,
   onSearchChange,
 }: DashboardViewProps) {
   const empty = overview.data !== undefined && !hasSpend(overview.data)
@@ -119,6 +123,24 @@ export function DashboardView({
                 />
               ))}
             </div>
+          </DashboardSection>
+          <DashboardSection
+            title="Emissions"
+            description="Estimated from spend; the last 12 months and the largest sectors"
+            loading={emissions.data === undefined}
+            error={emissions.error}
+            placeholderClassName="h-56"
+          >
+            {emissions.data ? (
+              <EmissionsFigures
+                report={emissions.data}
+                linkSearch={
+                  search.company_id
+                    ? { ...resolved, company_id: search.company_id }
+                    : resolved
+                }
+              />
+            ) : null}
           </DashboardSection>
           <div className="grid items-start gap-6 lg:grid-cols-2">
             <DashboardSection

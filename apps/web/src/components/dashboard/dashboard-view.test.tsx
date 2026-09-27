@@ -10,6 +10,7 @@ import {
 import type * as RouterModule from '@tanstack/react-router'
 import type {
   SpendBreakdown,
+  SpendEmissions,
   SpendInsights,
   SpendOverview,
   SpendTrend,
@@ -192,6 +193,29 @@ const INSIGHTS: SpendInsights = {
   ],
 }
 
+const EMISSIONS: SpendEmissions = {
+  ...PERIODS,
+  factor_set: {
+    source: 'open_ceda',
+    version: 'CEDA 2025',
+    currency: 'USD',
+    price_year: 2023,
+    price_basis: 'purchaser',
+    attribution: 'CEDA by Watershed',
+  },
+  kg_co2e: '2400',
+  comparison_kg_co2e: '2000',
+  months: [
+    { month: '2026-08-01', kg_co2e: '800' },
+    { month: '2026-09-01', kg_co2e: '900' },
+  ],
+  spend: [{ currency: 'DKK', posted_spend: '1000', estimated_spend: '870' }],
+  top_sectors: [
+    { code: '481000', name: 'Air transportation', kg_co2e: '1500' },
+    { code: '518200', name: 'Data processing, hosting', kg_co2e: '600' },
+  ],
+}
+
 function setup(overrides: Partial<DashboardViewProps> = {}) {
   const props: DashboardViewProps = {
     search: { period: 'quarter' },
@@ -201,6 +225,7 @@ function setup(overrides: Partial<DashboardViewProps> = {}) {
     trend: { data: TREND, error: false },
     breakdown: { data: BREAKDOWN, error: false },
     insights: { data: INSIGHTS, error: false },
+    emissions: { data: EMISSIONS, error: false },
     onSearchChange: vi.fn(),
     ...overrides,
   }
@@ -339,6 +364,36 @@ describe('DashboardView — insights', () => {
     expect(
       screen.getByRole('link', { name: /Shop ApS/ }).getAttribute('href'),
     ).toBe('/invoice-lines?voucher=4821')
+  })
+})
+
+describe('DashboardView — emissions', () => {
+  it('shows the period’s emissions, their change, the share estimated and the top sectors', () => {
+    setup()
+
+    const section = within(screen.getByRole('region', { name: 'Emissions' }))
+    expect(section.getByText('2.4 t CO₂e')).toBeTruthy()
+    expect(section.getByText('+20%')).toBeTruthy()
+    expect(section.getByText('87% of DKK spend estimated')).toBeTruthy()
+    expect(section.getByText('Air transportation')).toBeTruthy()
+    expect(section.getByText(/CEDA by Watershed/)).toBeTruthy()
+    expect(
+      section
+        .getByRole('link', { name: 'See the vouchers in Spend Lines' })
+        .getAttribute('href'),
+    ).toBe('/invoice-lines?from=2026-07-01&to=2026-09-26')
+  })
+
+  it('says no factors are imported when none are', () => {
+    setup({
+      emissions: {
+        data: { ...EMISSIONS, factor_set: null, kg_co2e: null },
+        error: false,
+      },
+    })
+
+    const section = within(screen.getByRole('region', { name: 'Emissions' }))
+    expect(section.getByText(/No emission factors are imported/)).toBeTruthy()
   })
 })
 

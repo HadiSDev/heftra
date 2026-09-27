@@ -133,8 +133,8 @@ function VoucherColumns() {
   return (
     <colgroup>
       <col className="w-10" />
-      <col className="w-[20%]" />
-      <col className="w-[9%]" />
+      <col className="w-[17%]" />
+      <col className="w-[12%]" />
       <col className="w-[6%]" />
       <col className="w-[9%]" />
       <col className="w-[22%]" />

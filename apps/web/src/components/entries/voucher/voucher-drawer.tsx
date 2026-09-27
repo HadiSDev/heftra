@@ -248,7 +248,7 @@ export function VoucherDrawer({
 
                 <div
                   className={cn(
-                    'flex min-h-0 flex-1 flex-col',
+                    'flex min-h-0 min-w-0 flex-1 flex-col',
                     invoice && showDocument ? 'hidden lg:flex' : 'flex',
                   )}
                 >
@@ -267,7 +267,7 @@ export function VoucherDrawer({
                   <Tabs
                     value={activeTab}
                     onValueChange={(value) => onTabChange(value as VoucherTab)}
-                    className="flex min-h-0 flex-1 flex-col gap-3"
+                    className="flex min-h-0 min-w-0 flex-1 flex-col gap-3"
                   >
                     <TabsList>
                       {invoice ? <TabsTab value="lines">Lines</TabsTab> : null}

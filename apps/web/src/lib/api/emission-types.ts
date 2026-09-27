@@ -46,3 +46,18 @@ export interface EmissionsSummaryRead {
   spend: Array<EmissionsSpendRow>
   vouchers_by_status: Partial<Record<EmissionsStatus, number>>
 }
+
+/** How a line's emissions were multiplied out: spend × rate = converted; converted × factor = kg. */
+export interface EmissionCalculationRead {
+  spend: Money
+  currency: string
+  rate: Money
+  rate_date: string
+  converted: Money
+  factor: Money
+  factor_currency: string
+  /** The country code or region the factor is for. */
+  factor_area: string
+  sector: EmissionSectorRead | null
+  kg_co2e: Money
+}

@@ -84,7 +84,7 @@ function PostingAmount({ entry }: { entry: ErpEntryRead }) {
   return (
     <span
       className={cn(
-        'font-mono tabular-nums font-medium',
+        'shrink-0 whitespace-nowrap font-mono tabular-nums font-medium',
         amount < 0 && 'text-success',
       )}
     >

@@ -1,5 +1,5 @@
 import { Badge, Tooltip, TooltipContent, TooltipTrigger } from '#/components/ui'
-import { formatEmissions } from '#/lib/format/emissions'
+import { calculationSteps, formatEmissions } from '#/lib/format/emissions'
 import { toNumber } from '#/lib/format/format'
 import type { InvoiceLineRead } from '#/lib/api/types'
 
@@ -65,14 +65,41 @@ export function LineSector({ line }: { line: InvoiceLineRead }) {
   )
 }
 
-/** A line's estimated CO2e, or a dash when it has none. */
+/** A line's estimated CO2e, or a dash when it has none; the calculation on hover and focus. */
 export function LineEmissions({ line }: { line: InvoiceLineRead }) {
   if (line.kg_co2e === null || line.kg_co2e === undefined) {
     return <span className="text-muted-foreground">—</span>
   }
+  const text = formatEmissions(line.kg_co2e)
+  const calculation = line.emission_calculation
+  if (!calculation) {
+    return (
+      <span className="font-mono text-sm tabular-nums text-muted-foreground">
+        {text}
+      </span>
+    )
+  }
+  const steps = calculationSteps(calculation)
   return (
-    <span className="font-mono text-sm tabular-nums text-muted-foreground">
-      {formatEmissions(line.kg_co2e)}
-    </span>
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <span
+            tabIndex={0}
+            aria-label={`${text}: ${steps.join(' ')}`}
+            className="cursor-help font-mono text-sm tabular-nums text-muted-foreground underline decoration-dotted underline-offset-4"
+          />
+        }
+      >
+        {text}
+      </TooltipTrigger>
+      <TooltipContent className="max-w-96">
+        <ol className="flex flex-col gap-1">
+          {steps.map((step) => (
+            <li key={step}>{step}</li>
+          ))}
+        </ol>
+      </TooltipContent>
+    </Tooltip>
   )
 }

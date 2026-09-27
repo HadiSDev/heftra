@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatEmissions } from './emissions'
+import { calculationSteps, formatEmissions } from './emissions'
 
 describe('formatEmissions', () => {
   it('shows kilograms below a tonne, to three significant figures', () => {
@@ -15,5 +15,28 @@ describe('formatEmissions', () => {
 
   it('keeps the sign of a credit note', () => {
     expect(formatEmissions('-5.8')).toBe('-5.8 kg CO₂e')
+  })
+})
+
+describe('calculationSteps', () => {
+  it('writes out the spend, the conversion and the factor, ending in the result', () => {
+    const steps = calculationSteps({
+      spend: '1000.00',
+      currency: 'DKK',
+      rate: '0.145',
+      rate_date: '2025-07-01',
+      converted: '145.00',
+      factor: '0.5',
+      factor_currency: 'USD',
+      factor_area: 'DE',
+      sector: { id: 's1', code: '518200', name: 'Hosting' },
+      kg_co2e: '72.500',
+    }).map((step) => step.replace(/\s/g, ' '))
+
+    expect(steps).toEqual([
+      'Share of the voucher’s spend: DKK 1,000.00',
+      '× 0.145 DKK→USD on 1 Jul 2025 = US$145.00',
+      '× 0.5 kg CO₂e per USD (Hosting, factor for DE) = 72.5 kg CO₂e',
+    ])
   })
 })

@@ -5,6 +5,7 @@ import { useApi } from '#/lib/auth/auth'
 import { companiesQueryOptions } from '#/lib/api/companies'
 import {
   spendBreakdownOptions,
+  spendEmissionsOptions,
   spendInsightsOptions,
   spendOverviewOptions,
   spendTrendOptions,
@@ -32,6 +33,7 @@ function DashboardPage() {
   const trend = useQuery(spendTrendOptions(api, scope))
   const breakdown = useQuery(spendBreakdownOptions(api, scope))
   const insights = useQuery(spendInsightsOptions(api, scope))
+  const emissions = useQuery(spendEmissionsOptions(api, scope))
 
   return (
     <DashboardView
@@ -42,6 +44,7 @@ function DashboardPage() {
       trend={{ data: trend.data, error: trend.isError }}
       breakdown={{ data: breakdown.data, error: breakdown.isError }}
       insights={{ data: insights.data, error: insights.isError }}
+      emissions={{ data: emissions.data, error: emissions.isError }}
       onSearchChange={(next) => {
         void navigate({ search: next })
       }}

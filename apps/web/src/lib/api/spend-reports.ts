@@ -2,6 +2,7 @@ import { keepPreviousData, queryOptions } from '@tanstack/react-query'
 import type { ApiClient } from './api-client'
 import type {
   SpendBreakdown,
+  SpendEmissions,
   SpendInsights,
   SpendOverview,
   SpendScope,
@@ -9,7 +10,11 @@ import type {
 } from './spend-report-types'
 
 type SpendReport =
-  'spend-overview' | 'spend-trend' | 'spend-breakdown' | 'spend-insights'
+  | 'spend-overview'
+  | 'spend-trend'
+  | 'spend-breakdown'
+  | 'spend-insights'
+  | 'spend-emissions'
 
 function spendReportOptions<T>(
   api: ApiClient,
@@ -41,4 +46,9 @@ export function spendBreakdownOptions(api: ApiClient, scope: SpendScope) {
 /** Changes worth a look (`GET /reports/spend-insights`). */
 export function spendInsightsOptions(api: ApiClient, scope: SpendScope) {
   return spendReportOptions<SpendInsights>(api, 'spend-insights', scope)
+}
+
+/** The period's estimated emissions (`GET /reports/spend-emissions`). */
+export function spendEmissionsOptions(api: ApiClient, scope: SpendScope) {
+  return spendReportOptions<SpendEmissions>(api, 'spend-emissions', scope)
 }

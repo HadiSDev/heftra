@@ -1,3 +1,4 @@
+import type { EmissionsSpendRow, FactorSetRead } from './emission-types'
 import type { Money } from './types'
 
 /** The period a spend report covers, as ISO dates. */
@@ -127,4 +128,28 @@ export interface SpendScope {
   from: string
   to: string
   company_id?: string
+}
+
+/** One month's estimated emissions. */
+export interface MonthEmissions {
+  month: string
+  kg_co2e: Money
+}
+
+/** A sector and the emissions estimated for it. */
+export interface SectorEmissions {
+  code: string
+  name: string
+  kg_co2e: Money
+}
+
+/** `GET /reports/spend-emissions`: the period's estimated emissions. */
+export interface SpendEmissions extends ReportPeriods {
+  /** Null when no emission factors are imported. */
+  factor_set: FactorSetRead | null
+  kg_co2e: Money | null
+  comparison_kg_co2e: Money | null
+  months: Array<MonthEmissions>
+  spend: Array<EmissionsSpendRow>
+  top_sectors: Array<SectorEmissions>
 }

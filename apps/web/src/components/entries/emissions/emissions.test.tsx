@@ -10,6 +10,7 @@ import type { EmissionsSummaryRead } from '#/lib/api/emission-types'
 import type { InvoiceLineRead, VoucherGroupRead } from '#/lib/api/types'
 import { EmissionsCard } from './emissions-card'
 import { LineEmissions, LineSector } from './line-emissions'
+import { LineEmissionsPanel } from './line-emissions-panel'
 import { EmissionSectorField } from './sector-field'
 import type { SectorSearch } from './sector-field'
 import { VoucherEmissions } from './voucher-emissions'
@@ -315,5 +316,79 @@ describe('EmissionSectorField', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Clear' }))
 
     expect(await screen.findByText('Not offered')).toBeTruthy()
+  })
+})
+
+const CALCULATION = {
+  spend: '1000.00',
+  currency: 'DKK',
+  rate: '0.145',
+  rate_date: '2025-07-01',
+  converted: '145.00',
+  factor: '0.5',
+  factor_currency: 'USD',
+  factor_area: 'DE',
+  sector: HOSTING,
+  kg_co2e: '72.500',
+}
+
+describe('LineEmissionsPanel', () => {
+  it('shows the sector, the AI’s reasoning and the calculation', () => {
+    render(
+      <LineEmissionsPanel
+        line={line({
+          emission_sector: HOSTING,
+          emission_sector_source: 'ai',
+          emission_sector_confidence: '0.4',
+          emission_sector_rationale: 'A rented server is hosting.',
+          emission_needs_review: true,
+          kg_co2e: '72.500',
+          emission_calculation: CALCULATION,
+        })}
+      />,
+    )
+
+    const panel = screen.getByRole('region', { name: 'Emissions' })
+    expect(panel.textContent).toContain('Data processing, hosting')
+    expect(panel.textContent).toContain('Matched by AI · 40% sure')
+    expect(panel.textContent).toContain('A rented server is hosting.')
+    expect(panel.textContent).toContain('0.145 DKK→USD on 1 Jul 2025')
+    expect(panel.textContent).toContain('× 0.5 kg CO₂e per USD')
+    expect(panel.textContent).toContain('factor for DE')
+    expect(screen.getByText('72.5 kg CO₂e')).toBeTruthy()
+  })
+
+  it('says a line with a sector but no calculation was not estimated, and why it might be', () => {
+    render(
+      <LineEmissionsPanel
+        line={line({
+          emission_sector: HOSTING,
+          emission_sector_source: 'human',
+        })}
+      />,
+    )
+
+    expect(screen.getByText('Chosen by a person.')).toBeTruthy()
+    expect(screen.getByText(/Not estimated/)).toBeTruthy()
+  })
+
+  it('says when a line has no sector yet', () => {
+    render(<LineEmissionsPanel line={line()} />)
+
+    expect(screen.getByText(/No emission sector yet/)).toBeTruthy()
+  })
+})
+
+describe('LineEmissions calculation', () => {
+  it('reads out the calculation on focus', () => {
+    render(
+      <LineEmissions
+        line={line({ kg_co2e: '72.500', emission_calculation: CALCULATION })}
+      />,
+    )
+
+    expect(
+      screen.getByLabelText(/72\.5 kg CO₂e: Share of the voucher’s spend/),
+    ).toBeTruthy()
   })
 })

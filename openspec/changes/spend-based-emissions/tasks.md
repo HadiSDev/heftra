@@ -97,6 +97,6 @@
 
 - [x] 8.1 Carry each line's calculation (spend share, rate, converted, factor, area, sector) through the estimate, and return it as `emission_calculation` on list and detail lines (tests)
 - [x] 8.2 `GET /reports/spend-emissions`: period and comparison kg, twelve months, spend estimated per currency, top five sectors (tests)
-- [ ] 8.3 Web: the calculation on hover of a line's CO₂e, and an emissions section in the line editor with sector, source, confidence, reasoning and the calculation (tests)
-- [ ] 8.4 Web: the dashboard's emissions section (tests)
+- [x] 8.3 Web: the calculation on hover of a line's CO₂e, and an emissions section in the line editor with sector, source, confidence, reasoning and the calculation (tests)
+- [x] 8.4 Web: the dashboard's emissions section (tests)
 - [ ] 8.5 Browser check of the new pieces
