@@ -15,7 +15,7 @@ import type {
 import type { ReportView } from '#/lib/agreement-search'
 import { formatRelativeTime } from '#/lib/format/format'
 import { Commitments } from './commitments'
-import { FindingsTable } from './findings-table'
+import { FindingsList } from './findings-list'
 import { ReportFigures } from './report-figures'
 
 export interface ReportTabProps {
@@ -135,7 +135,7 @@ export function ReportTab({
                   : 'No findings here.'}
               </p>
             ) : (
-              <FindingsTable
+              <FindingsList
                 findings={report.findings.items}
                 companyId={agreement.company_id}
                 canReview={canEdit}

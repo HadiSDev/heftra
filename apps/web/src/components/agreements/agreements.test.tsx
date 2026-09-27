@@ -490,6 +490,55 @@ describe('ReportTab', () => {
     })
   })
 
+  it('shows every finding on one purchase under its item', () => {
+    const saving: FindingRead = {
+      ...FINDING,
+      id: 'f2',
+      term_id: 't2',
+      term_kind: 'agreed_price',
+      kind: 'potential_saving',
+      severity: 'info',
+      amount: '1200',
+      reason:
+        'Bought from Proshop A/S at 9,200.00 against the agreed 8,000.00 DKK.',
+    }
+    renderReport({
+      report: {
+        ...REPORT,
+        findings: { ...REPORT.findings, items: [FINDING, saving], total: 2 },
+      },
+    })
+
+    const findings = within(screen.getByRole('region', { name: 'Findings' }))
+    expect(findings.getAllByText('Dell Latitude 5450')).toHaveLength(1)
+    expect(findings.getByText('Off-contract purchase')).toBeTruthy()
+    expect(findings.getByText('Potential saving')).toBeTruthy()
+    expect(findings.getAllByRole('button', { name: 'Review' })).toHaveLength(2)
+  })
+
+  it('shows a long reason in full on request', () => {
+    const reason = `${FINDING.reason} ${'The item is a laptop, which is IT equipment. '.repeat(4)}`
+    renderReport({
+      report: {
+        ...REPORT,
+        findings: {
+          ...REPORT.findings,
+          items: [{ ...FINDING, reason }],
+        },
+      },
+    })
+
+    const more = screen.getByRole('button', { name: 'Show more' })
+    expect(more.getAttribute('aria-expanded')).toBe('false')
+    fireEvent.click(more)
+
+    expect(
+      screen
+        .getByRole('button', { name: 'Show less' })
+        .getAttribute('aria-expanded'),
+    ).toBe('true')
+  })
+
   it('says the report waits for a confirmed agreement', () => {
     renderReport({ agreement: { ...AGREEMENT, status: 'review' } })
 
