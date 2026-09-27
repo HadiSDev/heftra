@@ -9,6 +9,7 @@ from cryptography.fernet import Fernet
 from sqlalchemy.pool import StaticPool
 from sqlmodel import Session, SQLModel, create_engine
 
+from ai_api import config as ai_config
 from ai_api.sync import llm_categorizer, runner
 from ai_api_testkit import FakeConnector
 from web_api import config as web_config
@@ -80,6 +81,12 @@ def _utcnow():
 def offline_fx(monkeypatch):
     """No test ever fetches a rate over the network."""
     monkeypatch.setattr(web_config, "FX_ENABLED", False)
+
+
+@pytest.fixture(autouse=True)
+def no_category_retrieval(monkeypatch):
+    """No test narrows a tree through Qdrant, whatever the local .env says."""
+    monkeypatch.setattr(ai_config, "CATEGORY_RETRIEVAL_ENABLED", False)
 
 
 @pytest.fixture(autouse=True)
