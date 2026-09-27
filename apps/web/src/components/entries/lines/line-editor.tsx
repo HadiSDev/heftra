@@ -336,18 +336,6 @@ export function LineEditor({
         </Field>
       )}
 
-      <LineEmissionsPanel line={line} />
-
-      {canManage && sectorSearch !== undefined ? (
-        <EmissionSectorField
-          line={line}
-          search={sectorSearch}
-          onChoose={(sectorId) =>
-            onUpdate(line.id, { emission_sector_id: sectorId })
-          }
-        />
-      ) : null}
-
       {stale && previous.length > 0 && nodes !== null && nodes.length > 0 ? (
         <p className="text-sm text-muted-foreground">
           Previously categorized as{' '}
@@ -370,6 +358,18 @@ export function LineEditor({
         <p className="rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground">
           {line.rationale}
         </p>
+      ) : null}
+
+      <LineEmissionsPanel line={line} />
+
+      {canManage && sectorSearch !== undefined ? (
+        <EmissionSectorField
+          line={line}
+          search={sectorSearch}
+          onChoose={(sectorId) =>
+            onUpdate(line.id, { emission_sector_id: sectorId })
+          }
+        />
       ) : null}
 
       {error ? <p className="text-sm text-destructive">{error}</p> : null}

@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { calculationSteps, formatEmissions } from './emissions'
+import {
+  calculationSteps,
+  formatEmissions,
+  formatEmissionsAmount,
+} from './emissions'
 
 describe('formatEmissions', () => {
   it('shows kilograms below a tonne, to three significant figures', () => {
@@ -38,5 +42,12 @@ describe('calculationSteps', () => {
       '× 0.145 DKK→USD on 1 Jul 2025 = US$145.00',
       '× 0.5 kg CO₂e per USD (Hosting, factor for DE) = 72.5 kg CO₂e',
     ])
+  })
+})
+
+describe('formatEmissionsAmount', () => {
+  it('leaves out CO₂e for a column already headed with it', () => {
+    expect(formatEmissionsAmount('19.6')).toBe('19.6 kg')
+    expect(formatEmissionsAmount('1234')).toBe('1.2 t')
   })
 })

@@ -169,7 +169,8 @@ describe('VoucherEmissions', () => {
       />,
     )
 
-    expect(screen.getByText('72.5 kg CO₂e')).toBeTruthy()
+    expect(screen.getByLabelText('72.5 kg CO₂e')).toBeTruthy()
+    expect(screen.getByText('72.5 kg')).toBeTruthy()
   })
 
   it('marks a partial estimate and says why', () => {
@@ -180,7 +181,9 @@ describe('VoucherEmissions', () => {
     )
 
     expect(
-      screen.getByLabelText(/5\.8 kg CO₂e\*\. Estimated from some lines/),
+      screen.getByLabelText(
+        /5\.8 kg CO₂e, partly estimated\. Estimated from some lines/,
+      ),
     ).toBeTruthy()
   })
 

@@ -1,5 +1,9 @@
 import { Badge, Tooltip, TooltipContent, TooltipTrigger } from '#/components/ui'
-import { calculationSteps, formatEmissions } from '#/lib/format/emissions'
+import {
+  calculationSteps,
+  formatEmissions,
+  formatEmissionsAmount,
+} from '#/lib/format/emissions'
 import { toNumber } from '#/lib/format/format'
 import type { InvoiceLineRead } from '#/lib/api/types'
 
@@ -70,11 +74,11 @@ export function LineEmissions({ line }: { line: InvoiceLineRead }) {
   if (line.kg_co2e === null || line.kg_co2e === undefined) {
     return <span className="text-muted-foreground">—</span>
   }
-  const text = formatEmissions(line.kg_co2e)
+  const text = formatEmissionsAmount(line.kg_co2e)
   const calculation = line.emission_calculation
   if (!calculation) {
     return (
-      <span className="font-mono text-sm tabular-nums text-muted-foreground">
+      <span className="whitespace-nowrap font-mono text-sm tabular-nums text-muted-foreground">
         {text}
       </span>
     )
@@ -86,8 +90,8 @@ export function LineEmissions({ line }: { line: InvoiceLineRead }) {
         render={
           <span
             tabIndex={0}
-            aria-label={`${text}: ${steps.join(' ')}`}
-            className="cursor-help font-mono text-sm tabular-nums text-muted-foreground underline decoration-dotted underline-offset-4"
+            aria-label={`${formatEmissions(line.kg_co2e)}: ${steps.join(' ')}`}
+            className="cursor-help whitespace-nowrap font-mono text-sm tabular-nums text-muted-foreground underline decoration-dotted underline-offset-4"
           />
         }
       >
