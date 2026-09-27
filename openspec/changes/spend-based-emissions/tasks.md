@@ -87,11 +87,11 @@
 ## 7. Verification
 
 - [x] 7.1 Run the web-api and ai-api suites in full
-- [ ] 7.2 With the user's go-ahead:
-  - [ ] 7.2.1 Import the real Open CEDA workbook and match one company's lines
-  - [ ] 7.2.2 Review the 20 largest-emission lines' sectors for plausibility, and compare the agent's matches with the fallback's
-  - [ ] 7.2.3 Check that the emissions card's estimated spend agrees with the coverage card's posted spend under the same filters
-- [ ] 7.3 Browser check of Spend Lines at desktop and phone width: the card doesn't shift the layout, the column fits without horizontal scroll, and the picker works
+- [x] 7.2 With the user's go-ahead:
+  - [x] 7.2.1 Import the real Open CEDA workbook and match one company's lines
+  - [x] 7.2.2 Review the 20 largest-emission lines' sectors for plausibility, and compare the agent's matches with the fallback's
+  - [x] 7.2.3 Check that the emissions card's estimated spend agrees with the coverage card's posted spend under the same filters
+- [ ] 7.3 Browser check of Spend Lines at desktop and phone width: the card doesn't shift the layout, the column fits without horizontal scroll, and the picker works (desktop checked; phone blocked by the app shell's fixed sidebar, which no page collapses; the picker needs a management session)
 
 ## 8. Calculations and the dashboard
 
