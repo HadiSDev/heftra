@@ -15,8 +15,8 @@ import type {
 } from '#/lib/api/agreement-types'
 import {
   FINDING_KIND_LABELS,
+  FINDING_KIND_VARIANTS,
   REVIEW_LABELS,
-  SEVERITY_VARIANTS,
 } from '#/lib/format/agreements'
 import { formatDay, formatMoney } from '#/lib/format/format'
 import { FindingReview } from './finding-review'
@@ -71,7 +71,7 @@ export function FindingsTable({
             }
           >
             <TableCell>
-              <Badge variant={SEVERITY_VARIANTS[finding.severity]}>
+              <Badge variant={FINDING_KIND_VARIANTS[finding.kind]}>
                 {FINDING_KIND_LABELS[finding.kind]}
               </Badge>
             </TableCell>

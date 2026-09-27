@@ -4,7 +4,6 @@ import type {
   AgreementTermKind,
   FindingKind,
   FindingReviewStatus,
-  FindingSeverity,
 } from '#/lib/api/agreement-types'
 import { toNumber } from './format'
 import type { Money } from '#/lib/api/types'
@@ -34,10 +33,13 @@ export const REVIEW_LABELS: Record<FindingReviewStatus, string> = {
 export type BadgeVariant =
   'default' | 'outline' | 'success' | 'warning' | 'destructive' | 'info'
 
-export const SEVERITY_VARIANTS: Record<FindingSeverity, BadgeVariant> = {
-  rule_break: 'destructive',
-  warning: 'warning',
-  info: 'default',
+export const FINDING_KIND_VARIANTS: Record<FindingKind, BadgeVariant> = {
+  off_contract: 'destructive',
+  overcharge: 'destructive',
+  missed_discount: 'warning',
+  price_unverifiable: 'warning',
+  potential_saving: 'default',
+  compliant: 'success',
 }
 
 /** How an agreement's state reads in the list, expiry included. */
