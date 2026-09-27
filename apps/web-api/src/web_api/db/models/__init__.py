@@ -1,3 +1,16 @@
+from .agreement import Agreement
+from .agreement_enums import (
+    AgreementStatus,
+    AgreementTermKind,
+    AgreementTermSource,
+    AgreementTermStatus,
+    FindingKind,
+    FindingReviewStatus,
+    FindingSeverity,
+)
+from .agreement_finding import AgreementFinding
+from .agreement_scope_judgement import AgreementScopeJudgement
+from .agreement_term import AgreementTerm
 from .audit_log import AuditLog
 from .company import Company
 from .emission_country_region import EmissionCountryRegion
@@ -46,6 +59,17 @@ from .vendor import Vendor
 from .webhook_event import WebhookEvent
 
 __all__ = [
+    "Agreement",
+    "AgreementFinding",
+    "AgreementScopeJudgement",
+    "AgreementStatus",
+    "AgreementTerm",
+    "AgreementTermKind",
+    "AgreementTermSource",
+    "AgreementTermStatus",
+    "FindingKind",
+    "FindingReviewStatus",
+    "FindingSeverity",
     "AuditLog",
     "Company",
     "DocStatus",

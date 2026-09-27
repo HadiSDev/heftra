@@ -33,3 +33,22 @@ services:
     volumes:
       - ./pgdata:/var/lib/postgresql/data
     restart: unless-stopped
+
+  rustfs:
+    image: rustfs/rustfs:1.0.0
+    environment:
+      RUSTFS_VOLUMES: /data
+      RUSTFS_ADDRESS: 0.0.0.0:9000
+      RUSTFS_CONSOLE_ADDRESS: 0.0.0.0:9001
+      RUSTFS_CONSOLE_ENABLE: "true"
+      RUSTFS_ACCESS_KEY: ${S3_ACCESS_KEY:-steelyard}
+      RUSTFS_SECRET_KEY: ${S3_SECRET_KEY:-steelyard-dev-secret}
+    ports:
+      - "9100:9000"
+      - "9101:9001"
+    volumes:
+      - rustfs_data:/data
+    restart: unless-stopped
+
+volumes:
+  rustfs_data:

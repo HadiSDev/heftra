@@ -47,7 +47,7 @@ Vendors are global and carry a VAT number (normalised by `vat.international_vat`
 - `delete(key)`
 
 There are two implementations:
-- `S3FileStore` (boto3). Its settings are `S3_ENDPOINT_URL`, `S3_REGION`, `S3_BUCKET`, `S3_ACCESS_KEY` and `S3_SECRET_KEY`. It uses path-style addressing, which RustFS needs.
+- `S3FileStore` (aioboto3, async). Its settings are `S3_ENDPOINT_URL`, `S3_REGION`, `S3_BUCKET`, `S3_ACCESS_KEY` and `S3_SECRET_KEY`. It uses path-style addressing, which RustFS needs.
 - `MemoryFileStore` for tests.
 
 `file_store()` returns the configured one. ai-api imports the same module; it already depends on web-api.
@@ -155,7 +155,7 @@ Commitment progress is a derived figure, not a finding. It is calculated per ter
 - a linear forecast to the period's end;
 - the rebate tier reached or next.
 
-Each run recalculates a term's findings and upserts them by (term, line, kind). A finding that is no longer produced is deleted. A review decision stays with its (term, line, kind), so re-running never reopens an accepted exception. Findings of rejected terms, or of agreements that are deleted, are removed.
+Each run recalculates a term's findings and upserts them by (term, line, kind). A line with a `not_in_scope` finding for a term is skipped for that term, and that finding is kept as the record of the decision. A finding that is no longer produced is deleted. A review decision stays with its (term, line, kind), so re-running never reopens an accepted exception. Findings of rejected terms, or of agreements that are deleted, are removed.
 
 *Alternative considered:* computing on read, like emissions. Rejected, because the scope judgement is an LLM answer that must stay stable and reviewable, and the report and dashboard must be fast.
 
@@ -219,7 +219,7 @@ All routes are under `/api/v1`. Reads are scoped by `tenant_scope`; writes need 
 
 ## Migration Plan
 
-1. The user adds the RustFS service (`docker compose up -d rustfs`), sets the S3 settings, syncs dependencies (`boto3`) and runs migration `0020_trade_agreements`.
+1. The user adds the RustFS service (`docker compose up -d rustfs`), sets the S3 settings, syncs dependencies (`aioboto3`) and runs migration `0020_trade_agreements`.
 2. Deploy web-api and ai-api. The bucket is created at startup.
 3. Upload an agreement, review it, and confirm its terms. Analysis runs by itself.
 

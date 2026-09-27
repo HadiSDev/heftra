@@ -52,6 +52,15 @@ PRICE_INDEX_CSV_URL = os.getenv(
 )
 PRICE_INDEX_HTTP_TIMEOUT_SECONDS = float(os.getenv("PRICE_INDEX_HTTP_TIMEOUT_SECONDS", "30"))
 
+S3_ENDPOINT_URL = os.getenv("S3_ENDPOINT_URL", "")
+S3_REGION = os.getenv("S3_REGION", "us-east-1")
+S3_BUCKET = os.getenv("S3_BUCKET", "steelyard")
+S3_ACCESS_KEY = os.getenv("S3_ACCESS_KEY", "")
+S3_SECRET_KEY = os.getenv("S3_SECRET_KEY", "")
+S3_TIMEOUT_SECONDS = float(os.getenv("S3_TIMEOUT_SECONDS", "30"))
+
+AGREEMENT_MAX_BYTES = int(os.getenv("AGREEMENT_MAX_BYTES", str(25 * 1024 * 1024)))
+
 UPLOAD_TMP_DIR = os.getenv("UPLOAD_TMP_DIR") or None
 EMISSION_WORKBOOK_MAX_BYTES = int(os.getenv("EMISSION_WORKBOOK_MAX_BYTES", str(50 * 1024 * 1024)))
 

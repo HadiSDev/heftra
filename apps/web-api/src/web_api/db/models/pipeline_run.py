@@ -20,6 +20,7 @@ class PipelineRunKind(str, Enum):
     READ_DOCUMENTS = "read_documents"
     CATEGORIZE = "categorize"
     MATCH_EMISSIONS = "match_emissions"
+    ANALYSE_AGREEMENTS = "analyse_agreements"
 
 
 class PipelineRunStatus(str, Enum):

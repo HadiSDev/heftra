@@ -9,6 +9,7 @@ from sqlmodel import Session, select
 from web_api.db.models import Company, InvoiceLine, LineStatus, SpendTree
 from ..audit import record_audit
 from ..db.models.audit_log import SYSTEM_ACTOR
+from ..agreements.stored_files import discard_company_files
 from ..company_deletion import company_records, delete_company
 from ..auth.deps import (
     TenantScope,
@@ -268,6 +269,7 @@ def delete_company_endpoint(
     deleted = CompanyDeleteResult(
         id=company.id, name=company.name, **records.__dict__
     )
-    delete_company(session, company)
+    deletion = delete_company(session, company)
     session.commit()
+    discard_company_files(deletion.stored_keys)
     return deleted

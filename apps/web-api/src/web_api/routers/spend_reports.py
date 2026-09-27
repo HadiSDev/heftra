@@ -7,7 +7,9 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlmodel import Session
 
 from ..auth.deps import TenantScope, get_session, resolve_company_ids, tenant_scope
+from ..compliance.dashboard import agreement_compliance
 from ..schemas import SpendBreakdown, SpendEmissions, SpendInsights, SpendOverview, SpendTrend
+from ..schemas.agreements import AgreementCompliance
 from ..spend_analytics.emissions import spend_emissions
 from ..spend_analytics.breakdown import DEFAULT_SUPPLIERS, MAX_SUPPLIERS, spend_breakdown
 from ..spend_analytics.insights import spend_insights
@@ -77,3 +79,11 @@ def get_spend_emissions(
 ) -> SpendEmissions:
     """The period's estimated emissions against its comparison, twelve months, the top sectors."""
     return spend_emissions(session, report.company_ids, report.period)
+
+
+@router.get("/agreement-compliance", response_model=AgreementCompliance)
+def get_agreement_compliance(
+    report: ReportScope = Depends(), session: Session = Depends(get_session)
+) -> AgreementCompliance:
+    """The period's open contract rule breaks and the suppliers bought from off-contract."""
+    return agreement_compliance(session, report.company_ids, report.period)

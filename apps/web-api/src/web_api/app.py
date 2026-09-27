@@ -15,8 +15,12 @@ import uvicorn
 from web_api import config
 from web_api.db import session as db_session
 from web_api.reference_imports.startup import interrupt_stale_jobs
+from web_api.storage.startup import ensure_storage
 from web_api.routers import (
     admin_emission_factors,
+    agreement_findings,
+    agreement_terms,
+    agreements,
     companies,
     emission_sectors,
     erp_entries,
@@ -39,6 +43,7 @@ from web_api.routers import (
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     interrupt_stale_jobs(db_session.engine)
+    await ensure_storage()
     yield
 
 
@@ -73,6 +78,9 @@ def create_app() -> FastAPI:
         )
 
     app.include_router(admin_emission_factors.router)
+    app.include_router(agreements.router)
+    app.include_router(agreement_terms.router)
+    app.include_router(agreement_findings.router)
     app.include_router(companies.router)
     app.include_router(invoices.router)
     app.include_router(invoice_lines.router)

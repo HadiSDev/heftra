@@ -7,6 +7,7 @@ from datetime import date
 from sqlalchemy import func
 from sqlmodel import Session, delete, select
 
+from .agreements.deletion import delete_company_agreements
 from .db.models import (
     AuditLog,
     Company,
@@ -41,6 +42,14 @@ class CompanyRecords:
     def is_empty(self) -> bool:
         """Nothing worth previewing."""
         return not (self.invoices or self.lines or self.entries or self.integrations)
+
+
+@dataclass(frozen=True)
+class CompanyDeletion:
+    """What was deleted, and the stored files still to remove."""
+
+    records: CompanyRecords
+    stored_keys: list[str]
 
 
 def company_records(session: Session, company_id: str) -> CompanyRecords:
@@ -79,9 +88,14 @@ def company_records(session: Session, company_id: str) -> CompanyRecords:
     )
 
 
-def delete_company(session: Session, company: Company) -> CompanyRecords:
-    """Delete ``company`` and every record scoped to it."""
+def delete_company(session: Session, company: Company) -> CompanyDeletion:
+    """Delete ``company`` and every record scoped to it.
+
+    Returns its record counts and the storage keys of its uploaded files, which the caller
+    removes from storage once it has committed.
+    """
     counts = company_records(session, company.id)
+    stored_keys = delete_company_agreements(session, company.id)
 
     invoice_ids = list(
         session.exec(select(Invoice.id).where(Invoice.company_id == company.id)).all()
@@ -129,4 +143,4 @@ def delete_company(session: Session, company: Company) -> CompanyRecords:
     session.exec(delete(ErpIntegration).where(ErpIntegration.company_id == company.id))
 
     session.delete(company)
-    return counts
+    return CompanyDeletion(counts, stored_keys)

@@ -1,37 +1,37 @@
 ## 1. Storage (infra + web-api)
 
-- [ ] 1.1 Add a `rustfs` service to `docker-compose.yml`. Pin its image, check its credential variables against the RustFS docs, and give it host ports 9100 (S3) and 9101 (console) and a named volume. Document `S3_ENDPOINT_URL`, `S3_REGION`, `S3_BUCKET`, `S3_ACCESS_KEY` and `S3_SECRET_KEY` in `.env.example`. Don't start it; the user runs compose
-- [ ] 1.2 Declare `boto3` in web-api's dependencies (the user runs the sync)
-- [ ] 1.3 `web_api/storage/`:
-  - [ ] 1.3.1 The `FileStore` protocol and `StorageUnavailable`
-  - [ ] 1.3.2 `S3FileStore`, path-style with timeouts
-  - [ ] 1.3.3 `MemoryFileStore`
-  - [ ] 1.3.4 `file_store()` from config, and `ensure_bucket`
-  - [ ] 1.3.5 Tests, with the memory store and a stubbed boto client
-- [ ] 1.4 Create the bucket at startup in the app lifespan, logged and skipped when unavailable (test)
+- [x] 1.1 Add a `rustfs` service to `docker-compose.yml`. Pin its image, check its credential variables against the RustFS docs, and give it host ports 9100 (S3) and 9101 (console) and a named volume. Document `S3_ENDPOINT_URL`, `S3_REGION`, `S3_BUCKET`, `S3_ACCESS_KEY` and `S3_SECRET_KEY` in `.env.example`. Don't start it; the user runs compose
+- [x] 1.2 Declare `aioboto3` in web-api's dependencies (the user runs the sync)
+- [x] 1.3 `web_api/storage/`:
+  - [x] 1.3.1 The `FileStore` protocol and `StorageUnavailable`
+  - [x] 1.3.2 `S3FileStore`, path-style with timeouts
+  - [x] 1.3.3 `MemoryFileStore`
+  - [x] 1.3.4 `file_store()` from config, and `ensure_bucket`
+  - [x] 1.3.5 Tests, with the memory store and a stubbed aioboto3 client
+- [x] 1.4 Create the bucket at startup in the app lifespan, logged and skipped when unavailable (test)
 
 ## 2. Agreements data and API (web-api)
 
-- [ ] 2.1 Models, one file each: `Agreement`, `AgreementTerm`, `AgreementFinding`, `AgreementScopeJudgement` (the cache). Put the enums in `enums.py`, and add `File.file_type="agreement_pdf"`. Migration `0020_trade_agreements`; don't run it
-- [ ] 2.2 Company deletion removes its agreements, terms, findings, judgements and stored files (test)
-- [ ] 2.3 Schemas under `schemas/agreements/`: agreement, term (create and patch per kind), finding, report, compliance report
-- [ ] 2.4 Upload: `POST /companies/{id}/agreements`:
-  - [ ] 2.4.1 Checks: management only, PDF name and signature, size limit
-  - [ ] 2.4.2 The row first, then the object; remove the row if the put fails (503)
-  - [ ] 2.4.3 Audited
-  - [ ] 2.4.4 Tests: 201, 403, 404, 413, 422, 503
-- [ ] 2.5 List, detail, patch (header), delete, document stream, and read-again, with tenant scoping and audit (tests)
-- [ ] 2.6 Terms: add, patch (edit, confirm, reject), and the `active` rule. Confirming or editing requests `analyse_agreements`. Editing a scope or item clears that term's judgements (tests)
-- [ ] 2.7 Findings review: `PATCH /agreement-findings/{id}`; `not_in_scope` also writes a negative judgement for the pair (tests)
-- [ ] 2.8 `POST /companies/{id}/agreements/analyse` (management), deduplicated against an unfinished run (test)
-- [ ] 2.9 Report: `GET /agreements/{id}/report`:
-  - [ ] 2.9.1 Totals by kind and severity
-  - [ ] 2.9.2 In-scope spend and the share with the supplier
-  - [ ] 2.9.3 Commitment progress
-  - [ ] 2.9.4 The findings, filtered and ordered with rule breaks first
-  - [ ] 2.9.5 Tests
-- [ ] 2.10 `GET /reports/agreement-compliance`, for the dashboard (tests)
-- [ ] 2.11 `PipelineRunKind.ANALYSE_AGREEMENTS`
+- [x] 2.1 Models, one file each: `Agreement`, `AgreementTerm`, `AgreementFinding`, `AgreementScopeJudgement` (the cache). Put the enums in `enums.py`, and add `File.file_type="agreement_pdf"`. Migration `0020_trade_agreements`; don't run it
+- [x] 2.2 Company deletion removes its agreements, terms, findings, judgements and stored files (test)
+- [x] 2.3 Schemas under `schemas/agreements/`: agreement, term (create and patch per kind), finding, report, compliance report
+- [x] 2.4 Upload: `POST /companies/{id}/agreements`:
+  - [x] 2.4.1 Checks: management only, PDF name and signature, size limit
+  - [x] 2.4.2 The row first, then the object; remove the row if the put fails (503)
+  - [x] 2.4.3 Audited
+  - [x] 2.4.4 Tests: 201, 403, 404, 413, 422, 503
+- [x] 2.5 List, detail, patch (header), delete, document stream, and read-again, with tenant scoping and audit (tests)
+- [x] 2.6 Terms: add, patch (edit, confirm, reject), and the `active` rule. Confirming or editing requests `analyse_agreements`. Editing a scope or item clears that term's judgements (tests)
+- [x] 2.7 Findings review: `PATCH /agreement-findings/{id}`; later runs skip a line for a term once one of its findings is `not_in_scope` (tests)
+- [x] 2.8 `POST /companies/{id}/agreements/analyse` (management), deduplicated against an unfinished run (test)
+- [x] 2.9 Report: `GET /agreements/{id}/report`:
+  - [x] 2.9.1 Totals by kind and severity
+  - [x] 2.9.2 In-scope spend and the share with the supplier
+  - [x] 2.9.3 Commitment progress
+  - [x] 2.9.4 The findings, filtered and ordered with rule breaks first
+  - [x] 2.9.5 Tests
+- [x] 2.10 `GET /reports/agreement-compliance`, for the dashboard (tests)
+- [x] 2.11 `PipelineRunKind.ANALYSE_AGREEMENTS`
 
 ## 3. Reading agreements (ai-api)
 

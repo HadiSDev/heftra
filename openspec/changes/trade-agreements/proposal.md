@@ -60,7 +60,7 @@ Rule breaks matter most: buying in-scope goods from another supplier when an agr
   - S3 settings in `.env.example`;
   - a bucket created at startup.
 - **Dependencies:**
-  - `boto3` in web-api, which ai-api inherits through the workspace. The user runs the sync.
+  - `aioboto3` in web-api (async S3 client), which ai-api inherits through the workspace. The user runs the sync.
   - The existing `pdfplumber`, `pypdfium2`, CrewAI and Qdrant cover the rest.
 - **web-api:**
   - new `storage/`, `agreements/` and `compliance/` packages;

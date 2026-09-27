@@ -90,7 +90,7 @@ Findings SHALL be stored per term, line and kind. Each analysis run SHALL:
 
 A finding's review SHALL survive re-analysis while the same term, line and kind is still produced. Its review status is `open`, `exception` or `not_in_scope`, with a note, who reviewed it and when.
 
-A manager SHALL be able to review a finding through `PATCH /api/v1/agreement-findings/{id}`: mark it as an exception or as not in scope with a note, or reopen it. That SHALL be audited. A finding marked `not_in_scope` SHALL also record the judgement for that pair as not in scope, so it isn't raised again.
+A manager SHALL be able to review a finding through `PATCH /api/v1/agreement-findings/{id}`: mark it as an exception or as not in scope with a note, or reopen it. That SHALL be audited. Once any finding of a line against a term is marked `not_in_scope`, later runs SHALL NOT raise that line against that term, and SHALL keep that finding as the record of the decision.
 
 #### Scenario: An accepted exception stays accepted
 
