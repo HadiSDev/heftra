@@ -79,4 +79,16 @@ describe('AppSidebar', () => {
     expect(spendLines.getAttribute('aria-current')).toBe('page')
     expect(screen.queryByText('Invoices')).toBeNull()
   })
+
+  it('links Agreements after Suppliers', () => {
+    render(<AppSidebar pathname="/agreements/a1" />)
+
+    const links = screen.getAllByRole('link').map((link) => link.textContent)
+    expect(links.indexOf('Agreements')).toBe(links.indexOf('Suppliers') + 1)
+    expect(
+      screen
+        .getByRole('link', { name: 'Agreements' })
+        .getAttribute('aria-current'),
+    ).toBe('page')
+  })
 })

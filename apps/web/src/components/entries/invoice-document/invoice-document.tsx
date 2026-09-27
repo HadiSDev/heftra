@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { useQuery } from '@tanstack/react-query'
+import type { UseQueryResult } from '@tanstack/react-query'
 import { ClientOnly } from '@tanstack/react-router'
 import {
   ChevronLeft,
@@ -198,11 +199,35 @@ function Toolbar({
   )
 }
 
+/** A page to show, as a new object each time it is asked for so the same page can be asked again. */
+export interface PageRequest {
+  page: number
+}
+
+export interface DocumentPaneProps {
+  query: UseQueryResult<Blob>
+  /** The document's original filename, used for the download control. */
+  filename: string | null
+  /** Scrolls to this page whenever a new request is passed. */
+  pageRequest?: PageRequest | null
+}
+
 /** Viewer for an invoice's scanned document (PDF or image). */
 export function InvoiceDocument({ invoiceId, filename }: InvoiceDocumentProps) {
   const api = useApi()
   const query = useQuery(invoiceDocumentQueryOptions(api, invoiceId))
+  if (invoiceId === null) {
+    return <NoDocumentState />
+  }
+  return <DocumentPane query={query} filename={filename} />
+}
 
+/** A fetched document shown with paging, zoom and download, whatever it belongs to. */
+export function DocumentPane({
+  query,
+  filename,
+  pageRequest,
+}: DocumentPaneProps) {
   const [objectUrl, setObjectUrl] = React.useState<string | null>(null)
   const [numPages, setNumPages] = React.useState(0)
   const [pageNumber, setPageNumber] = React.useState(1)
@@ -224,9 +249,11 @@ export function InvoiceDocument({ invoiceId, filename }: InvoiceDocumentProps) {
     }
   }, [query.data])
 
-  if (invoiceId === null) {
-    return <NoDocumentState />
-  }
+  React.useEffect(() => {
+    if (pageRequest) {
+      setPageNumber(pageRequest.page)
+    }
+  }, [pageRequest])
 
   if (query.isPending) {
     return <LoadingState />
@@ -245,7 +272,7 @@ export function InvoiceDocument({ invoiceId, filename }: InvoiceDocumentProps) {
   }
 
   const blob = query.data
-  if (!objectUrl || !blob) {
+  if (!objectUrl) {
     return <LoadingState />
   }
 

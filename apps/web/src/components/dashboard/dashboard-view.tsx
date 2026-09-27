@@ -10,12 +10,14 @@ import type {
   SpendOverview,
   SpendTrend,
 } from '#/lib/api/spend-report-types'
+import type { AgreementCompliance } from '#/lib/api/agreement-types'
 import type { CompanyRead } from '#/lib/api/types'
 import { CategoryBreakdown } from './breakdown/category-breakdown'
 import { TopSuppliers } from './breakdown/top-suppliers'
 import { DashboardControls } from './controls/dashboard-controls'
 import { InsightLists } from './insights/insight-lists'
 import { DashboardSection } from './section'
+import { ComplianceFigures } from './compliance/compliance-section'
 import { EmissionsFigures } from './emissions/emissions-section'
 import { OverviewTiles } from './tiles/overview-tiles'
 import { TrendChart } from './trend/trend-chart'
@@ -35,6 +37,7 @@ export interface DashboardViewProps {
   breakdown: ReportState<SpendBreakdown>
   insights: ReportState<SpendInsights>
   emissions: ReportState<SpendEmissions>
+  compliance: ReportState<AgreementCompliance>
   onSearchChange: (next: DashboardSearch) => void
 }
 
@@ -79,6 +82,7 @@ export function DashboardView({
   breakdown,
   insights,
   emissions,
+  compliance,
   onSearchChange,
 }: DashboardViewProps) {
   const empty = overview.data !== undefined && !hasSpend(overview.data)
@@ -140,6 +144,17 @@ export function DashboardView({
                     : resolved
                 }
               />
+            ) : null}
+          </DashboardSection>
+          <DashboardSection
+            title="Contract compliance"
+            description="Purchases in the period that break your agreements"
+            loading={compliance.data === undefined}
+            error={compliance.error}
+            placeholderClassName="h-32"
+          >
+            {compliance.data ? (
+              <ComplianceFigures report={compliance.data} />
             ) : null}
           </DashboardSection>
           <div className="grid items-start gap-6 lg:grid-cols-2">

@@ -78,29 +78,29 @@
 
 ## 5. Web
 
-- [ ] 5.1 Types and queries in `lib/api/agreements.ts` (and types): list, detail, report and compliance report. Mutations for upload (with progress), header, terms, findings review, read again, re-analyse and delete, each invalidating what it changes. Poll while an agreement is reading or an analysis is unfinished
-- [ ] 5.2 The nav entry **Agreements** after Suppliers (test)
-- [ ] 5.3 `routes/_authed/agreements/index.tsx` and `components/agreements/list/`: the table with status badges and emphasised rule breaks, the `FileDropzone` upload for managers, and the loading, empty and error states (tests)
-- [ ] 5.4 `routes/_authed/agreements/$agreementId.tsx` with Terms and Report tabs (search param `tab`)
-- [ ] 5.5 `components/agreements/terms/`:
-  - [ ] 5.5.1 The document viewer, reused
-  - [ ] 5.5.2 The header form, with the supplier picker from the vendors search
-  - [ ] 5.5.3 A term card per kind: edit, confirm, reject; the quote jumps to its page
-  - [ ] 5.5.4 The add-term dialog
-  - [ ] 5.5.5 The reading and failed states, with read-again
-  - [ ] 5.5.6 Tests
-- [ ] 5.6 `components/agreements/report/`:
-  - [ ] 5.6.1 The summary tiles
-  - [ ] 5.6.2 The rule-breaks table first, then price checks, discount checks and commitment progress
-  - [ ] 5.6.3 The finding review popover (exception or not in scope, with a note)
-  - [ ] 5.6.4 Opening the voucher drawer for a finding
-  - [ ] 5.6.5 Re-analyse and last analysed
-  - [ ] 5.6.6 Tests
-- [ ] 5.7 The dashboard's **Contract compliance** section, with an empty state that invites an upload (tests)
-- [ ] 5.8 Run vitest, tsc, eslint and prettier on the changed files, and regenerate the route tree
+- [x] 5.1 Types and queries in `lib/api/agreements.ts` (and types): list, detail, report and compliance report. Mutations for upload (with progress), header, terms, findings review, read again, re-analyse and delete, each invalidating what it changes. Poll while an agreement is reading or an analysis is unfinished
+- [x] 5.2 The nav entry **Agreements** after Suppliers (test)
+- [x] 5.3 `routes/_authed/agreements/index.tsx` and `components/agreements/list/`: the table with status badges and emphasised rule breaks, the `FileDropzone` upload for managers, and the loading, empty and error states (tests)
+- [x] 5.4 `routes/_authed/agreements/$agreementId.tsx` with Terms and Report tabs (search param `tab`)
+- [x] 5.5 `components/agreements/terms/`:
+  - [x] 5.5.1 The document viewer, reused
+  - [x] 5.5.2 The header form, with the supplier picker from the vendors search
+  - [x] 5.5.3 A term card per kind: edit, confirm, reject; the quote jumps to its page
+  - [x] 5.5.4 The add-term dialog
+  - [x] 5.5.5 The reading and failed states, with read-again
+  - [x] 5.5.6 Tests
+- [x] 5.6 `components/agreements/report/`:
+  - [x] 5.6.1 The summary tiles
+  - [x] 5.6.2 The rule-breaks table first, then price checks, discount checks and commitment progress
+  - [x] 5.6.3 The finding review popover (exception or not in scope, with a note)
+  - [x] 5.6.4 Opening the voucher drawer for a finding
+  - [x] 5.6.5 Re-analyse and last analysed
+  - [x] 5.6.6 Tests
+- [x] 5.7 The dashboard's **Contract compliance** section, with an empty state that invites an upload (tests)
+- [x] 5.8 Run vitest, tsc, eslint and prettier on the changed files, and regenerate the route tree
 
 ## 6. Verification
 
-- [ ] 6.1 Run the web-api and ai-api suites in full
+- [x] 6.1 Run the web-api and ai-api suites in full
 - [ ] 6.2 With the user's go-ahead: start RustFS, run the migration, upload a real or sample framework agreement, review its terms and confirm them. Check the rule breaks against a few lines by hand
 - [ ] 6.3 Browser check with an impersonated manager: upload, review, the report, a finding's voucher, marking an exception, and the dashboard section

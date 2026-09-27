@@ -1,5 +1,6 @@
 import { keepPreviousData, queryOptions } from '@tanstack/react-query'
 import type { ApiClient } from './api-client'
+import type { AgreementCompliance } from './agreement-types'
 import type {
   SpendBreakdown,
   SpendEmissions,
@@ -15,6 +16,7 @@ type SpendReport =
   | 'spend-breakdown'
   | 'spend-insights'
   | 'spend-emissions'
+  | 'agreement-compliance'
 
 function spendReportOptions<T>(
   api: ApiClient,
@@ -51,4 +53,13 @@ export function spendInsightsOptions(api: ApiClient, scope: SpendScope) {
 /** The period's estimated emissions (`GET /reports/spend-emissions`). */
 export function spendEmissionsOptions(api: ApiClient, scope: SpendScope) {
   return spendReportOptions<SpendEmissions>(api, 'spend-emissions', scope)
+}
+
+/** The period's open contract rule breaks (`GET /reports/agreement-compliance`). */
+export function agreementComplianceOptions(api: ApiClient, scope: SpendScope) {
+  return spendReportOptions<AgreementCompliance>(
+    api,
+    'agreement-compliance',
+    scope,
+  )
 }

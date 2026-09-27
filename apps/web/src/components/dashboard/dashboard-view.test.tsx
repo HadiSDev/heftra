@@ -16,6 +16,7 @@ import type {
   SpendTrend,
 } from '#/lib/api/spend-report-types'
 import { DashboardView } from './dashboard-view'
+import type { AgreementCompliance } from '#/lib/api/agreement-types'
 import type { DashboardViewProps } from './dashboard-view'
 
 vi.mock('@tanstack/react-router', async (importOriginal) => {
@@ -221,6 +222,20 @@ const EMISSIONS: SpendEmissions = {
   ],
 }
 
+const COMPLIANCE: AgreementCompliance = {
+  ...PERIODS,
+  has_active_agreement: true,
+  currency: 'DKK',
+  open_rule_breaks: 4,
+  rule_break_amount: '38000',
+  off_contract_amount: '36800',
+  overcharge_amount: '1200',
+  top_suppliers: [
+    { vendor_id: 'v1', name: 'Proshop A/S', amount: '30000', count: 3 },
+    { vendor_id: 'v2', name: 'Komplett', amount: '6800', count: 1 },
+  ],
+}
+
 function setup(overrides: Partial<DashboardViewProps> = {}) {
   const props: DashboardViewProps = {
     search: { period: 'quarter' },
@@ -231,6 +246,7 @@ function setup(overrides: Partial<DashboardViewProps> = {}) {
     breakdown: { data: BREAKDOWN, error: false },
     insights: { data: INSIGHTS, error: false },
     emissions: { data: EMISSIONS, error: false },
+    compliance: { data: COMPLIANCE, error: false },
     onSearchChange: vi.fn(),
     ...overrides,
   }
@@ -438,5 +454,40 @@ describe('DashboardView — states', () => {
     expect(insights.getByRole('alert')).toBeTruthy()
     expect(tile('Spend')).toBeTruthy()
     expect(screen.getByRole('region', { name: 'Spend over time' })).toBeTruthy()
+  })
+
+  it('shows the period’s contract rule breaks and who was bought from off-contract', () => {
+    setup()
+
+    const compliance = within(
+      screen.getByRole('region', { name: 'Contract compliance' }),
+    )
+    expect(compliance.getByText('4')).toBeTruthy()
+    expect(compliance.getByText('open rule breaks')).toBeTruthy()
+    const suppliers = compliance.getByRole('list', {
+      name: 'Bought from off-contract',
+    })
+    expect(suppliers.textContent).toContain('Proshop A/S')
+  })
+
+  it('invites an upload when there are no active agreements', () => {
+    setup({
+      compliance: {
+        data: {
+          ...COMPLIANCE,
+          has_active_agreement: false,
+          open_rule_breaks: 0,
+        },
+        error: false,
+      },
+    })
+
+    const compliance = within(
+      screen.getByRole('region', { name: 'Contract compliance' }),
+    )
+    expect(compliance.getByText(/No active agreements yet/)).toBeTruthy()
+    expect(
+      compliance.getByRole('link', { name: 'Go to Agreements' }),
+    ).toBeTruthy()
   })
 })

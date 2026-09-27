@@ -18,12 +18,14 @@ import { Route as AuthedSettingsRouteImport } from './routes/_authed/settings'
 import { Route as AuthedInvoiceLinesRouteImport } from './routes/_authed/invoice-lines'
 import { Route as AuthedSuppliersIndexRouteImport } from './routes/_authed/suppliers/index'
 import { Route as AuthedSettingsIndexRouteImport } from './routes/_authed/settings/index'
+import { Route as AuthedAgreementsIndexRouteImport } from './routes/_authed/agreements/index'
 import { Route as AuthedSuppliersVendorIdRouteImport } from './routes/_authed/suppliers/$vendorId'
 import { Route as AuthedSettingsSpendTreesRouteImport } from './routes/_authed/settings/spend-trees'
 import { Route as AuthedSettingsProfileRouteImport } from './routes/_authed/settings/profile'
 import { Route as AuthedSettingsOrganizationRouteImport } from './routes/_authed/settings/organization'
 import { Route as AuthedSettingsEmissionFactorsRouteImport } from './routes/_authed/settings/emission-factors'
 import { Route as AuthedSettingsCompaniesRouteImport } from './routes/_authed/settings/companies'
+import { Route as AuthedAgreementsAgreementIdRouteImport } from './routes/_authed/agreements/$agreementId'
 import { Route as AuthedSettingsCompaniesIndexRouteImport } from './routes/_authed/settings/companies.index'
 import { Route as AuthedSettingsCompaniesCompanyIdAccountsRouteImport } from './routes/_authed/settings/companies.$companyId.accounts'
 
@@ -71,6 +73,11 @@ const AuthedSettingsIndexRoute = AuthedSettingsIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthedSettingsRoute,
 } as any)
+const AuthedAgreementsIndexRoute = AuthedAgreementsIndexRouteImport.update({
+  id: '/agreements/',
+  path: '/agreements/',
+  getParentRoute: () => AuthedRoute,
+} as any)
 const AuthedSuppliersVendorIdRoute = AuthedSuppliersVendorIdRouteImport.update({
   id: '/suppliers/$vendorId',
   path: '/suppliers/$vendorId',
@@ -104,6 +111,12 @@ const AuthedSettingsCompaniesRoute = AuthedSettingsCompaniesRouteImport.update({
   path: '/companies',
   getParentRoute: () => AuthedSettingsRoute,
 } as any)
+const AuthedAgreementsAgreementIdRoute =
+  AuthedAgreementsAgreementIdRouteImport.update({
+    id: '/agreements/$agreementId',
+    path: '/agreements/$agreementId',
+    getParentRoute: () => AuthedRoute,
+  } as any)
 const AuthedSettingsCompaniesIndexRoute =
   AuthedSettingsCompaniesIndexRouteImport.update({
     id: '/',
@@ -124,12 +137,14 @@ export interface FileRoutesByFullPath {
   '/ui': typeof UiRoute
   '/invoice-lines': typeof AuthedInvoiceLinesRoute
   '/settings': typeof AuthedSettingsRouteWithChildren
+  '/agreements/$agreementId': typeof AuthedAgreementsAgreementIdRoute
   '/settings/companies': typeof AuthedSettingsCompaniesRouteWithChildren
   '/settings/emission-factors': typeof AuthedSettingsEmissionFactorsRoute
   '/settings/organization': typeof AuthedSettingsOrganizationRoute
   '/settings/profile': typeof AuthedSettingsProfileRoute
   '/settings/spend-trees': typeof AuthedSettingsSpendTreesRoute
   '/suppliers/$vendorId': typeof AuthedSuppliersVendorIdRoute
+  '/agreements/': typeof AuthedAgreementsIndexRoute
   '/settings/': typeof AuthedSettingsIndexRoute
   '/suppliers/': typeof AuthedSuppliersIndexRoute
   '/settings/companies/': typeof AuthedSettingsCompaniesIndexRoute
@@ -141,11 +156,13 @@ export interface FileRoutesByTo {
   '/ui': typeof UiRoute
   '/invoice-lines': typeof AuthedInvoiceLinesRoute
   '/': typeof AuthedIndexRoute
+  '/agreements/$agreementId': typeof AuthedAgreementsAgreementIdRoute
   '/settings/emission-factors': typeof AuthedSettingsEmissionFactorsRoute
   '/settings/organization': typeof AuthedSettingsOrganizationRoute
   '/settings/profile': typeof AuthedSettingsProfileRoute
   '/settings/spend-trees': typeof AuthedSettingsSpendTreesRoute
   '/suppliers/$vendorId': typeof AuthedSuppliersVendorIdRoute
+  '/agreements': typeof AuthedAgreementsIndexRoute
   '/settings': typeof AuthedSettingsIndexRoute
   '/suppliers': typeof AuthedSuppliersIndexRoute
   '/settings/companies': typeof AuthedSettingsCompaniesIndexRoute
@@ -160,12 +177,14 @@ export interface FileRoutesById {
   '/_authed/invoice-lines': typeof AuthedInvoiceLinesRoute
   '/_authed/settings': typeof AuthedSettingsRouteWithChildren
   '/_authed/': typeof AuthedIndexRoute
+  '/_authed/agreements/$agreementId': typeof AuthedAgreementsAgreementIdRoute
   '/_authed/settings/companies': typeof AuthedSettingsCompaniesRouteWithChildren
   '/_authed/settings/emission-factors': typeof AuthedSettingsEmissionFactorsRoute
   '/_authed/settings/organization': typeof AuthedSettingsOrganizationRoute
   '/_authed/settings/profile': typeof AuthedSettingsProfileRoute
   '/_authed/settings/spend-trees': typeof AuthedSettingsSpendTreesRoute
   '/_authed/suppliers/$vendorId': typeof AuthedSuppliersVendorIdRoute
+  '/_authed/agreements/': typeof AuthedAgreementsIndexRoute
   '/_authed/settings/': typeof AuthedSettingsIndexRoute
   '/_authed/suppliers/': typeof AuthedSuppliersIndexRoute
   '/_authed/settings/companies/': typeof AuthedSettingsCompaniesIndexRoute
@@ -180,12 +199,14 @@ export interface FileRouteTypes {
     | '/ui'
     | '/invoice-lines'
     | '/settings'
+    | '/agreements/$agreementId'
     | '/settings/companies'
     | '/settings/emission-factors'
     | '/settings/organization'
     | '/settings/profile'
     | '/settings/spend-trees'
     | '/suppliers/$vendorId'
+    | '/agreements/'
     | '/settings/'
     | '/suppliers/'
     | '/settings/companies/'
@@ -197,11 +218,13 @@ export interface FileRouteTypes {
     | '/ui'
     | '/invoice-lines'
     | '/'
+    | '/agreements/$agreementId'
     | '/settings/emission-factors'
     | '/settings/organization'
     | '/settings/profile'
     | '/settings/spend-trees'
     | '/suppliers/$vendorId'
+    | '/agreements'
     | '/settings'
     | '/suppliers'
     | '/settings/companies'
@@ -215,12 +238,14 @@ export interface FileRouteTypes {
     | '/_authed/invoice-lines'
     | '/_authed/settings'
     | '/_authed/'
+    | '/_authed/agreements/$agreementId'
     | '/_authed/settings/companies'
     | '/_authed/settings/emission-factors'
     | '/_authed/settings/organization'
     | '/_authed/settings/profile'
     | '/_authed/settings/spend-trees'
     | '/_authed/suppliers/$vendorId'
+    | '/_authed/agreements/'
     | '/_authed/settings/'
     | '/_authed/suppliers/'
     | '/_authed/settings/companies/'
@@ -299,6 +324,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedSettingsIndexRouteImport
       parentRoute: typeof AuthedSettingsRoute
     }
+    '/_authed/agreements/': {
+      id: '/_authed/agreements/'
+      path: '/agreements'
+      fullPath: '/agreements/'
+      preLoaderRoute: typeof AuthedAgreementsIndexRouteImport
+      parentRoute: typeof AuthedRoute
+    }
     '/_authed/suppliers/$vendorId': {
       id: '/_authed/suppliers/$vendorId'
       path: '/suppliers/$vendorId'
@@ -340,6 +372,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/settings/companies'
       preLoaderRoute: typeof AuthedSettingsCompaniesRouteImport
       parentRoute: typeof AuthedSettingsRoute
+    }
+    '/_authed/agreements/$agreementId': {
+      id: '/_authed/agreements/$agreementId'
+      path: '/agreements/$agreementId'
+      fullPath: '/agreements/$agreementId'
+      preLoaderRoute: typeof AuthedAgreementsAgreementIdRouteImport
+      parentRoute: typeof AuthedRoute
     }
     '/_authed/settings/companies/': {
       id: '/_authed/settings/companies/'
@@ -401,7 +440,9 @@ interface AuthedRouteChildren {
   AuthedInvoiceLinesRoute: typeof AuthedInvoiceLinesRoute
   AuthedSettingsRoute: typeof AuthedSettingsRouteWithChildren
   AuthedIndexRoute: typeof AuthedIndexRoute
+  AuthedAgreementsAgreementIdRoute: typeof AuthedAgreementsAgreementIdRoute
   AuthedSuppliersVendorIdRoute: typeof AuthedSuppliersVendorIdRoute
+  AuthedAgreementsIndexRoute: typeof AuthedAgreementsIndexRoute
   AuthedSuppliersIndexRoute: typeof AuthedSuppliersIndexRoute
 }
 
@@ -409,7 +450,9 @@ const AuthedRouteChildren: AuthedRouteChildren = {
   AuthedInvoiceLinesRoute: AuthedInvoiceLinesRoute,
   AuthedSettingsRoute: AuthedSettingsRouteWithChildren,
   AuthedIndexRoute: AuthedIndexRoute,
+  AuthedAgreementsAgreementIdRoute: AuthedAgreementsAgreementIdRoute,
   AuthedSuppliersVendorIdRoute: AuthedSuppliersVendorIdRoute,
+  AuthedAgreementsIndexRoute: AuthedAgreementsIndexRoute,
   AuthedSuppliersIndexRoute: AuthedSuppliersIndexRoute,
 }
 

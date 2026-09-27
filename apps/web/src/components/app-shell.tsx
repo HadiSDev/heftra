@@ -11,6 +11,7 @@ import { Logo } from '#/components/brand/logo'
 import {
   Building2,
   ChevronDown,
+  FileSignature,
   LayoutDashboard,
   LogOut,
   Moon,
@@ -133,6 +134,7 @@ export const NAV_ITEMS = [
   { label: 'Dashboard', icon: LayoutDashboard, to: '/' },
   { label: 'Spend Lines', icon: Receipt, to: '/invoice-lines' },
   { label: 'Suppliers', icon: Building2, to: '/suppliers' },
+  { label: 'Agreements', icon: FileSignature, to: '/agreements' },
   { label: 'Settings', icon: Settings, to: '/settings' },
 ] as const
 
