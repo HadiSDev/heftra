@@ -45,7 +45,7 @@ counts, and an `error` when it failed.
 
 When no run is queued, the worker SHALL claim and read one pending agreement, as it reads pending documents. A claim left `reading` longer than the stale timeout SHALL be claimable again.
 
-After a company's `sync`, `read_documents` or `categorize` run succeeds, the worker SHALL queue a system `analyse_agreements` run for that company when it has an active agreement and no queued or running analysis.
+After a company's `sync`, `read_documents` or `categorize` run succeeds, the worker SHALL queue a system `analyse_agreements` run for that company when it has an active agreement and no queued analysis.
 
 #### Scenario: An uploaded agreement is read
 

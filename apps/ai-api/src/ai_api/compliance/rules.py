@@ -62,8 +62,9 @@ def _agreed_price(context: TermContext, line: AnalysedLine, judgement: Agreement
     if not judgement.same_item or term.unit_price is None:
         return []
     actual = None
-    if judgement.units_comparable is not False and line.unit_price is not None:
-        actual = convert(line.unit_price, line.currency, context.currency, line.spent_on)
+    paid = _paid_unit_price(line)
+    if judgement.units_comparable is not False and paid is not None:
+        actual = convert(paid, line.currency, context.currency, line.spent_on)
     if actual is None or actual <= 0:
         if not from_supplier:
             return []
@@ -87,6 +88,13 @@ def _agreed_price(context: TermContext, line: AnalysedLine, judgement: Agreement
                        f"Bought from {line.vendor_name or 'another supplier'} at "
                        f"{price_text.rstrip()}.", expected=agreed, actual=actual)]
     return []
+
+
+def _paid_unit_price(line: AnalysedLine) -> Decimal | None:
+    """What one unit cost after the line's discounts, falling back to its listed unit price."""
+    if line.amount is not None and line.quantity:
+        return line.amount / line.quantity
+    return line.unit_price
 
 
 def _discount(context: TermContext, line: AnalysedLine, judgement: AgreementScopeJudgement,

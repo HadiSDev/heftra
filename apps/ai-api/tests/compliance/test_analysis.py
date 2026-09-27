@@ -95,6 +95,19 @@ def test_the_same_item_dearer_elsewhere_is_a_potential_saving(session, books):
     assert (saving.severity, saving.amount) == ("info", Decimal("2000.00"))
 
 
+def test_prices_are_compared_as_paid_per_unit(session, books):
+    agreement = books.agreement()
+    books.term(agreement, AgreementTermKind.AGREED_PRICE, "Laptops",
+               item="ThinkPad T14", unit="unit", unit_price=Decimal("8000"))
+    line = books.line(books.proshop, "ThinkPad T14 laptop", unit_price="18500", amount="8500")
+
+    _analyse(session, books, Judge(("thinkpad",), item="ThinkPad T14"))
+
+    saving = _findings(session)[("potential_saving", line.id)]
+    assert (saving.amount, saving.actual) == (Decimal("500.00"), Decimal("8500.0000"))
+    assert "8,500.00 against the agreed 8,000.00" in saving.reason
+
+
 def test_a_missing_discount_and_one_that_is_given(session, books):
     agreement = books.agreement()
     books.term(agreement, AgreementTermKind.DISCOUNT, "Accessories such as docks and cables",

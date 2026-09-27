@@ -1,20 +1,18 @@
 """Asking the worker to check a company's spend against its agreements."""
 from __future__ import annotations
 
-from sqlmodel import Session, col, select
+from sqlmodel import Session, select
 
 from ..db.models import PipelineRun, PipelineRunKind, PipelineRunStatus
 
-_UNFINISHED = (PipelineRunStatus.QUEUED.value, PipelineRunStatus.RUNNING.value)
-
 
 def request_analysis(session: Session, company_id: str, requested_by: str) -> PipelineRun:
-    """The company's queued or running analysis, or a new queued one; the caller commits."""
+    """The company's queued analysis, or a new one queued behind any running; the caller commits."""
     existing = session.exec(
         select(PipelineRun).where(
             PipelineRun.company_id == company_id,
             PipelineRun.kind == PipelineRunKind.ANALYSE_AGREEMENTS.value,
-            col(PipelineRun.status).in_(_UNFINISHED),
+            PipelineRun.status == PipelineRunStatus.QUEUED.value,
         )
     ).first()
     if existing is not None:

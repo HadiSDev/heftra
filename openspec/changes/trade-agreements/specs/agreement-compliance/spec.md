@@ -34,7 +34,7 @@ A line SHALL count as from the agreement's supplier when its invoice's vendor is
 - **Preferred supplier:**
   - a line from the supplier is `compliant`;
   - a line from any other supplier is an **`off_contract`** rule break. Its amount is the line's net spend in base currency, and its reason names the term, its conditions and the supplier used.
-- **Agreed price, for the priced item with a comparable unit.** The line's unit price is converted to the agreement's currency at the invoice date.
+- **Agreed price, for the priced item with a comparable unit.** The price paid per unit, the line's net amount over its quantity (its unit price when it has no quantity), is converted to the agreement's currency at the invoice date.
   - From the supplier: above the agreed price by more than the tolerance is an **`overcharge`** rule break, of (actual − agreed) × quantity in base currency; otherwise it is `compliant`.
   - From another supplier: a `potential_saving` of (actual − agreed) × quantity when positive. It is also `off_contract` when a preferred-supplier term of the same agreement covers the line.
   - An incomparable unit gives `price_unverifiable`.
@@ -109,7 +109,7 @@ A company's `analyse_agreements` run SHALL be requested:
 - by the worker, as a system run, after the company's `sync`, `read_documents` or `categorize` run succeeds, when it has an active agreement;
 - by a manager, through `POST /api/v1/companies/{id}/agreements/analyse`.
 
-A request SHALL return the queued or running run of that kind rather than add another. The run's summary SHALL count:
+A request SHALL return the queued run of that kind rather than add another. While one is running, a request SHALL queue another, so that a change made during a run is analysed. The run's summary SHALL count:
 - the terms analysed;
 - the candidates, judged, cached and unjudged pairs;
 - the findings by kind.

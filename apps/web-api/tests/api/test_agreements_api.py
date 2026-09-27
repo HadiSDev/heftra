@@ -193,6 +193,22 @@ def test_a_manager_asks_for_analysis_once(client, engine, seed):
                        headers=auth("tok_viewerA")).status_code == 403
 
 
+def test_a_change_during_a_running_analysis_queues_another(client, engine, seed):
+    running = client.post(f"/api/v1/companies/{seed['comp_a']}/agreements/analyse",
+                          headers=auth("tokA")).json()["id"]
+    with Session(engine) as s:
+        run = s.get(PipelineRun, running)
+        run.status = "running"
+        s.add(run)
+        s.commit()
+
+    queued = client.post(f"/api/v1/companies/{seed['comp_a']}/agreements/analyse",
+                         headers=auth("tokA"))
+
+    assert queued.json()["id"] != running
+    assert queued.json()["status"] == "queued"
+
+
 def test_the_period_s_rule_breaks_reach_the_dashboard(client, engine, seed):
     with Session(engine) as s:
         vendor = supplier(s)

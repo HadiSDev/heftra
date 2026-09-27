@@ -166,7 +166,7 @@ Analysis runs as `PipelineRunKind.ANALYSE_AGREEMENTS`, for one company, through 
 - after the company's sync, `read_documents` or `categorize` run succeeds, if it has an active agreement (a system run);
 - by a manager through **Re-analyse** (`POST /companies/{id}/agreements/analyse`, `require_management`).
 
-It is deduplicated against a queued or running run of the same kind.
+It is deduplicated against a queued run of the same kind. A running analysis has already loaded its terms and lines, so a request made while it runs queues another behind it.
 
 The summary counts:
 - terms analysed, candidates, judged, cached and not judged;
