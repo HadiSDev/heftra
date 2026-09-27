@@ -11,8 +11,9 @@ who requested it, when it was requested, started and finished, a `summary` of
 counts, and an `error` when it failed.
 
 - `kind` SHALL be one of `sync` (sync from ERP), `read_documents` (read the
-  company's pending documents) or `categorize` (categorize the company's
-  uncategorized lines).
+  company's pending documents), `categorize` (categorize the company's
+  uncategorized lines) or `match_emissions` (match the company's lines to
+  emission sectors).
 - `status` SHALL move only `queued → running → succeeded | failed`. A run SHALL
   never move backwards, and a finished run SHALL never change again.
 - `requested_by` SHALL be the requesting user's id, or `system` for a run the
@@ -29,6 +30,11 @@ counts, and an `error` when it failed.
 
 - **WHEN** a run has reached `succeeded` or `failed`
 - **THEN** no later operation changes its status, times, summary or error
+
+#### Scenario: An emissions matching run can be requested
+
+- **WHEN** a system admin requests a run of kind `match_emissions`
+- **THEN** a `queued` run of that kind is recorded
 
 ### Requirement: A system admin can request a run for a company
 
@@ -103,6 +109,10 @@ claims the oldest `queued` run, executes it, and records the outcome.
   categorization of the lines each read creates.
 - A `categorize` run SHALL categorize the company's `uncategorized` lines the
   way the sync's categorization step does, without contacting the ERP.
+- A `match_emissions` run SHALL match the company's eligible lines to emission
+  sectors exactly as `python -m ai_api.emissions.runner --company-id <id>` does.
+  With no active factor set it SHALL succeed with a summary saying it was
+  skipped.
 - On success the run SHALL be `succeeded` with a `summary` of the counts the
   stage reports (for example lines categorized, documents read, failures).
 - An exception SHALL mark the run `failed` with the error message, and the worker
@@ -116,6 +126,13 @@ claims the oldest `queued` run, executes it, and records the outcome.
 - **WHEN** a `categorize` run is `queued` and the worker polls
 - **THEN** the run becomes `running`, the company's uncategorized lines are
   categorized, and the run ends `succeeded` with the number of lines categorized
+
+#### Scenario: A queued emissions matching run is executed
+
+- **WHEN** a `match_emissions` run is `queued`, a factor set is active, and the
+  worker polls
+- **THEN** the company's eligible lines are matched and the run ends `succeeded`
+  with the agent, fallback, unmatched, cached and failed counts
 
 #### Scenario: A failing run does not stop the worker
 
@@ -160,4 +177,3 @@ typed.
 
 - **WHEN** the worker polls and finds no queued run and no pending document
 - **THEN** no run is recorded
-

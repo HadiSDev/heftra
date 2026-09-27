@@ -971,3 +971,121 @@ Spend Lines SHALL carry a `document` filter in the URL (`failed` or `mismatch`),
 - **WHEN** the user opens Spend Lines from the dashboard's "3 totals disagree"
 - **THEN** Spend Lines lists the vouchers whose document total disagrees with the ERP, with the filter shown as applied
 
+### Requirement: Spend Lines SHALL show the estimated emissions of what it lists
+
+Below the coverage card, Spend Lines SHALL show an emissions card fed by the emissions summary under the page's current filters. The card SHALL show:
+- the total estimated emissions;
+- the share of posted spend that was estimated, per base currency;
+- a method line naming the factor set, its version and its price year and currency (for example "Spend-based estimate · CEDA 2025 · 2023 USD");
+- the factor set's attribution;
+- the number of vouchers not estimated, broken down by reason, and how many were estimated from only some of their lines.
+
+Totals SHALL be shown in kg CO₂e below 1,000 kg and in t CO₂e with one decimal from 1,000 kg. With no active factor set, the card SHALL say that no emission factors are imported and show no figure. The card SHALL load, fail and retry independently of the coverage card, and SHALL keep its size while loading so the page does not shift.
+
+#### Scenario: The card follows the filters
+
+- **WHEN** a user filters Spend Lines to one supplier
+- **THEN** the emissions card shows that supplier's estimated emissions and share of spend estimated
+
+#### Scenario: Large totals are shown in tonnes
+
+- **WHEN** the filtered vouchers are estimated at 12,437 kg CO₂e
+- **THEN** the card shows 12.4 t CO₂e
+
+#### Scenario: No factors imported
+
+- **WHEN** no factor set is active
+- **THEN** the card says no emission factors are imported, with no figure
+
+#### Scenario: The attribution is shown
+
+- **WHEN** the card shows a figure from Open CEDA
+- **THEN** "CEDA by Watershed" is visible on the card
+
+### Requirement: Each voucher and line SHALL show its estimated emissions
+
+The voucher table SHALL have a CO₂e column showing each voucher's estimated emissions.
+- A `partial` voucher SHALL be marked as partly estimated.
+- A voucher with nothing estimated SHALL show "—", with its reason available on hover and focus.
+
+Each expanded line SHALL show:
+- its emissions;
+- its emission sector's name;
+- a mark distinguishing an AI match from a human choice;
+- for an AI match below the review threshold, a needs-review mark like a low-confidence category.
+
+The AI's rationale and the country or region whose factor was used SHALL be available on hover and focus.
+
+#### Scenario: A voucher row shows its emissions
+
+- **WHEN** an estimated voucher is listed
+- **THEN** its row shows its CO₂e in the CO₂e column
+
+#### Scenario: A voucher with no lines
+
+- **WHEN** a journal-only voucher is listed
+- **THEN** its CO₂e shows "—" and its reason says it has no invoice lines
+
+#### Scenario: A line shows its sector and emissions
+
+- **WHEN** a voucher with a matched line is expanded
+- **THEN** the line shows its sector's name, whether it was matched by AI or chosen by a human, and its CO₂e
+
+### Requirement: A line's emission sector SHALL be chosen from the active sectors
+
+The line editor SHALL offer an emission sector picker that:
+- searches the active factor set's sectors as the user types;
+- shows each sector's name and code;
+- saves a pick at once through the line update, then refreshes the voucher list and the emissions card.
+
+The picker SHALL offer to clear the sector. It SHALL be disabled, with an explanation, when no factor set is active.
+
+#### Scenario: A reviewer corrects a sector
+
+- **WHEN** a reviewer searches for "freight", picks a sector and saves
+- **THEN** the line shows that sector as a human choice, and the voucher's CO₂e and the emissions card update
+
+#### Scenario: No factors imported
+
+- **WHEN** no factor set is active and a reviewer opens a line
+- **THEN** the sector picker is disabled and says no emission factors are imported
+
+### Requirement: A line's emissions SHALL show how they were reached
+
+A line's CO₂e in the voucher table SHALL reveal on hover and focus the calculation behind it:
+- its spend;
+- the conversion to the factor's currency;
+- when adjusted, the deflation to the factor's price year, naming the index and the month used;
+- the factor and the country or region it is for;
+- the result.
+
+The line editor in the voucher panel SHALL show an emissions section with:
+- the sector, and whether AI matched it or a person chose it;
+- for an AI match, its confidence and its reasoning;
+- the calculation, step by step: the line's share of the voucher's spend, the rate and converted amount, the deflation when adjusted, the factor with its sector and area, and the kg CO₂e.
+
+For a line with no estimate it SHALL say why.
+
+#### Scenario: A reviewer sees how a line's emissions were reached
+
+- **WHEN** a reviewer opens a line estimated at 65.9 kg CO₂e
+- **THEN** the panel shows DKK 1,000.00 × 0.145 = USD 145.00, × US CPI 2023 average 300 ÷ Aug 2026 330 = USD 131.82 in 2023 prices, × 0.5 kg CO₂e per USD (factor for DE) = 65.9 kg CO₂e, and the AI's reasoning for the sector
+
+#### Scenario: An unadjusted line has no deflation step
+
+- **WHEN** a reviewer opens a line whose calculation has no deflation
+- **THEN** the calculation goes straight from the converted amount to the factor
+
+### Requirement: The emissions card SHALL say whether figures are adjusted for inflation
+
+The emissions card's method line SHALL end with "adjusted with <index label>" when the factor set carries a price index, and with "not adjusted for inflation" when it does not. The latest month of the index SHALL be available on hover and focus.
+
+#### Scenario: Adjusted
+
+- **WHEN** the factor set's price index is US CPI through August 2026
+- **THEN** the method line reads "Spend-based estimate · CEDA 2025 · 2023 USD · adjusted with US CPI", and hovering it shows that the index runs to August 2026
+
+#### Scenario: Not adjusted
+
+- **WHEN** the factor set has no price index
+- **THEN** the method line ends with "not adjusted for inflation"

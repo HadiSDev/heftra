@@ -919,8 +919,8 @@ Accept and dismiss SHALL be available only to a role that may edit the tree. A r
 ### Requirement: A system admin can run a company's pipeline from Settings
 
 The Companies section SHALL offer, on each company row and to system admins
-only, a **Run** menu with **Sync from ERP**, **Read documents** and
-**Categorize lines**, and SHALL show the company's latest run.
+only, a **Run** menu with **Sync from ERP**, **Read documents**, **Categorize lines**
+and **Match emission sectors**, and SHALL show the company's latest run.
 
 - A reader without the platform flag SHALL NOT see the menu or the run status at
   all, rather than see them disabled.
@@ -938,7 +938,7 @@ only, a **Run** menu with **Sync from ERP**, **Read documents** and
 #### Scenario: A system admin sees the run menu
 
 - **WHEN** a system admin views the companies list
-- **THEN** each company row offers a Run menu with the three actions and shows
+- **THEN** each company row offers a Run menu with the four actions and shows
   the company's latest run
 
 #### Scenario: Everyone else sees neither
@@ -963,3 +963,21 @@ only, a **Run** menu with **Sync from ERP**, **Read documents** and
   integration
 - **THEN** Sync from ERP is not offered
 
+#### Scenario: Emission sectors can be matched from the menu
+
+- **WHEN** a system admin chooses Match emission sectors for a company
+- **THEN** a `match_emissions` run is requested and the row shows it as queued
+
+### Requirement: System admins SHALL find Emission factors as a Settings tab
+
+Settings SHALL show an **Emission factors** tab after its other tabs, linking to `/settings/emission-factors`, only for system admins. For anyone else the tab SHALL NOT be rendered. The sidebar SHALL NOT gain an entry for it.
+
+#### Scenario: A system admin sees the tab
+
+- **WHEN** a system admin opens Settings
+- **THEN** the last tab is Emission factors
+
+#### Scenario: Others don't
+
+- **WHEN** an organization admin who is not a system admin opens Settings
+- **THEN** there is no Emission factors tab
