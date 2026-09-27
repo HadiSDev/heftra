@@ -22,6 +22,7 @@ from web_api.db.models import (
 from web_api.fx.service import FxService
 from web_api.vat import international_vat
 
+from ..agreements.scope_categories import Suggest, category_suggester
 from .candidates import EmbedFn, LineVectors, candidates, descendants
 from .drafts import FindingDraft
 from .identity import from_supplier, supplier_vat
@@ -84,12 +85,18 @@ def _analyse(session: Session, agreement: Agreement, terms: list[AgreementTerm],
     vectors = LineVectors(lines, embed_fn)
     discounts = invoice_discount_rates(session, {line.invoice_id for line in lines})
     convert = _converter(fx)
+    suggest: Suggest | None = None
     drafts: list[FindingDraft] = []
     considered = 0
     for term in terms:
+        scope_ids = term.scope_category_ids
+        if not scope_ids:
+            if suggest is None:
+                suggest = category_suggester(session, agreement.company_id, embed_fn=embed_fn)
+            scope_ids = suggest(term.scope)
         context = TermContext(term, supplier_name, term.currency or agreement.currency)
         pool = [line for line in lines if (term.id, line.line_id) not in ruled_out]
-        for line in candidates(term, pool, vectors, descendants(session, term.scope_category_ids)):
+        for line in candidates(term, pool, vectors, descendants(session, scope_ids)):
             considered += 1
             judgement = judge.judge(term, line)
             if judgement is None or not judgement.in_scope:

@@ -8,6 +8,7 @@ import pytest
 from sqlmodel import Session, select
 
 from agreement_books import Books, Judge, embed
+from ai_api import config
 from ai_api.compliance.run import analyse_company
 from web_api.db.models import (
     AgreementFinding,
@@ -55,6 +56,21 @@ def test_a_laptop_from_a_webshop_is_an_off_contract_rule_break(session, books):
     assert "when available from stock" in off.reason and "Proshop A/S" in off.reason
     assert found[("compliant", ours.id)].from_supplier is True
     assert summary["findings"] == {"off_contract": 1, "compliant": 1}
+
+
+def test_a_term_without_categories_checks_the_categories_closest_to_its_scope(session, books,
+                                                                              monkeypatch):
+    monkeypatch.setattr(config, "AGREEMENT_SIMILARITY_MIN", 2.0)
+    tree = books.tree("Office Equipment", "Coffee")
+    agreement = books.agreement()
+    books.term(agreement, AgreementTermKind.PREFERRED_SUPPLIER, "IT equipment")
+    adapter = books.line(books.proshop, "96W USB-C power adapter", unit_price="484",
+                         category=tree["Office Equipment"])
+    books.line(books.proshop, "Espresso beans", unit_price="120", category=tree["Coffee"])
+
+    _analyse(session, books, Judge(("adapter",)))
+
+    assert ("off_contract", adapter.id) in _findings(session)
 
 
 def test_an_overcharged_laptop(session, books):

@@ -81,7 +81,7 @@ Reading happens in steps:
    - `confidence`.
 4. **Quote check:** a term whose quote isn't found on its page, after whitespace and case folding, is dropped. This is the guard against invented terms, like the emission agent's "only codes a tool showed you".
 5. **Merge:** terms of the same kind with the same normalised scope or item, from different pages, are merged, keeping every quote.
-6. **Scope categories:** suggested for each term by retrieving the company's spend tree categories closest to its scope (`rag/indexer.retrieve_categories`).
+6. **Scope categories:** suggested for each term as the company's spend tree categories whose paths are closest to its scope, compared in memory with the embedding model (the tree is small, so neither Qdrant nor `CATEGORY_RETRIEVAL_ENABLED` is needed). Analysis uses the suggested categories for a confirmed term that has none.
 
 When reading finishes, the agreement moves to `review`, with every term in `draft`.
 

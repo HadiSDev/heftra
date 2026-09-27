@@ -19,10 +19,13 @@ from web_api.db.models import (
     Invoice,
     InvoiceLine,
     Organization,
+    SpendCategory,
+    SpendTree,
     Vendor,
 )
 
-WORDS = ["laptop", "thinkpad", "dell", "monitor", "dock", "coffee", "sleeve", "cable"]
+WORDS = ["laptop", "thinkpad", "dell", "monitor", "dock", "coffee", "sleeve", "cable",
+         "equipment", "office"]
 
 
 def embed(texts: list[str]) -> list[list[float]]:
@@ -48,6 +51,19 @@ class Books:
         self.atea = self.vendor("Atea A/S", "DK12345678")
         self.proshop = self.vendor("Proshop A/S", "DK87654321")
 
+    def tree(self, *names: str) -> dict[str, SpendCategory]:
+        """A spend tree for the company with one top-level category per name."""
+        tree = SpendTree(organization_id=self.company.organization_id, name="Acme tree")
+        self.session.add(tree)
+        self.session.commit()
+        categories = {name: SpendCategory(spend_tree_id=tree.id, name=name, level_1=name)
+                      for name in names}
+        self.session.add_all(categories.values())
+        self.company.spend_tree_id = tree.id
+        self.session.add(self.company)
+        self.session.commit()
+        return categories
+
     def vendor(self, name: str, vat: str) -> Vendor:
         vendor = Vendor(name=name, vat_number=vat, country_code="DK")
         self.session.add(vendor)
@@ -56,7 +72,8 @@ class Books:
 
     def line(self, vendor: Vendor, item: str, *, quantity: str = "1", unit_price: str,
              amount: str | None = None, discount: str | None = None, unit: str = "unit",
-             on: date = date(2026, 3, 1), invoice: Invoice | None = None) -> InvoiceLine:
+             on: date = date(2026, 3, 1), invoice: Invoice | None = None,
+             category: SpendCategory | None = None) -> InvoiceLine:
         if invoice is None:
             invoice = Invoice(company_id=self.company.id, vendor_id=vendor.id,
                               invoice_number=f"{vendor.name}-{item}", invoice_date=on,
@@ -68,6 +85,8 @@ class Books:
                            quantity=Decimal(quantity), unit=unit, unit_price=Decimal(unit_price),
                            amount=total, base_amount=total,
                            discount=Decimal(discount) if discount else None,
+                           spend_category_id=category.id if category else None,
+                           level_1=category.name if category else None,
                            status="ai_categorized", sequence=0)
         self.session.add(line)
         self.session.commit()
