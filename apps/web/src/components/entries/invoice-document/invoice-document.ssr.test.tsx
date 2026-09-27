@@ -16,6 +16,7 @@ vi.mock('#/lib/auth/auth', () => ({
     patch: vi.fn(),
     del: vi.fn(),
     getBlob: vi.fn(async () => new Blob(['%PDF-1.4'])),
+    upload: vi.fn(),
   }),
 }))
 

@@ -79,4 +79,21 @@ describe('AppSidebar', () => {
     expect(spendLines.getAttribute('aria-current')).toBe('page')
     expect(screen.queryByText('Invoices')).toBeNull()
   })
+
+  it('lists Emission factors under System for a system admin', () => {
+    render(<AppSidebar pathname="/admin/emission-factors" isSystemAdmin />)
+
+    const system = screen.getByRole('navigation', { name: 'System' })
+    const link = screen.getByRole('link', { name: 'Emission factors' })
+    expect(system.contains(link)).toBe(true)
+    expect(link.getAttribute('href')).toBe('/admin/emission-factors')
+    expect(link.getAttribute('aria-current')).toBe('page')
+  })
+
+  it('shows no System entries to anyone else', () => {
+    render(<AppSidebar pathname="/" />)
+
+    expect(screen.queryByRole('navigation', { name: 'System' })).toBeNull()
+    expect(screen.queryByRole('link', { name: 'Emission factors' })).toBeNull()
+  })
 })

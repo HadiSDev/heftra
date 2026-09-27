@@ -27,24 +27,24 @@
 
 ## 3. Web
 
-- [ ] 3.1 Types and queries in `lib/api/admin-emission-factors.ts`:
-  - [ ] 3.1.1 The status query, and the jobs query (refetching every 2 s while a job is active)
-  - [ ] 3.1.2 Mutations for activate, refresh and upload (upload with progress via XHR), each invalidating the status and the emissions queries
-- [ ] 3.2 `AppSidebar` gets a `SidebarFooter` for system admins with a "System" caption and `ADMIN_NAV_ITEMS` (Emission factors, `Leaf`) (tests: shown to system admins, hidden from others, active marking)
-- [ ] 3.3 Route `routes/_authed/admin/emission-factors.tsx`, titled "Emission factors", with the non-system-admin notice (test)
-- [ ] 3.4 Components in `components/admin/emission-factors/`:
-  - [ ] 3.4.1 `factor-sets-table`
-  - [ ] 3.4.2 `activate-dialog`
-  - [ ] 3.4.3 `price-index-card`
-  - [ ] 3.4.4 `workbook-upload`
-  - [ ] 3.4.5 `import-jobs`
-  - [ ] 3.4.6 `coverage-table` with the Match emission sectors action
-  - [ ] 3.4.7 Loading, error and empty states
-  - [ ] 3.4.8 Tests
-- [ ] 3.5 Run vitest, tsc, eslint and prettier on the changed files
+- [x] 3.1 Types and queries in `lib/api/admin-emission-factors.ts`:
+  - [x] 3.1.1 The status query, and the jobs query (refetching every 2 s while a job is active)
+  - [x] 3.1.2 Mutations for activate, refresh and upload (upload with progress via XHR), each invalidating the status and the emissions queries
+- [x] 3.2 `AppSidebar` gets a `SidebarFooter` for system admins with a "System" caption and `ADMIN_NAV_ITEMS` (Emission factors, `Leaf`) (tests: shown to system admins, hidden from others, active marking)
+- [x] 3.3 Route `routes/_authed/admin/emission-factors.tsx`, titled "Emission factors", with the non-system-admin notice (test)
+- [x] 3.4 Components in `components/admin/emission-factors/`:
+  - [x] 3.4.1 `factor-sets-table`
+  - [x] 3.4.2 `activate-dialog`
+  - [x] 3.4.3 `price-index-card`
+  - [x] 3.4.4 `workbook-upload`
+  - [x] 3.4.5 `import-jobs`
+  - [x] 3.4.6 `coverage-table` with the Match emission sectors action
+  - [x] 3.4.7 Loading, error and empty states
+  - [x] 3.4.8 Tests
+- [x] 3.5 Run vitest, tsc, eslint and prettier on the changed files
 
 ## 4. Verification
 
-- [ ] 4.1 Run the web-api suite in full
+- [x] 4.1 Run the web-api suite in full
 - [ ] 4.2 With the user's go-ahead, after the migration: as an impersonated system admin, refresh CPI, and activate and re-activate CEDA 2025. Check that the sidebar footer shows only for system admins
 - [ ] 4.3 Upload the real Open CEDA 2025 workbook as a re-import, and check that the job's counts match the CLI's

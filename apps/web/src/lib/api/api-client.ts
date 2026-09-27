@@ -73,6 +73,50 @@ export interface ApiClient {
   del: <T>(path: string, params?: QueryParams) => Promise<T>
   /** Fetch a binary response. */
   getBlob: (path: string, params?: QueryParams) => Promise<Blob>
+  /** POST a multipart form, reporting the share of it sent so far. */
+  upload: <T>(
+    path: string,
+    form: FormData,
+    onProgress?: (sent: number) => void,
+  ) => Promise<T>
+}
+
+interface UploadResponse {
+  status: number
+  body: unknown
+}
+
+/** Send `form` with XHR, which, unlike fetch, reports upload progress. */
+function sendForm(
+  url: string,
+  form: FormData,
+  token: string | null,
+  onProgress?: (sent: number) => void,
+): Promise<UploadResponse> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest()
+    xhr.open('POST', url)
+    xhr.setRequestHeader('Accept', 'application/json')
+    if (token) {
+      xhr.setRequestHeader('Authorization', `Bearer ${token}`)
+    }
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable && onProgress) {
+        onProgress(event.loaded / event.total)
+      }
+    }
+    xhr.onload = () => {
+      let body: unknown
+      try {
+        body = JSON.parse(xhr.responseText)
+      } catch {}
+      resolve({ status: xhr.status, body })
+    }
+    xhr.onerror = () => {
+      reject(new Error(`Upload to ${url} failed`))
+    }
+    xhr.send(form)
+  })
 }
 
 function withQuery(path: string, params?: QueryParams): string {
@@ -159,6 +203,26 @@ export function createApiClient(getToken: TokenGetter): ApiClient {
         throw await toApiError(path, res)
       }
       return res.blob()
+    },
+    upload: async <T>(
+      path: string,
+      form: FormData,
+      onProgress?: (sent: number) => void,
+    ): Promise<T> => {
+      const url = `${API_BASE_URL}${path}`
+      let res = await sendForm(url, form, await getToken(), onProgress)
+      if (res.status === 401) {
+        const freshToken = await getToken({ skipCache: true })
+        res = await sendForm(url, form, freshToken, onProgress)
+      }
+      if (res.status < 200 || res.status >= 300) {
+        throw new ApiError(
+          res.status,
+          `Request to ${path} failed with ${res.status}`,
+          res.body,
+        )
+      }
+      return res.body as T
     },
   }
 }

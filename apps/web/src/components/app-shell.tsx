@@ -12,6 +12,7 @@ import {
   Building2,
   ChevronDown,
   LayoutDashboard,
+  Leaf,
   LogOut,
   Moon,
   Receipt,
@@ -32,6 +33,7 @@ import {
   IconButton,
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarHeader,
   SidebarNav,
   SidebarNavItem,
@@ -136,6 +138,11 @@ export const NAV_ITEMS = [
   { label: 'Settings', icon: Settings, to: '/settings' },
 ] as const
 
+/** System-admin pages, listed at the bottom of the sidebar for system admins only. */
+export const ADMIN_NAV_ITEMS = [
+  { label: 'Emission factors', icon: Leaf, to: '/admin/emission-factors' },
+] as const
+
 /** Whether a nav entry matches the current location. */
 export function isNavItemActive(pathname: string, to: string): boolean {
   if (to === '/') {
@@ -144,8 +151,41 @@ export function isNavItemActive(pathname: string, to: string): boolean {
   return pathname === to || pathname.startsWith(`${to}/`)
 }
 
+/** The system-admin entries under a "System" caption. */
+function AdminNav({ pathname }: { pathname: string }) {
+  return (
+    <SidebarFooter className="border-t border-border pt-3">
+      <p className="px-3 pb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        System
+      </p>
+      <SidebarNav aria-label="System">
+        {ADMIN_NAV_ITEMS.map(({ label, icon: Icon, to }) => {
+          const active = isNavItemActive(pathname, to)
+          return (
+            <Link
+              key={label}
+              to={to}
+              className={sidebarNavItemClass(active)}
+              aria-current={active ? 'page' : undefined}
+            >
+              <Icon />
+              <span className="truncate">{label}</span>
+            </Link>
+          )
+        })}
+      </SidebarNav>
+    </SidebarFooter>
+  )
+}
+
 /** The sidebar, driven by the current pathname. Presentational. */
-export function AppSidebar({ pathname }: { pathname: string }) {
+export function AppSidebar({
+  pathname,
+  isSystemAdmin = false,
+}: {
+  pathname: string
+  isSystemAdmin?: boolean
+}) {
   return (
     <Sidebar>
       <SidebarHeader className="flex-col items-stretch gap-2">
@@ -178,6 +218,7 @@ export function AppSidebar({ pathname }: { pathname: string }) {
           })}
         </SidebarNav>
       </SidebarContent>
+      {isSystemAdmin ? <AdminNav pathname={pathname} /> : null}
     </Sidebar>
   )
 }
@@ -205,7 +246,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <AppShell
-      sidebar={<AppSidebar pathname={pathname} />}
+      sidebar={
+        <AppSidebar
+          pathname={pathname}
+          isSystemAdmin={principal.isSystemAdmin}
+        />
+      }
       header={
         <Topbar>
           <TopbarTitle>{title}</TopbarTitle>

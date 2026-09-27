@@ -15,6 +15,7 @@ vi.mock('#/lib/auth/auth', () => ({
     patch: vi.fn(),
     del: vi.fn(),
     getBlob,
+    upload: vi.fn(),
   }),
 }))
 
