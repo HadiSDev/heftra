@@ -35,23 +35,23 @@
 
 ## 3. Reading agreements (ai-api)
 
-- [ ] 3.1 `agreements/pages.py`: text per page with pdfplumber, and vision for pages without text, capped (tests with small generated PDFs)
-- [ ] 3.2 `agreements/models.py`: the pydantic models for the header and each term kind
-- [ ] 3.3 `agreements/prompts.py` and `agreements/extract.py`:
-  - [ ] 3.3.1 The header from the first pages, and terms chunk by chunk
-  - [ ] 3.3.2 Parse with `parse_model`
-  - [ ] 3.3.3 The quote check against the page
-  - [ ] 3.3.4 Merge across chunks
-  - [ ] 3.3.5 Tests with a stub LLM: an invented quote dropped, duplicates merged, a malformed answer
-- [ ] 3.4 `agreements/supplier.py`: link by international VAT, then suggest by website root or name keys (tests)
-- [ ] 3.5 `agreements/scope_categories.py`: suggest spend categories for a term from the company's tree index (test)
-- [ ] 3.6 `agreements/runner.py`:
-  - [ ] 3.6.1 Claim pending or stale agreements
-  - [ ] 3.6.2 Read them from `FileStore`
-  - [ ] 3.6.3 Store the header and draft terms, replacing drafts and keeping confirmed and rejected terms
-  - [ ] 3.6.4 Handle attempts and failure
-  - [ ] 3.6.5 Wire into the worker's idle loop after documents
-  - [ ] 3.6.6 Tests
+- [x] 3.1 `agreements/pages.py`: text per page with pdfplumber, and vision for pages without text, capped (tests with small generated PDFs)
+- [x] 3.2 `agreements/models.py`: the pydantic models for the header and each term kind
+- [x] 3.3 `agreements/prompts.py` and `agreements/extract.py`:
+  - [x] 3.3.1 The header from the first pages, and terms chunk by chunk
+  - [x] 3.3.2 Parse with `parse_model`
+  - [x] 3.3.3 The quote check against the page
+  - [x] 3.3.4 Merge across chunks
+  - [x] 3.3.5 Tests with a stub LLM: an invented quote dropped, duplicates merged, a malformed answer
+- [x] 3.4 `agreements/supplier.py`: link by international VAT, then suggest by website root or name keys (tests)
+- [x] 3.5 `agreements/scope_categories.py`: suggest spend categories for a term from the company's tree index (test)
+- [x] 3.6 `agreements/runner.py`:
+  - [x] 3.6.1 Claim pending or stale agreements
+  - [x] 3.6.2 Read them from `FileStore`
+  - [x] 3.6.3 Store the header and draft terms, replacing drafts and keeping confirmed and rejected terms
+  - [x] 3.6.4 Handle attempts and failure
+  - [x] 3.6.5 Wire into the worker's idle loop after documents
+  - [x] 3.6.6 Tests
 
 ## 4. Compliance analysis (ai-api)
 

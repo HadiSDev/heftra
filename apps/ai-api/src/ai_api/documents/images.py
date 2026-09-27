@@ -99,3 +99,15 @@ def pdf_page_images(content: bytes) -> list[DocumentImage]:
         return images
     finally:
         pdf.close()
+
+
+def pdf_page_image(content: bytes, index: int) -> DocumentImage:
+    """One whole PDF page as a picture, at the configured long edge."""
+    pdf = pdfium.PdfDocument(io.BytesIO(content))
+    try:
+        page = pdf[index]
+        longest = max(page.get_size()) or 1
+        rendered = page.render(scale=config.DOC_VISION_MAX_EDGE / longest).to_pil()
+        return _encode(rendered, prefer_png=True)
+    finally:
+        pdf.close()
