@@ -13,6 +13,7 @@ from web_api.db.models import PipelineRunKind
 from web_api.db.session import engine
 
 from ..agreements.worker import read_pending_agreements
+from ..compliance.follow_up import queue_analysis_after
 from ..documents import runner as documents_runner
 from .claims import claim_next, finish, recover_interrupted, start_system_run
 from .executors import execute
@@ -49,6 +50,7 @@ def _run_claimed() -> bool:
             return True
         finish(session, run_id, summary=summary)
         logger.info("run %s succeeded: %s", run_id, summary)
+        queue_analysis_after(session, kind, company_id)
         return True
 
 
@@ -74,6 +76,7 @@ def _read_for(company_id: str, count: int) -> None:
             finish(session, run_id, error=_error_text(exc))
             return
         finish(session, run_id, summary=summary)
+        queue_analysis_after(session, PipelineRunKind.READ_DOCUMENTS.value, company_id)
 
 
 def _read_pending(document_batch: int) -> bool:

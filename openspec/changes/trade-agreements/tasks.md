@@ -55,18 +55,18 @@
 
 ## 4. Compliance analysis (ai-api)
 
-- [ ] 4.1 `compliance/candidates.py`: the lines within validity, by scope categories and their descendants, plus the top-K by embedding similarity above the threshold (tests with a fake embedder)
-- [ ] 4.2 `compliance/judge/`: the prompt, the parsed reply (in scope, confidence, reason, same item, comparable units), and the cache keyed by the term's judged fields and the line's `question_key` (tests: parse failures, cache hits)
-- [ ] 4.3 `compliance/supplier_identity.py`: same vendor, or the same international VAT (test)
-- [ ] 4.4 `compliance/findings.py`: deterministic findings per kind, following the design's table. Convert prices with `FxService` at the invoice date, apply tolerances, and detect discounts on the line or the invoice (tests for every row of the table, including incomparable units and the preferred-supplier plus agreed-price overlap)
-- [ ] 4.5 `compliance/commitments.py`: the period, spend to date, the pro-rata target, the forecast and the tiers (tests)
-- [ ] 4.6 `compliance/run.py` `analyse_company`:
-  - [ ] 4.6.1 Upsert findings by (term, line, kind), keeping reviews
-  - [ ] 4.6.2 Delete what's no longer produced, and the findings of rejected terms
-  - [ ] 4.6.3 The summary counts
-  - [ ] 4.6.4 Tests: re-runs are incremental, an exception survives, not-in-scope is learnt
-- [ ] 4.7 Register the `analyse_agreements` executor. Queue a system run after a successful sync, `read_documents` or `categorize` when the company has an active agreement (tests)
-- [ ] 4.8 Config and `.env.example`:
+- [x] 4.1 `compliance/candidates.py`: the lines within validity, by scope categories and their descendants, plus the top-K by embedding similarity above the threshold (tests with a fake embedder)
+- [x] 4.2 `compliance/judge/`: the prompt, the parsed reply (in scope, confidence, reason, same item, comparable units), and the cache keyed by the term's judged fields and the line's `question_key` (tests: parse failures, cache hits)
+- [x] 4.3 `compliance/supplier_identity.py`: same vendor, or the same international VAT (test)
+- [x] 4.4 `compliance/findings.py`: deterministic findings per kind, following the design's table. Convert prices with `FxService` at the invoice date, apply tolerances, and detect discounts on the line or the invoice (tests for every row of the table, including incomparable units and the preferred-supplier plus agreed-price overlap)
+- [x] 4.5 `compliance/commitments.py`: the period, spend to date, the pro-rata target, the forecast and the tiers (tests)
+- [x] 4.6 `compliance/run.py` `analyse_company`:
+  - [x] 4.6.1 Upsert findings by (term, line, kind), keeping reviews
+  - [x] 4.6.2 Delete what's no longer produced, and the findings of rejected terms
+  - [x] 4.6.3 The summary counts
+  - [x] 4.6.4 Tests: re-runs are incremental, an exception survives, not-in-scope is learnt
+- [x] 4.7 Register the `analyse_agreements` executor. Queue a system run after a successful sync, `read_documents` or `categorize` when the company has an active agreement (tests)
+- [x] 4.8 Config and `.env.example`:
   - `AGREEMENT_CHUNK_PAGES`
   - `AGREEMENT_VISION_MAX_PAGES`
   - `AGREEMENT_SIMILARITY_MIN`

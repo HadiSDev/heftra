@@ -8,8 +8,11 @@ from sqlmodel import Session
 from web_api.db.models import PipelineRunKind
 
 from ..categorization.company import categorize_company
+from ..compliance.run import analyse_company
+from ..config import get_llm
 from ..documents import runner as documents_runner
 from ..emissions.lines import match_company
+from ..rag.embedding import embed
 from ..sync import runner as sync_runner
 from ..sync.integrations import connected_integrations
 
@@ -69,11 +72,22 @@ def match_emissions(session: Session, company_id: str) -> dict:
     return match_company(session, company_id)
 
 
+def analyse_agreements(session: Session, company_id: str) -> dict:
+    """Check the company's spend lines against its active agreements' confirmed terms."""
+    llm = get_llm()
+    return analyse_company(
+        session, company_id,
+        ask=lambda prompt: llm.call([{"role": "user", "content": prompt}]),
+        embed_fn=embed,
+    )
+
+
 EXECUTORS: dict[str, Executor] = {
     PipelineRunKind.SYNC.value: sync,
     PipelineRunKind.READ_DOCUMENTS.value: read_documents,
     PipelineRunKind.CATEGORIZE.value: categorize,
     PipelineRunKind.MATCH_EMISSIONS.value: match_emissions,
+    PipelineRunKind.ANALYSE_AGREEMENTS.value: analyse_agreements,
 }
 
 
