@@ -29,6 +29,11 @@ from .pipeline_run import (
 )
 from .price_index_value import PriceIndexValue
 from .recommendation import Recommendation
+from .reference_data_import import (
+    ReferenceDataImport,
+    ReferenceImportKind,
+    ReferenceImportStatus,
+)
 from .spend_category import SpendCategory
 from .spend_category_suggestion import (
     SpendCategorySuggestion,
@@ -67,6 +72,9 @@ __all__ = [
     "SYSTEM_REQUESTER",
     "PriceIndexValue",
     "Recommendation",
+    "ReferenceDataImport",
+    "ReferenceImportKind",
+    "ReferenceImportStatus",
     "SpendCategory",
     "SpendCategorySuggestion",
     "SuggestionState",

@@ -5,10 +5,12 @@ from decimal import Decimal
 from typing import NamedTuple
 from uuid import uuid4
 
-from sqlalchemy import delete, insert, update
+from sqlalchemy import delete, insert
 from sqlmodel import Session, select
 
 from ..db.models import EmissionCountryRegion, EmissionFactor, EmissionFactorSet, EmissionSector
+from ..db.models.audit_log import SYSTEM_ACTOR
+from .activation import activate_factor_set
 from .ceda.release import ATTRIBUTION, CLASSIFICATION, LICENCE, SOURCE
 from .ceda.types import CedaWorkbook, WorkbookError
 
@@ -27,7 +29,8 @@ class ImportCounts(NamedTuple):
     active: bool
 
 
-def import_workbook(session: Session, workbook: CedaWorkbook, *, activate: bool) -> ImportCounts:
+def import_workbook(session: Session, workbook: CedaWorkbook, *, activate: bool,
+                    actor: str = SYSTEM_ACTOR) -> ImportCounts:
     """Store `workbook` as its version's factor set, replacing any earlier import of that version.
 
     The caller commits, so a failure part-way leaves nothing behind.
@@ -53,13 +56,7 @@ def import_workbook(session: Session, workbook: CedaWorkbook, *, activate: bool)
         session.execute(insert(EmissionCountryRegion), regions)
 
     if activate:
-        session.exec(
-            update(EmissionFactorSet)
-            .where(EmissionFactorSet.id != factor_set.id)
-            .values(active=False)
-        )
-        factor_set.active = True
-        session.add(factor_set)
+        activate_factor_set(session, factor_set, actor=actor)
     session.flush()
     return ImportCounts(
         factor_set_id=factor_set.id,

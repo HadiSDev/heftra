@@ -29,6 +29,10 @@ class PriceIndex:
         return cls([IndexValue(month, value) for month, value in rows])
 
     @property
+    def months(self) -> int:
+        return len(self._values)
+
+    @property
     def latest_month(self) -> date | None:
         return self._months[-1] if self._months else None
 

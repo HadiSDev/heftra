@@ -1,29 +1,29 @@
 ## 0. Before starting
 
 - [ ] 0.1 Archive `spend-based-emissions` and `emissions-inflation-adjustment` (with the user's go-ahead)
-- [ ] 0.2 Declare `python-multipart` in web-api's dependencies (the user runs the sync)
+- [x] 0.2 Declare `python-multipart` in web-api's dependencies (the user runs the sync)
 
 ## 1. Jobs and activation (web-api)
 
-- [ ] 1.1 `ReferenceDataImport` model (`db/models/reference_data_import.py`) with the `ReferenceImportKind` and `ReferenceImportStatus` enums. Migration `0019_reference_data_imports`; do not run it
-- [ ] 1.2 `emissions/activation.py`: `activate_factor_set(session, factor_set, actor) -> ActivationResult` (the previous set, `rematch_needed`), with an audit row and a no-op when the set is already active. `import_workbook(--activate)` uses it (tests)
-- [ ] 1.3 `reference_imports/jobs.py`: create a job, refuse one while the same kind is queued or running, and mark running, succeeded (with a result) or failed (with an error) (tests)
-- [ ] 1.4 `reference_imports/runners.py`: `run_workbook_job(job_id, path)` (reads, imports, optionally activates, always deletes the file) and `run_price_index_job(job_id, series)`, each in its own session (tests with a generated workbook and a stubbed download)
-- [ ] 1.5 `reference_imports/uploads.py`: stream an upload to a temp file with a size limit, checking the `.xlsx` name and the zip signature (tests: too large, wrong type)
-- [ ] 1.6 Mark queued or running jobs as interrupted on app startup (test)
-- [ ] 1.7 Config: `UPLOAD_TMP_DIR` and `EMISSION_WORKBOOK_MAX_BYTES`, documented in `.env.example`
+- [x] 1.1 `ReferenceDataImport` model (`db/models/reference_data_import.py`) with the `ReferenceImportKind` and `ReferenceImportStatus` enums. Migration `0019_reference_data_imports`; do not run it
+- [x] 1.2 `emissions/activation.py`: `activate_factor_set(session, factor_set, actor) -> ActivationResult` (the previous set, `rematch_needed`), with an audit row and a no-op when the set is already active. `import_workbook(--activate)` uses it (tests)
+- [x] 1.3 `reference_imports/jobs.py`: create a job, refuse one while the same kind is queued or running, and mark running, succeeded (with a result) or failed (with an error) (tests)
+- [x] 1.4 `reference_imports/runners.py`: `run_workbook_job(job_id, path)` (reads, imports, optionally activates, always deletes the file) and `run_price_index_job(job_id, series)`, each in its own session (tests with a generated workbook and a stubbed download)
+- [x] 1.5 `reference_imports/uploads.py`: stream an upload to a temp file with a size limit, checking the `.xlsx` name and the zip signature (tests: too large, wrong type)
+- [x] 1.6 Mark queued or running jobs as interrupted on app startup (test)
+- [x] 1.7 Config: `UPLOAD_TMP_DIR` and `EMISSION_WORKBOOK_MAX_BYTES`, documented in `.env.example`
 
 ## 2. Admin API (web-api)
 
-- [ ] 2.1 Schemas in `schemas/admin/`: the factor set row, the price index row, coverage, status, job, activation result
-- [ ] 2.2 `admin/emission_status.py`: sets with counts, price indices, and coverage per company in one grouped query (tests for each count, including another classification and the review threshold)
-- [ ] 2.3 `routers/admin_emission_factors.py`: GET status, POST activate, POST price-index refresh, POST workbooks, GET imports, each depending on `require_system_admin`. Register it in `app.py`
-- [ ] 2.4 API tests:
-  - [ ] 2.4.1 403 for an org admin on every route
-  - [ ] 2.4.2 Activate: switches, audits, no-op, 404, `rematch_needed`
-  - [ ] 2.4.3 Refresh: 202, then succeeded, and failed with the download error
-  - [ ] 2.4.4 Upload: 202 and imported and activated; 413; 422; 409 while one is running
-  - [ ] 2.4.5 Imports list: order and limit
+- [x] 2.1 Schemas in `schemas/admin/`: the factor set row, the price index row, coverage, status, job, activation result
+- [x] 2.2 `admin/emission_status.py`: sets with counts, price indices, and coverage per company in one grouped query (tests for each count, including another classification and the review threshold)
+- [x] 2.3 `routers/admin_emission_factors.py`: GET status, POST activate, POST price-index refresh, POST workbooks, GET imports, each depending on `require_system_admin`. Register it in `app.py`
+- [x] 2.4 API tests:
+  - [x] 2.4.1 403 for an org admin on every route
+  - [x] 2.4.2 Activate: switches, audits, no-op, 404, `rematch_needed`
+  - [x] 2.4.3 Refresh: 202, then succeeded, and failed with the download error
+  - [x] 2.4.4 Upload: 202 and imported and activated; 413; 422; 409 while one is running
+  - [x] 2.4.5 Imports list: order and limit
 
 ## 3. Web
 

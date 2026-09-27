@@ -5,6 +5,8 @@ import httpx
 
 from .. import config
 
+FRED_SOURCE = "fred"
+
 
 class SeriesDownloadError(RuntimeError):
     """FRED could not be reached or refused the series."""

@@ -1,6 +1,9 @@
 """FastAPI application factory for the Clerk-authenticated web API."""
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
@@ -10,7 +13,10 @@ import pathlib
 
 import uvicorn
 from web_api import config
+from web_api.db import session as db_session
+from web_api.reference_imports.startup import interrupt_stale_jobs
 from web_api.routers import (
+    admin_emission_factors,
     companies,
     emission_sectors,
     erp_entries,
@@ -30,8 +36,15 @@ from web_api.routers import (
 )
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    interrupt_stale_jobs(db_session.engine)
+    yield
+
+
 def create_app() -> FastAPI:
     app = FastAPI(
+        lifespan=lifespan,
         title="Steelyard Web API",
         version="0.1.0",
         description="Clerk-authenticated API for reviewing raw ERP spend data.",
@@ -59,6 +72,7 @@ def create_app() -> FastAPI:
             title=app.title,
         )
 
+    app.include_router(admin_emission_factors.router)
     app.include_router(companies.router)
     app.include_router(invoices.router)
     app.include_router(invoice_lines.router)

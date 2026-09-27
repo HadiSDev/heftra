@@ -9,14 +9,11 @@ from pathlib import Path
 from sqlmodel import Session
 
 from ..db.session import engine
-from .csv_file import SeriesFileError, parse_series_csv
-from .fred import SeriesDownloadError, download_series_csv
-from .store import replace_series
+from .csv_file import SeriesFileError
+from .fred import FRED_SOURCE, SeriesDownloadError, download_series_csv
+from .refresh import store_series
 
 logger = logging.getLogger("web_api.price_indices.import_series")
-
-FRED_SOURCE = "fred"
-
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Import a monthly price index series.")
@@ -28,20 +25,15 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         text, source = _read(args.series, args.file)
-        values = parse_series_csv(text, args.series)
+        with Session(engine) as session:
+            stored = store_series(session, args.series, text, source)
+            session.commit()
     except (OSError, SeriesDownloadError, SeriesFileError) as error:
         logger.error("Nothing was imported: %s", error)
         return 1
-    if not values:
-        logger.error("Nothing was imported: %s has no values", args.series)
-        return 1
 
-    with Session(engine) as session:
-        replace_series(session, args.series, values, source)
-        session.commit()
-
-    logger.info("%s: %d months, latest %s", args.series, len(values),
-                values[-1].month.strftime("%B %Y"))
+    logger.info("%s: %d months, latest %s", args.series, stored.months,
+                stored.latest_month.strftime("%B %Y"))
     return 0
 
 
