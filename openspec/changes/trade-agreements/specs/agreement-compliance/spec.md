@@ -36,12 +36,11 @@ A line SHALL count as from the agreement's supplier when its invoice's vendor is
   - a line from any other supplier is an **`off_contract`** rule break. Its amount is the line's net spend in base currency, and its reason names the term, its conditions and the supplier used.
 - **Agreed price, for the priced item with a comparable unit.** The price paid per unit, the line's net amount over its quantity (its unit price when it has no quantity), is converted to the agreement's currency at the invoice date.
   - From the supplier: above the agreed price by more than the tolerance is an **`overcharge`** rule break, of (actual − agreed) × quantity in base currency; otherwise it is `compliant`.
-  - From another supplier: a `potential_saving` of (actual − agreed) × quantity when positive.
+  - From another supplier: a `potential_saving` of (actual − agreed) × quantity when positive. It is also `off_contract` when a preferred-supplier term of the same agreement covers the line.
   - An incomparable unit gives `price_unverifiable`.
 - **Discount:**
   - From the supplier: a discount of at least the agreed rate, less the tolerance, shown on the line or as a discount line on the same invoice, is `compliant`. Otherwise it is **`missed_discount`**, of the rate × the line's net spend.
   - From another supplier: a `potential_saving` of the rate × its net spend.
-- **A saving on a rule break:** when a line has an `off_contract` finding, its potential savings from the same agreement SHALL NOT be separate findings. The off-contract finding's reason SHALL say what the agreed price or discount would have saved, and it SHALL carry the agreed and paid prices.
 - **Volume commitment:** in-scope spend with the supplier counts towards the commitment, with no finding per line.
 
 Each finding SHALL record:
@@ -57,11 +56,6 @@ Each finding SHALL record:
 
 - **WHEN** the agreed price for a ThinkPad T14 Gen 5 is DKK 8,000 and Atea invoices 3 at DKK 8,400
 - **THEN** there is an `overcharge` rule break of DKK 1,200, with expected 8,000 and actual 8,400
-
-#### Scenario: A laptop bought elsewhere, above the agreed price
-
-- **WHEN** IT equipment is to be bought from Atea, a ThinkPad T14 is agreed at DKK 8,000, and 2 are bought from Proshop at DKK 9,000
-- **THEN** there is one `off_contract` rule break of DKK 18,000 whose reason says the agreed price would have cost DKK 2,000 less, and no separate potential saving
 
 #### Scenario: A box against a unit
 

@@ -144,12 +144,10 @@ Findings by kind, for in-scope lines:
 | Term | Line from the agreement supplier | Line from another supplier |
 |---|---|---|
 | Preferred supplier | `compliant` (info) | **`off_contract`** (rule break): amount = line base amount |
-| Agreed price, same item, comparable units | unit price converted to the agreement currency at the invoice date (`FxService`); above agreed by more than `AGREEMENT_PRICE_TOLERANCE_PCT` → **`overcharge`** (rule break): amount = (actual − agreed) × quantity, in base currency; otherwise `compliant` | `potential_saving` (info): (actual − agreed) × quantity when positive |
+| Agreed price, same item, comparable units | unit price converted to the agreement currency at the invoice date (`FxService`); above agreed by more than `AGREEMENT_PRICE_TOLERANCE_PCT` → **`overcharge`** (rule break): amount = (actual − agreed) × quantity, in base currency; otherwise `compliant` | `potential_saving` (info): (actual − agreed) × quantity when positive. It is also an **off-contract** rule break when the agreement has a preferred-supplier term covering the line |
 | Agreed price, units not comparable | `price_unverifiable` (warning) | none |
 | Discount | discount found on the line (`discount`, or `amount` below `quantity × unit_price`), or as a discount line on the same invoice, of at least the agreed rate minus tolerance → `compliant`; otherwise **`missed_discount`** (warning): amount = rate × line amount | `potential_saving` (info): rate × line amount |
 | Volume commitment | counted towards progress, with no finding per line | none |
-
-A line bought off contract carries its potential savings in its `off_contract` finding: the reason says what the agreed price or discount would have saved, with the agreed and paid prices, and no separate `potential_saving` is raised for it. A saving stays a finding of its own only where no rule was broken.
 
 Commitment progress is a derived figure, not a finding. It is calculated per term and period:
 - in-scope spend with the supplier;

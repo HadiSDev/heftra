@@ -28,7 +28,6 @@ from .identity import from_supplier, supplier_vat
 from .judge.judge import Ask, Judge
 from .lines import AnalysedLine, invoice_discount_rates, load_lines
 from .rules import TermContext, evaluate
-from .savings import fold_savings
 from .store import delete_undecided_findings, store_findings
 
 logger = logging.getLogger("ai_api.compliance")
@@ -59,7 +58,6 @@ def analyse_company(session: Session, company_id: str, *, ask: Ask, embed_fn: Em
         ).all()
         delete_undecided_findings(session, [agreement.id], [term.id for term in terms])
         drafts, considered = _analyse(session, agreement, terms, judge, fx, embed_fn)
-        drafts = fold_savings(drafts, base_currency)
         store_findings(session, agreement, [term.id for term in terms], drafts, base_currency)
         agreement.analysed_at = datetime.now(timezone.utc)
         session.add(agreement)
