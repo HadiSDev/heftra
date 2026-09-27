@@ -41,12 +41,11 @@ export function AgreementUpload({
   onUpload,
 }: AgreementUploadProps) {
   const [file, setFile] = React.useState<File | null>(null)
-  const [chosenCompany, setChosenCompany] = React.useState(
-    companyId ?? (companies.length === 1 ? companies[0].id : ''),
-  )
+  const [chosenCompany, setChosenCompany] = React.useState('')
   const [progress, setProgress] = React.useState<number | null>(null)
   const [error, setError] = React.useState<string | null>(null)
-  const target = companyId ?? chosenCompany
+  const onlyCompany = companies.length === 1 ? companies[0].id : ''
+  const target = companyId ?? (chosenCompany || onlyCompany)
   const uploading = progress !== null
   const items = companies.map((company) => ({
     value: company.id,

@@ -212,6 +212,30 @@ describe('AgreementsPanel', () => {
     })
   })
 
+  it('uploads for the only company once the companies have loaded', async () => {
+    const onUpload = vi.fn(async () => {})
+    const panel = (companies: Array<{ id: string; name: string }>) => (
+      <AgreementsPanel
+        agreements={[]}
+        error={false}
+        onRetry={vi.fn()}
+        upload={{ companies, onUpload }}
+      />
+    )
+    const { rerender } = render(panel([]))
+    rerender(panel([{ id: 'c1', name: 'Acme' }]))
+    const file = new File(['%PDF'], 'atea.pdf', { type: 'application/pdf' })
+
+    fireEvent.change(screen.getByLabelText('Agreement file'), {
+      target: { files: [file] },
+    })
+    fireEvent.click(screen.getByRole('button', { name: /Upload and read/ }))
+
+    await waitFor(() => {
+      expect(onUpload).toHaveBeenCalledWith('c1', file, expect.any(Function))
+    })
+  })
+
   it('refuses a file that is not a PDF', () => {
     render(
       <AgreementsPanel
