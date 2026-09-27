@@ -6,7 +6,8 @@ from datetime import date
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Iterable, Optional
 
-from sqlmodel import Session, select
+from sqlalchemy.exc import IntegrityError
+from sqlmodel import Session, col, select
 
 from ..db.models import ErpEntry, FxRate, Invoice, InvoiceLine
 from .provider import RateProvider, RateSet, default_provider
@@ -39,12 +40,39 @@ def convert(amount: Decimal | None, rate: Decimal) -> Decimal | None:
 
 
 class FxService:
-    """Resolves historical rates for one unit of work."""
+    """Resolves historical rates for one unit of work.
 
-    def __init__(self, session: Session, provider: RateProvider | None = None) -> None:
+    Rates fetched from the provider are added to `session`, for the caller to commit with its
+    own writes. A service made with `for_reads` commits them itself, in a session of their own,
+    so a read-only request keeps what it fetched instead of fetching it again next time.
+    """
+
+    def __init__(self, session: Session, provider: RateProvider | None = None, *,
+                 commit_fetched: bool = False) -> None:
         self.session = session
         self.provider = provider if provider is not None else default_provider()
+        self._commit_fetched = commit_fetched
         self._memo: dict[date, Optional[tuple[date, dict[str, Decimal]]]] = {}
+
+    @classmethod
+    def for_reads(cls, session: Session, provider: RateProvider | None = None) -> FxService:
+        """A service for a request that writes nothing else, keeping the rates it fetches."""
+        return cls(session, provider, commit_fetched=True)
+
+    def prefetch(self, dates: Iterable[date]) -> None:
+        """Load the stored rates of every date in `dates` in one query."""
+        wanted = {day for day in dates if day not in self._memo}
+        if not wanted:
+            return
+        rows = self.session.exec(
+            select(FxRate).where(col(FxRate.rate_date).in_(wanted))
+        ).all()
+        by_date: dict[date, list[FxRate]] = {}
+        for row in rows:
+            by_date.setdefault(row.rate_date, []).append(row)
+        for day, day_rows in by_date.items():
+            self._memo[day] = (day_rows[0].published_date,
+                               {row.quote_currency: row.rate for row in day_rows})
 
     def get_rate(
         self, from_currency: str | None, to_currency: str | None, on_date: date | None
@@ -93,17 +121,32 @@ class FxService:
             return None
         published, rates = fetched
 
-        self._write_cache(on_date, published, rates)
-        if published != on_date:
-            self._write_cache(published, published, rates)
+        if self._commit_fetched:
+            self._commit_cache(on_date, published, rates)
+        else:
+            self._write_cache(self.session, on_date, published, rates)
+            if published != on_date:
+                self._write_cache(self.session, published, published, rates)
         return published, rates
 
+    def _commit_cache(self, on_date: date, published: date, rates: dict[str, Decimal]) -> None:
+        """Store a fetched rate set in its own transaction; another request storing it first is fine."""
+        with Session(self.session.get_bind()) as cache:
+            self._write_cache(cache, on_date, published, rates)
+            if published != on_date:
+                self._write_cache(cache, published, published, rates)
+            try:
+                cache.commit()
+            except IntegrityError:
+                cache.rollback()
+                logger.info("FX: rates for %s were stored by another request", on_date)
+
     def _write_cache(
-        self, rate_date: date, published: date, rates: dict[str, Decimal]
+        self, session: Session, rate_date: date, published: date, rates: dict[str, Decimal]
     ) -> None:
         existing = {
             r.quote_currency
-            for r in self.session.exec(
+            for r in session.exec(
                 select(FxRate).where(FxRate.rate_date == rate_date)
             ).all()
         }
@@ -111,7 +154,7 @@ class FxService:
         for currency, rate in rates.items():
             if currency in existing:
                 continue
-            self.session.add(
+            session.add(
                 FxRate(
                     quote_currency=currency,
                     rate_date=rate_date,

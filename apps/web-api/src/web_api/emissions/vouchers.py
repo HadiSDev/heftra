@@ -43,6 +43,8 @@ def estimate_vouchers(session: Session, groups: Mapping[Key, list[EntryRow]],
                                              if rows})
 
     sector_ids = {line.sector_id for group in lines.values() for line in group if line.sector_id}
+    dates = {key: spent_on(rows) for key, rows in groups.items() if rows}
+    fx.prefetch(dates.values())
     estimator = Estimator(FactorLookup.load(session, factor_set, sector_ids),
                           _rate_for(fx, factor_set.currency), factor_set.currency,
                           Deflator.for_factor_set(session, factor_set))
@@ -58,7 +60,7 @@ def estimate_vouchers(session: Session, groups: Mapping[Key, list[EntryRow]],
             amount=amount,
             currency=currency,
             unconverted=unconverted > 0,
-            spent_on=spent_on(rows),
+            spent_on=dates[key],
             supplier_country=_supplier_country(origin),
             company_country=countries.get(rows[0].entry.company_id),
             lines=lines.get(invoice_id, []) if invoice_id else [],

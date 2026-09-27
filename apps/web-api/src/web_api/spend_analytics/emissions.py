@@ -42,7 +42,7 @@ def spend_emissions(session: Session, company_ids: list[str], period: Period) ->
     months = trailing_months(period.end)
     window = Period(min(comparison.start, months[0]), period.end)
     groups = vouchers_between(session, company_ids, window.start, window.end)
-    estimates = estimate_vouchers(session, groups, FxService(session))
+    estimates = estimate_vouchers(session, groups, FxService.for_reads(session))
     dated = []
     for key, rows in groups.items():
         amount, _, _, currency, _ = voucher_amount(rows, "base")

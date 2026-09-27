@@ -5,6 +5,7 @@ from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import String, func, literal, nulls_last, or_
+from sqlalchemy.orm import selectinload
 from sqlmodel import Session, select
 
 from web_api.db.models import (
@@ -260,7 +261,7 @@ def list_voucher_groups(
     lines_by_invoice = _invoice_lines_for(session, invoice_ids)
     header_by_invoice = _invoice_header_state(session, invoice_ids)
 
-    emissions = estimate_vouchers(session, buckets, FxService(session))
+    emissions = estimate_vouchers(session, buckets, FxService.for_reads(session))
 
     items = []
     for company, key in order:
@@ -358,7 +359,7 @@ def summarize_voucher_emissions(
     if document is not None:
         conditions.append(document_condition(session, company_ids, document))
     buckets = _voucher_buckets(session, conditions)
-    emissions = estimate_vouchers(session, buckets, FxService(session))
+    emissions = estimate_vouchers(session, buckets, FxService.for_reads(session))
     currencies = _base_currencies(session, company_ids)
     return summarize(factor_set, [
         SummarizedVoucher(
@@ -419,6 +420,7 @@ def _invoice_lines_for(session: Session, invoice_ids: set[str]) -> dict[str, lis
         select(InvoiceLine, Invoice.currency)
         .join(Invoice, Invoice.id == InvoiceLine.invoice_id)
         .where(InvoiceLine.invoice_id.in_(invoice_ids))  # type: ignore[union-attr]
+        .options(selectinload(InvoiceLine.emission_sector))  # type: ignore[arg-type]
         .order_by(InvoiceLine.invoice_id, InvoiceLine.sequence, InvoiceLine.id)
     ).all()
     by_invoice: dict[str, list[InvoiceLineRead]] = {}
@@ -529,6 +531,7 @@ def _voucher_detail(
             lines = session.exec(
                 select(InvoiceLine)
                 .where(InvoiceLine.invoice_id == invoice.id)
+                .options(selectinload(InvoiceLine.emission_sector))  # type: ignore[arg-type]
                 .order_by(InvoiceLine.sequence, InvoiceLine.id)
             ).all()
             file_row = (
@@ -536,7 +539,8 @@ def _voucher_detail(
             )
             detail = _invoice_read(invoice, file_row).model_dump()
             estimate = estimate_vouchers(
-                session, {"voucher": _listed_postings(session, first)}, FxService(session)
+                session, {"voucher": _listed_postings(session, first)},
+                FxService.for_reads(session),
             )
             detail["lines"] = lines_with_emissions(
                 [_line_read(ln, invoice.currency) for ln in lines], estimate.get("voucher")
