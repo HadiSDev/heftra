@@ -48,10 +48,8 @@ export function EmissionFactorsAdmin({
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="font-display text-2xl font-semibold tracking-tight">
-          Emission factors
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <h2 className="font-display text-lg font-medium">Emission factors</h2>
+        <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
           The factor sets and price index every company&apos;s emissions are
           estimated with. Changes here apply to all organizations.
         </p>

@@ -7,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
   Checkbox,
+  FileDropzone,
   Progress,
 } from '#/components/ui'
 
@@ -23,24 +24,12 @@ export interface WorkbookUploadProps {
   ) => Promise<void>
 }
 
-/** Why `file` can't be uploaded, or null when it can. */
-export function workbookProblem(file: File): string | null {
-  if (!file.name.toLowerCase().endsWith('.xlsx')) {
-    return `${file.name} is not an .xlsx workbook.`
-  }
-  if (file.size > MAX_WORKBOOK_BYTES) {
-    return `${file.name} is over 50 MB.`
-  }
-  return null
-}
-
 /** Upload an Open CEDA workbook, optionally activating it once imported. */
 export function WorkbookUpload({ importing, onUpload }: WorkbookUploadProps) {
   const [file, setFile] = React.useState<File | null>(null)
   const [activate, setActivate] = React.useState(true)
   const [progress, setProgress] = React.useState<number | null>(null)
   const [error, setError] = React.useState<string | null>(null)
-  const input = React.useRef<HTMLInputElement>(null)
   const uploading = progress !== null
 
   async function submit(event: React.FormEvent) {
@@ -48,19 +37,11 @@ export function WorkbookUpload({ importing, onUpload }: WorkbookUploadProps) {
     if (!file) {
       return
     }
-    const problem = workbookProblem(file)
-    if (problem) {
-      setError(problem)
-      return
-    }
     setError(null)
     setProgress(0)
     try {
       await onUpload(file, activate, setProgress)
       setFile(null)
-      if (input.current) {
-        input.current.value = ''
-      }
     } catch (uploadError) {
       setError(
         uploadError instanceof Error ? uploadError.message : 'Upload failed',
@@ -89,18 +70,19 @@ export function WorkbookUpload({ importing, onUpload }: WorkbookUploadProps) {
           void submit(event)
         }}
       >
-        <input
-          ref={input}
-          type="file"
-          accept=".xlsx"
-          aria-label="Workbook file"
-          disabled={uploading || importing}
-          className="text-sm file:mr-3 file:rounded-lg file:border file:border-border file:bg-card file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-foreground hover:file:bg-muted"
-          onChange={(event) => {
-            const chosen = event.target.files?.[0] ?? null
+        <FileDropzone
+          value={file}
+          onChange={(chosen) => {
             setFile(chosen)
-            setError(chosen ? workbookProblem(chosen) : null)
+            setError(null)
           }}
+          accept=".xlsx"
+          maxBytes={MAX_WORKBOOK_BYTES}
+          disabled={uploading || importing}
+          label="Workbook file"
+          title="Drop an Open CEDA workbook here"
+          hint=".xlsx, up to 50 MB"
+          error={error}
         />
         <label className="flex items-center gap-2 text-sm">
           <Checkbox
@@ -123,12 +105,8 @@ export function WorkbookUpload({ importing, onUpload }: WorkbookUploadProps) {
             A workbook is being imported. Wait for it to finish.
           </p>
         ) : null}
-        {error ? <p className="text-sm text-destructive">{error}</p> : null}
         <div>
-          <Button
-            type="submit"
-            disabled={!file || uploading || importing || error !== null}
-          >
+          <Button type="submit" disabled={!file || uploading || importing}>
             <Upload />
             {uploading ? 'Uploading…' : 'Upload and import'}
           </Button>

@@ -5,7 +5,7 @@ Emission factors and the price index are global reference data. Today the only w
 - when the index was last refreshed;
 - how much of each company's spend has an emission sector.
 
-A system admin who wants to load next year's workbook, switch releases or refresh CPI needs shell access. This change adds those controls to the app for system admins, in a new admin area at the bottom of the sidebar.
+A system admin who wants to load next year's workbook, switch releases or refresh CPI needs shell access. This change adds those controls to the app for system admins, in a new Settings tab only system admins see.
 
 ## What Changes
 
@@ -16,13 +16,13 @@ A system admin who wants to load next year's workbook, switch releases or refres
   - **Upload an Open CEDA workbook** (`.xlsx`, at most 50 MB). It is imported in the background, optionally activated once done.
   - **Import jobs:** a stored record of each upload or refresh (kind, file, status, counts or error, who asked, when). This lets the page show progress and history. Jobs run in the web API process; any left running by a restart are marked as interrupted.
 - **Web**:
-  - A system-admin **Emission factors** page at `/admin/emission-factors`, with:
+  - A system-admin **Emission factors** tab in Settings, at `/settings/emission-factors`, with:
     - the factor sets, and an activate action with a confirmation;
     - the price index card, with a refresh button;
-    - the upload form, with an "activate when imported" choice;
+    - the upload form, with a drag-and-drop file picker and an "activate when imported" choice;
     - the recent jobs, polled while one is running;
     - the per-company coverage, with a **Match emission sectors** action that requests the existing `match_emissions` run.
-  - A **sidebar footer** at the bottom left, shown only to system admins, with a **System** label and the **Emission factors** entry. Future admin pages go there too.
+  - A reusable **file dropzone** in the UI library: drop or browse, type and size checks, the chosen file's name and size.
 
 ## Capabilities
 
@@ -31,7 +31,8 @@ A system admin who wants to load next year's workbook, switch releases or refres
 - `frontend-emission-factor-admin`: the Emission factors admin page.
 
 ### Modified Capabilities
-- `frontend-auth-dashboard`: the app shell's sidebar gains a footer with system-admin entries, hidden from everyone else.
+- `frontend-settings`: Settings gains an Emission factors tab for system admins only.
+- `frontend-ui-library`: a file dropzone component.
 
 ## Impact
 
@@ -45,10 +46,11 @@ A system admin who wants to load next year's workbook, switch releases or refres
   - Reuses `read_workbook`/`import_workbook`, `parse_series_csv`/`replace_series` and `require_system_admin`.
   - Needs `python-multipart` for uploads. It is already in `uv.lock` through another package, but web-api must declare it, and the user runs the sync.
 - **web**:
-  - a new route `routes/_authed/admin/emission-factors.tsx`;
-  - components under `components/admin/emission-factors/`;
+  - a new route `routes/_authed/settings/emission-factors.tsx`;
+  - components under `components/settings/emission-factors/`;
+  - `components/ui/forms/file-dropzone.tsx`;
   - API types and queries;
-  - `app-shell.tsx` gains the sidebar footer.
+  - `routes/_authed/settings.tsx` adds the tab for system admins.
 - **Out of scope:**
   - deleting factor sets;
   - editing individual factors or sectors;

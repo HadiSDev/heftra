@@ -2,9 +2,9 @@ import * as React from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Card } from '#/components/ui'
-import { ActivateDialog } from '#/components/admin/emission-factors/activate-dialog'
-import type { MatchRequest } from '#/components/admin/emission-factors/coverage-card'
-import { EmissionFactorsAdmin } from '#/components/admin/emission-factors/emission-factors-admin'
+import { ActivateDialog } from '#/components/settings/emission-factors/activate-dialog'
+import type { MatchRequest } from '#/components/settings/emission-factors/coverage-card'
+import { EmissionFactorsAdmin } from '#/components/settings/emission-factors/emission-factors-admin'
 import { usePrincipal, useApi } from '#/lib/auth/auth'
 import { ApiError } from '#/lib/api/api-client'
 import {
@@ -20,7 +20,7 @@ import type { AdminFactorSetRead } from '#/lib/api/admin-emission-factor-types'
 import { requestRunMutation } from '#/lib/api/pipeline-runs'
 import { useImportFinished } from '#/lib/use-import-finished'
 
-export const Route = createFileRoute('/_authed/admin/emission-factors')({
+export const Route = createFileRoute('/_authed/settings/emission-factors')({
   component: EmissionFactorsRoute,
   staticData: { title: 'Emission factors' },
 })

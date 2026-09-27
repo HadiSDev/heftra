@@ -14,7 +14,6 @@ import type {
 import { ActivateDialog } from './activate-dialog'
 import { EmissionFactorsAdmin } from './emission-factors-admin'
 import type { EmissionFactorsAdminProps } from './emission-factors-admin'
-import { workbookProblem } from './workbook-upload'
 
 afterEach(() => {
   cleanup()
@@ -182,7 +181,7 @@ describe('EmissionFactorsAdmin', () => {
     })
 
     expect(
-      screen.getByText('invoice.pdf is not an .xlsx workbook.'),
+      screen.getByText("invoice.pdf isn't an accepted file (.xlsx)."),
     ).toBeTruthy()
     const button = screen.getByRole('button', { name: /Upload and import/ })
     expect((button as HTMLButtonElement).disabled).toBe(true)
@@ -271,11 +270,5 @@ describe('ActivateDialog', () => {
     const text = screen.getByRole('alertdialog').textContent
     expect(text).toContain('CEDA 2025 is active now.')
     expect(text).toContain('every line will need matching')
-  })
-})
-
-describe('workbookProblem', () => {
-  it('accepts an .xlsx within the limit', () => {
-    expect(workbookProblem(new File(['PK'], 'ceda.XLSX'))).toBeNull()
   })
 })

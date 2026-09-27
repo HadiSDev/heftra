@@ -2,10 +2,10 @@
 
 ### Requirement: System admins SHALL have an Emission factors page
 
-The `/admin/emission-factors` route SHALL show system admins:
+The `/settings/emission-factors` Settings section SHALL show system admins:
 - the factor sets;
 - the price indices;
-- an upload form for a workbook;
+- an upload form for a workbook, with a drag-and-drop file picker;
 - the recent import jobs;
 - each company's matching coverage.
 
@@ -18,7 +18,7 @@ For anyone else it SHALL show a "System admins only" notice and SHALL NOT call t
 
 #### Scenario: Someone else follows the link
 
-- **WHEN** an organization admin who is not a system admin opens `/admin/emission-factors`
+- **WHEN** an organization admin who is not a system admin opens `/settings/emission-factors`
 - **THEN** the page says it is for system admins only, and no admin request is made
 
 ### Requirement: The factor sets SHALL be listed with an activate action
@@ -52,7 +52,7 @@ It SHALL say "Not imported, so estimates are not adjusted for inflation" when th
 
 ### Requirement: A workbook SHALL be uploadable with a choice to activate it
 
-The upload form SHALL take one `.xlsx` file and an **Activate when imported** checkbox, and SHALL show the upload's progress.
+The upload form SHALL take one `.xlsx` file, dropped or browsed for with the UI library's file dropzone, and an **Activate when imported** checkbox. It SHALL show the upload's progress.
 
 It SHALL refuse a file that isn't `.xlsx`, or that is over the limit, before uploading, and it SHALL show the server's refusal when there is one. It SHALL be disabled while a workbook job is queued or running.
 

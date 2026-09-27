@@ -31,6 +31,12 @@ export {
   useFormField,
 } from './forms/form'
 export { Checkbox } from './forms/checkbox'
+export {
+  FileDropzone,
+  fileRejection,
+  formatFileSize,
+  type FileDropzoneProps,
+} from './forms/file-dropzone'
 export { RadioGroup, RadioItem } from './forms/radio'
 export { Switch } from './forms/switch'
 export {

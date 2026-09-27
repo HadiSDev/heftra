@@ -22,8 +22,8 @@ import { Route as AuthedSuppliersVendorIdRouteImport } from './routes/_authed/su
 import { Route as AuthedSettingsSpendTreesRouteImport } from './routes/_authed/settings/spend-trees'
 import { Route as AuthedSettingsProfileRouteImport } from './routes/_authed/settings/profile'
 import { Route as AuthedSettingsOrganizationRouteImport } from './routes/_authed/settings/organization'
+import { Route as AuthedSettingsEmissionFactorsRouteImport } from './routes/_authed/settings/emission-factors'
 import { Route as AuthedSettingsCompaniesRouteImport } from './routes/_authed/settings/companies'
-import { Route as AuthedAdminEmissionFactorsRouteImport } from './routes/_authed/admin/emission-factors'
 import { Route as AuthedSettingsCompaniesIndexRouteImport } from './routes/_authed/settings/companies.index'
 import { Route as AuthedSettingsCompaniesCompanyIdAccountsRouteImport } from './routes/_authed/settings/companies.$companyId.accounts'
 
@@ -93,17 +93,17 @@ const AuthedSettingsOrganizationRoute =
     path: '/organization',
     getParentRoute: () => AuthedSettingsRoute,
   } as any)
+const AuthedSettingsEmissionFactorsRoute =
+  AuthedSettingsEmissionFactorsRouteImport.update({
+    id: '/emission-factors',
+    path: '/emission-factors',
+    getParentRoute: () => AuthedSettingsRoute,
+  } as any)
 const AuthedSettingsCompaniesRoute = AuthedSettingsCompaniesRouteImport.update({
   id: '/companies',
   path: '/companies',
   getParentRoute: () => AuthedSettingsRoute,
 } as any)
-const AuthedAdminEmissionFactorsRoute =
-  AuthedAdminEmissionFactorsRouteImport.update({
-    id: '/admin/emission-factors',
-    path: '/admin/emission-factors',
-    getParentRoute: () => AuthedRoute,
-  } as any)
 const AuthedSettingsCompaniesIndexRoute =
   AuthedSettingsCompaniesIndexRouteImport.update({
     id: '/',
@@ -124,8 +124,8 @@ export interface FileRoutesByFullPath {
   '/ui': typeof UiRoute
   '/invoice-lines': typeof AuthedInvoiceLinesRoute
   '/settings': typeof AuthedSettingsRouteWithChildren
-  '/admin/emission-factors': typeof AuthedAdminEmissionFactorsRoute
   '/settings/companies': typeof AuthedSettingsCompaniesRouteWithChildren
+  '/settings/emission-factors': typeof AuthedSettingsEmissionFactorsRoute
   '/settings/organization': typeof AuthedSettingsOrganizationRoute
   '/settings/profile': typeof AuthedSettingsProfileRoute
   '/settings/spend-trees': typeof AuthedSettingsSpendTreesRoute
@@ -141,7 +141,7 @@ export interface FileRoutesByTo {
   '/ui': typeof UiRoute
   '/invoice-lines': typeof AuthedInvoiceLinesRoute
   '/': typeof AuthedIndexRoute
-  '/admin/emission-factors': typeof AuthedAdminEmissionFactorsRoute
+  '/settings/emission-factors': typeof AuthedSettingsEmissionFactorsRoute
   '/settings/organization': typeof AuthedSettingsOrganizationRoute
   '/settings/profile': typeof AuthedSettingsProfileRoute
   '/settings/spend-trees': typeof AuthedSettingsSpendTreesRoute
@@ -160,8 +160,8 @@ export interface FileRoutesById {
   '/_authed/invoice-lines': typeof AuthedInvoiceLinesRoute
   '/_authed/settings': typeof AuthedSettingsRouteWithChildren
   '/_authed/': typeof AuthedIndexRoute
-  '/_authed/admin/emission-factors': typeof AuthedAdminEmissionFactorsRoute
   '/_authed/settings/companies': typeof AuthedSettingsCompaniesRouteWithChildren
+  '/_authed/settings/emission-factors': typeof AuthedSettingsEmissionFactorsRoute
   '/_authed/settings/organization': typeof AuthedSettingsOrganizationRoute
   '/_authed/settings/profile': typeof AuthedSettingsProfileRoute
   '/_authed/settings/spend-trees': typeof AuthedSettingsSpendTreesRoute
@@ -180,8 +180,8 @@ export interface FileRouteTypes {
     | '/ui'
     | '/invoice-lines'
     | '/settings'
-    | '/admin/emission-factors'
     | '/settings/companies'
+    | '/settings/emission-factors'
     | '/settings/organization'
     | '/settings/profile'
     | '/settings/spend-trees'
@@ -197,7 +197,7 @@ export interface FileRouteTypes {
     | '/ui'
     | '/invoice-lines'
     | '/'
-    | '/admin/emission-factors'
+    | '/settings/emission-factors'
     | '/settings/organization'
     | '/settings/profile'
     | '/settings/spend-trees'
@@ -215,8 +215,8 @@ export interface FileRouteTypes {
     | '/_authed/invoice-lines'
     | '/_authed/settings'
     | '/_authed/'
-    | '/_authed/admin/emission-factors'
     | '/_authed/settings/companies'
+    | '/_authed/settings/emission-factors'
     | '/_authed/settings/organization'
     | '/_authed/settings/profile'
     | '/_authed/settings/spend-trees'
@@ -327,19 +327,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedSettingsOrganizationRouteImport
       parentRoute: typeof AuthedSettingsRoute
     }
+    '/_authed/settings/emission-factors': {
+      id: '/_authed/settings/emission-factors'
+      path: '/emission-factors'
+      fullPath: '/settings/emission-factors'
+      preLoaderRoute: typeof AuthedSettingsEmissionFactorsRouteImport
+      parentRoute: typeof AuthedSettingsRoute
+    }
     '/_authed/settings/companies': {
       id: '/_authed/settings/companies'
       path: '/companies'
       fullPath: '/settings/companies'
       preLoaderRoute: typeof AuthedSettingsCompaniesRouteImport
       parentRoute: typeof AuthedSettingsRoute
-    }
-    '/_authed/admin/emission-factors': {
-      id: '/_authed/admin/emission-factors'
-      path: '/admin/emission-factors'
-      fullPath: '/admin/emission-factors'
-      preLoaderRoute: typeof AuthedAdminEmissionFactorsRouteImport
-      parentRoute: typeof AuthedRoute
     }
     '/_authed/settings/companies/': {
       id: '/_authed/settings/companies/'
@@ -377,6 +377,7 @@ const AuthedSettingsCompaniesRouteWithChildren =
 
 interface AuthedSettingsRouteChildren {
   AuthedSettingsCompaniesRoute: typeof AuthedSettingsCompaniesRouteWithChildren
+  AuthedSettingsEmissionFactorsRoute: typeof AuthedSettingsEmissionFactorsRoute
   AuthedSettingsOrganizationRoute: typeof AuthedSettingsOrganizationRoute
   AuthedSettingsProfileRoute: typeof AuthedSettingsProfileRoute
   AuthedSettingsSpendTreesRoute: typeof AuthedSettingsSpendTreesRoute
@@ -385,6 +386,7 @@ interface AuthedSettingsRouteChildren {
 
 const AuthedSettingsRouteChildren: AuthedSettingsRouteChildren = {
   AuthedSettingsCompaniesRoute: AuthedSettingsCompaniesRouteWithChildren,
+  AuthedSettingsEmissionFactorsRoute: AuthedSettingsEmissionFactorsRoute,
   AuthedSettingsOrganizationRoute: AuthedSettingsOrganizationRoute,
   AuthedSettingsProfileRoute: AuthedSettingsProfileRoute,
   AuthedSettingsSpendTreesRoute: AuthedSettingsSpendTreesRoute,
@@ -399,7 +401,6 @@ interface AuthedRouteChildren {
   AuthedInvoiceLinesRoute: typeof AuthedInvoiceLinesRoute
   AuthedSettingsRoute: typeof AuthedSettingsRouteWithChildren
   AuthedIndexRoute: typeof AuthedIndexRoute
-  AuthedAdminEmissionFactorsRoute: typeof AuthedAdminEmissionFactorsRoute
   AuthedSuppliersVendorIdRoute: typeof AuthedSuppliersVendorIdRoute
   AuthedSuppliersIndexRoute: typeof AuthedSuppliersIndexRoute
 }
@@ -408,7 +409,6 @@ const AuthedRouteChildren: AuthedRouteChildren = {
   AuthedInvoiceLinesRoute: AuthedInvoiceLinesRoute,
   AuthedSettingsRoute: AuthedSettingsRouteWithChildren,
   AuthedIndexRoute: AuthedIndexRoute,
-  AuthedAdminEmissionFactorsRoute: AuthedAdminEmissionFactorsRoute,
   AuthedSuppliersVendorIdRoute: AuthedSuppliersVendorIdRoute,
   AuthedSuppliersIndexRoute: AuthedSuppliersIndexRoute,
 }

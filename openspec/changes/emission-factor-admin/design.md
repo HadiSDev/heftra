@@ -6,7 +6,7 @@
 - **The price index** is imported by `web_api.price_indices.import_series`:
   - `download_series_csv`, then `parse_series_csv`, then `replace_series`.
 - **System admins** are gated by `auth.deps.require_system_admin`, and `principal.isSystemAdmin` on the web.
-- **The sidebar** (`components/app-shell.tsx`, `AppSidebar`) renders `NAV_ITEMS` in `SidebarContent`. `SidebarFooter` exists in the UI library but isn't used yet.
+- **Settings** (`routes/_authed/settings.tsx`) renders a fixed list of tabs; system-admin-only controls elsewhere, such as the company Run menu, check `principal.isSystemAdmin`.
 - **Pipeline runs** are per company (`company_id` NOT NULL) and executed by the ai-api worker. Factor imports are global and web-api code, so they don't fit there.
 - **Upload handling:** the web API has no file upload yet.
 
@@ -15,7 +15,7 @@
 **Goals:**
 - A system admin can see the reference data's state, switch the active set, refresh CPI and load a new workbook without a shell.
 - Long imports don't block a request, and their outcome is visible afterwards.
-- One admin area in the sidebar that later admin pages can join.
+- Keep system-admin controls in Settings, next to the other management pages, rather than in the main navigation.
 
 **Non-Goals:**
 - Deleting or editing factor sets, sectors or factors.
@@ -82,10 +82,10 @@ All routes are under `/api/v1/admin/emission-factors`, and every one depends on 
 - `price_indices` lists one entry per series mapped from an imported set's currency: series, label, months, latest month, and the base-year average for the active set.
 - A series with no values is listed with `months: 0`.
 
-### Web page and sidebar
+### Web page and Settings tab
 
-- The route `routes/_authed/admin/emission-factors.tsx` has `staticData.title = 'Emission factors'`. For a non-system-admin, it renders a "System admins only" notice instead of calling the API.
-- Components live in `components/admin/emission-factors/`, one file each:
+- The route `routes/_authed/settings/emission-factors.tsx` has `staticData.title = 'Emission factors'`. Settings appends its tab to the others only for system admins. For a non-system-admin, it renders a "System admins only" notice instead of calling the API.
+- Components live in `components/settings/emission-factors/`, one file each:
   - `factor-sets-table`
   - `activate-dialog`
   - `price-index-card`
@@ -93,7 +93,7 @@ All routes are under `/api/v1/admin/emission-factors`, and every one depends on 
   - `import-jobs`
   - `coverage-table`
 - The jobs query refetches every 2 s while any job is `queued` or `running`. When a job finishes, the page invalidates the status query, and the emissions queries on other pages too, since an activation or a new index changes every figure.
-- The sidebar footer is rendered only when `principal.isSystemAdmin`. It shows a small "System" caption and an `ADMIN_NAV_ITEMS` list (first entry: Emission factors, `Leaf` icon), styled like the main nav, with the same active matching.
+- The upload uses a new `FileDropzone` in the UI library (`components/ui/forms/file-dropzone.tsx`): a dashed drop area that highlights on drag-over, a browse button, `accept` and `maxBytes` checks with a stated reason, and the chosen file's name and size with a remove button. It is controlled (`value`, `onChange`) so any form can use it.
 
 ## Risks / Trade-offs
 
@@ -107,9 +107,9 @@ All routes are under `/api/v1/admin/emission-factors`, and every one depends on 
 
 1. Archive `spend-based-emissions` and `emissions-inflation-adjustment`.
 2. The user syncs dependencies (`python-multipart` declared) and runs migration `0019`.
-3. Deploy. The sidebar footer appears for system admins.
+3. Deploy. The Emission factors tab appears in Settings for system admins.
 
-To roll back, hide the footer; the tables and endpoints are additive.
+To roll back, hide the tab; the tables and endpoints are additive.
 
 ## Open Questions
 

@@ -30,9 +30,9 @@
 - [x] 3.1 Types and queries in `lib/api/admin-emission-factors.ts`:
   - [x] 3.1.1 The status query, and the jobs query (refetching every 2 s while a job is active)
   - [x] 3.1.2 Mutations for activate, refresh and upload (upload with progress via XHR), each invalidating the status and the emissions queries
-- [x] 3.2 `AppSidebar` gets a `SidebarFooter` for system admins with a "System" caption and `ADMIN_NAV_ITEMS` (Emission factors, `Leaf`) (tests: shown to system admins, hidden from others, active marking)
-- [x] 3.3 Route `routes/_authed/admin/emission-factors.tsx`, titled "Emission factors", with the non-system-admin notice (test)
-- [x] 3.4 Components in `components/admin/emission-factors/`:
+- [x] 3.2 Settings gets an Emission factors tab, last, for system admins only (tests: shown to system admins, hidden from others)
+- [x] 3.3 Route `routes/_authed/settings/emission-factors.tsx`, titled "Emission factors", with the non-system-admin notice (test)
+- [x] 3.4 Components in `components/settings/emission-factors/`:
   - [x] 3.4.1 `factor-sets-table`
   - [x] 3.4.2 `activate-dialog`
   - [x] 3.4.3 `price-index-card`
@@ -41,10 +41,11 @@
   - [x] 3.4.6 `coverage-table` with the Match emission sectors action
   - [x] 3.4.7 Loading, error and empty states
   - [x] 3.4.8 Tests
+- [x] 3.4.9 A reusable `FileDropzone` in the UI library (drop or browse, type and size checks, name and size, remove), used by the workbook upload (tests)
 - [x] 3.5 Run vitest, tsc, eslint and prettier on the changed files
 
 ## 4. Verification
 
 - [x] 4.1 Run the web-api suite in full
-- [ ] 4.2 With the user's go-ahead, after the migration: as an impersonated system admin, refresh CPI, and activate and re-activate CEDA 2025. Check that the sidebar footer shows only for system admins
+- [ ] 4.2 With the user's go-ahead, after the migration: as an impersonated system admin, refresh CPI, and activate and re-activate CEDA 2025. Check that the Settings tab shows only for system admins, and drop a workbook onto the dropzone
 - [ ] 4.3 Upload the real Open CEDA 2025 workbook as a re-import, and check that the job's counts match the CLI's
