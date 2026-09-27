@@ -95,6 +95,25 @@ def test_the_same_item_dearer_elsewhere_is_a_potential_saving(session, books):
     assert (saving.severity, saving.amount) == ("info", Decimal("2000.00"))
 
 
+def test_an_off_contract_purchase_tells_what_the_agreement_would_have_saved(session, books):
+    agreement = books.agreement()
+    books.term(agreement, AgreementTermKind.PREFERRED_SUPPLIER, "IT equipment such as laptops")
+    books.term(agreement, AgreementTermKind.AGREED_PRICE, "Laptops",
+               item="ThinkPad T14", unit="unit", unit_price=Decimal("8000"))
+    line = books.line(books.proshop, "ThinkPad T14 laptop", quantity="2", unit_price="9000")
+
+    summary = _analyse(session, books, Judge(("laptop",), item="ThinkPad T14"))
+
+    found = _findings(session)
+    off = found[("off_contract", line.id)]
+    assert off.amount == Decimal("18000.00")
+    assert "9,000.00 against the agreed 8,000.00" in off.reason
+    assert "would have cost 2,000.00 DKK less" in off.reason
+    assert (off.expected, off.actual) == (Decimal("8000"), Decimal("9000"))
+    assert ("potential_saving", line.id) not in found
+    assert summary["findings"] == {"off_contract": 1}
+
+
 def test_prices_are_compared_as_paid_per_unit(session, books):
     agreement = books.agreement()
     books.term(agreement, AgreementTermKind.AGREED_PRICE, "Laptops",
