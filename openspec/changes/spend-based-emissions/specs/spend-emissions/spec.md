@@ -123,3 +123,45 @@ It SHALL be scoped to the caller's companies exactly as the voucher list is. It 
 
 - **WHEN** a reviewer sends a sector id from a classification that is not active
 - **THEN** the API responds `422` and the line is unchanged
+
+### Requirement: Each estimated line SHALL carry the calculation behind its emissions
+
+Every estimated line in the voucher list and in a voucher's detail SHALL carry `emission_calculation`:
+- `spend`: its share of the voucher's net spend, and `currency`, the base currency;
+- `rate`, `rate_date` and `converted`: the exchange rate to the factor set's currency, the voucher date it was taken for, and the share converted;
+- `factor`, `factor_unit` and `factor_area`: the kg CO₂e per unit of the factor set's currency, what that unit is, and the country or region the factor is for;
+- `sector`: the sector the factor belongs to;
+- `kg_co2e`: the result, `converted` × `factor`.
+
+The figures SHALL multiply out to `kg_co2e` to within rounding. A line that was not estimated SHALL carry no calculation.
+
+#### Scenario: The calculation multiplies out
+
+- **WHEN** a line's share is DKK 1,000.00, the rate to USD is 0.145 and the factor is 0.5 kg per USD
+- **THEN** its calculation shows spend 1,000.00 DKK, rate 0.145, converted 145.00 USD, factor 0.5, and 72.500 kg CO₂e
+
+#### Scenario: The voucher detail carries it too
+
+- **WHEN** a voucher with an estimated line is opened
+- **THEN** that line in the detail carries the same calculation as in the list
+
+### Requirement: The dashboard's emissions SHALL be reported for a period
+
+`GET /api/v1/reports/spend-emissions?from=&to=&company_id=` SHALL take the same scope as the other spend reports. It SHALL return:
+- `factor_set`: the active set's details, or empty when none is active;
+- `kg_co2e` for the period, and `comparison_kg_co2e` for its comparison period;
+- the twelve months ending with the period, each with its kg;
+- per base currency, the posted and estimated spend in the period;
+- the five sectors with the most emissions in the period, each with its kg.
+
+A voucher SHALL fall in the month and period of its date, as in the other spend reports.
+
+#### Scenario: A period's emissions and their change
+
+- **WHEN** a company's vouchers are estimated at 30 kg in September and 20 kg in August, and September is asked for
+- **THEN** the report gives 30 kg for the period, 20 kg for the comparison, and both months in its twelve
+
+#### Scenario: No factor set
+
+- **WHEN** no factor set is active
+- **THEN** the report has an empty `factor_set` and no figures

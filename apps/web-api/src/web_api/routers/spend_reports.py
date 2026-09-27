@@ -7,7 +7,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlmodel import Session
 
 from ..auth.deps import TenantScope, get_session, resolve_company_ids, tenant_scope
-from ..schemas import SpendBreakdown, SpendInsights, SpendOverview, SpendTrend
+from ..schemas import SpendBreakdown, SpendEmissions, SpendInsights, SpendOverview, SpendTrend
+from ..spend_analytics.emissions import spend_emissions
 from ..spend_analytics.breakdown import DEFAULT_SUPPLIERS, MAX_SUPPLIERS, spend_breakdown
 from ..spend_analytics.insights import spend_insights
 from ..spend_analytics.overview import spend_overview
@@ -68,3 +69,11 @@ def get_spend_insights(
 ) -> SpendInsights:
     """New suppliers, the biggest rises, recurring spend and the largest uncategorized vouchers."""
     return spend_insights(session, report.company_ids, report.period)
+
+
+@router.get("/spend-emissions", response_model=SpendEmissions)
+def get_spend_emissions(
+    report: ReportScope = Depends(), session: Session = Depends(get_session)
+) -> SpendEmissions:
+    """The period's estimated emissions against its comparison, twelve months, the top sectors."""
+    return spend_emissions(session, report.company_ids, report.period)

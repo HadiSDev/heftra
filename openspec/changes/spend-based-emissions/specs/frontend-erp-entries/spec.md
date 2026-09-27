@@ -78,3 +78,19 @@ The picker SHALL offer to clear the sector. It SHALL be disabled, with an explan
 
 - **WHEN** no factor set is active and a reviewer opens a line
 - **THEN** the sector picker is disabled and says no emission factors are imported
+
+### Requirement: A line's emissions SHALL show how they were reached
+
+A line's CO₂e in the voucher table SHALL reveal on hover and focus the calculation behind it: its spend, the conversion to the factor's currency, the factor and the country or region it is for, and the result.
+
+The line editor in the voucher panel SHALL show an emissions section with:
+- the sector, and whether AI matched it or a person chose it;
+- for an AI match, its confidence and its reasoning;
+- the calculation, step by step: the line's share of the voucher's spend, the rate and converted amount, the factor with its sector and area, and the kg CO₂e.
+
+For a line with no estimate it SHALL say why.
+
+#### Scenario: A reviewer sees how a line's emissions were reached
+
+- **WHEN** a reviewer opens a line estimated at 72.5 kg CO₂e
+- **THEN** the panel shows DKK 1,000.00 × 0.145 = USD 145.00, × 0.5 kg CO₂e per USD (factor for DE) = 72.5 kg CO₂e, and the AI's reasoning for the sector

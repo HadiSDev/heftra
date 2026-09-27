@@ -19,7 +19,7 @@ from web_api.db.models import (
 from .. import config, spend_coverage
 from ..auth.deps import TenantScope, get_session, resolve_company_ids, tenant_scope
 from ..emissions.factors import active_factor_set
-from ..emissions.reads import with_emissions
+from ..emissions.reads import lines_with_emissions, with_emissions
 from ..emissions.summary import SummarizedVoucher, summarize
 from ..emissions.vouchers import estimate_vouchers
 from ..fx.service import FxService
@@ -533,7 +533,12 @@ def _voucher_detail(
                 session.get(File, invoice.file_id) if invoice.file_id is not None else None
             )
             detail = _invoice_read(invoice, file_row).model_dump()
-            detail["lines"] = [_line_read(ln, invoice.currency) for ln in lines]
+            estimate = estimate_vouchers(
+                session, {"voucher": _listed_postings(session, first)}, FxService(session)
+            )
+            detail["lines"] = lines_with_emissions(
+                [_line_read(ln, invoice.currency) for ln in lines], estimate.get("voucher")
+            )
             verdict = reconcile_lines(lines, invoice)
             detail["lines_reconciled"] = verdict.ok
             detail["reconciliation_delta"] = verdict.delta
@@ -555,6 +560,18 @@ def _voucher_detail(
         entries=reads,
         invoice=invoice_payload,
         document=document,
+    )
+
+
+def _listed_postings(session: Session, first: ErpEntry) -> list[EntryRow]:
+    """The voucher's postings as the voucher list counts them: synced accounts, no payments."""
+    same_voucher = (
+        ErpEntry.voucher_id == first.voucher_id if first.voucher_id is not None
+        else ErpEntry.id == first.id
+    )
+    return entry_rows(
+        session,
+        entry_select().where(*visible_entry_conditions([first.company_id]), same_voucher),
     )
 
 

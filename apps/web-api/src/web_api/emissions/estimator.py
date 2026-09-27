@@ -20,9 +20,10 @@ RateFor = Callable[[str, date], Decimal | None]
 class Estimator:
     """Estimates vouchers with one factor set's factors, converting spend with `rate_for`."""
 
-    def __init__(self, lookup: FactorLookup, rate_for: RateFor) -> None:
+    def __init__(self, lookup: FactorLookup, rate_for: RateFor, factor_currency: str) -> None:
         self._lookup = lookup
         self._rate_for = rate_for
+        self._factor_currency = factor_currency
 
     @staticmethod
     def without_factors() -> VoucherEmissions:
@@ -54,7 +55,11 @@ class Estimator:
                                        voucher.company_country) if sector_id else None
             if factor is not None:
                 kg = (share * rate * factor.kg_co2e_per_unit).quantize(KG_PLACES)
-                lines[line_id] = LineEmissions(kg, factor.area)
+                lines[line_id] = LineEmissions(
+                    kg_co2e=kg, area=factor.area, sector_id=sector_id, spend=share,
+                    currency=voucher.currency, rate=rate, rate_date=voucher.spent_on,
+                    factor=factor.kg_co2e_per_unit, factor_currency=self._factor_currency,
+                )
 
         if not lines:
             return _nothing(EmissionsStatus.NO_FACTOR)

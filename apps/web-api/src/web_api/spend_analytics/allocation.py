@@ -11,13 +11,12 @@ from typing import NamedTuple
 
 from sqlmodel import Session, select
 
-from web_api.db.models import Company, ErpEntry, InvoiceLine
+from web_api.db.models import Company, InvoiceLine
 from web_api.db.models.enums import LineStatus
 from web_api.vouchers import shares
 from web_api.vouchers.dates import spent_on as voucher_date
-from web_api.vouchers.amounts import ZERO, bucket_key, group_invoice_id, shared_value, voucher_amount
-from web_api.vouchers.query import entry_rows, entry_select, visible_entry_conditions
-from web_api.vouchers.rows import EntryRow
+from web_api.vouchers.groups import vouchers_between
+from web_api.vouchers.amounts import ZERO, group_invoice_id, shared_value, voucher_amount
 
 from .periods import Period
 
@@ -69,17 +68,7 @@ def allocate(session: Session, company_ids: list[str], window: Period) -> Alloca
     if not company_ids:
         return Allocation([], [])
 
-    rows = entry_rows(
-        session,
-        entry_select().where(
-            *visible_entry_conditions(company_ids),
-            ErpEntry.accounting_date >= window.start,
-            ErpEntry.accounting_date <= window.end,
-        ),
-    )
-    vouchers: dict[tuple[str, str], list[EntryRow]] = {}
-    for row in rows:
-        vouchers.setdefault(bucket_key(row.entry), []).append(row)
+    vouchers = vouchers_between(session, company_ids, window.start, window.end)
 
     currencies = _base_currencies(session, company_ids)
     invoice_ids = {

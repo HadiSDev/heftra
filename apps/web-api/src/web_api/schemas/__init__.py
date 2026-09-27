@@ -30,6 +30,7 @@ from .invoices.invoice import DocumentRead, InvoiceDetailRead, InvoiceRead
 from .invoices.invoice_edits import InvoiceUpdate, InvoiceVerify
 from .invoices.line_edits import InvoiceLineCreate, InvoiceLinePatch, InvoiceLineUpdate
 from .invoices.lines import InvoiceLineRead, InvoiceLineVerify
+from .reports.emissions import MonthEmissions, SectorEmissions, SpendEmissions
 from .reports.entries import EntryAccountRow, EntrySummaryRow
 from .reports.spend import CategorySpendRow, VendorSpendRow
 from .reports.breakdown import CategorySpendRead, SpendBreakdown, SpendBreakdownRow, SupplierSpendRead
@@ -55,6 +56,9 @@ from .vendor_detail import VendorCategorySpendRead, VendorDetailRead, VendorInvo
 from .vendor_overview import VendorOverviewRead, VendorSpendRead
 
 __all__ = [
+    "MonthEmissions",
+    "SectorEmissions",
+    "SpendEmissions",
     "AttentionCounts",
     "AuditLogRead",
     "CategorySpendRead",

@@ -34,6 +34,7 @@ Commercial emission-factor APIs such as Climatiq charge per call and keep the fa
 ### Modified Capabilities
 - `pipeline-runs`: a new run kind, `match_emissions`, that the worker executes.
 - `frontend-settings`: the company Run menu offers **Match emission sectors**.
+- `frontend-dashboard`: the dashboard shows the period's estimated emissions.
 - `frontend-erp-entries`: Spend Lines shows the emissions card, the voucher and line CO₂e, the line's sector, and a sector picker.
 
 ## Impact

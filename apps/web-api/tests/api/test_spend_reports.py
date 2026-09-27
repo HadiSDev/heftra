@@ -76,3 +76,11 @@ def test_a_caller_without_companies_gets_no_rows(client, books):
     body = _get(client, "spend-overview", token="tok_empty").json()
 
     assert body["rows"] == []
+
+
+def test_the_emissions_report_takes_the_same_scope(client, seed):
+    res = client.get("/api/v1/reports/spend-emissions",
+                     params={"from": "2026-09-01", "to": "2026-09-30"}, headers=auth("tokA"))
+
+    assert res.status_code == 200, res.text
+    assert res.json()["period"] == {"start": "2026-09-01", "end": "2026-09-30"}

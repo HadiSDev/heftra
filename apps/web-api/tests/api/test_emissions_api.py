@@ -217,3 +217,42 @@ def test_an_emissions_matching_run_can_be_requested(client, books):
 
     assert res.status_code == 201, res.text
     assert res.json()["kind"] == "match_emissions"
+
+
+def test_an_estimated_line_carries_the_calculation_that_multiplies_out(client, engine, books,
+                                                                       hosting):
+    _set_line(engine, books["line_a1"], emission_sector_id=hosting,
+              emission_sector_source=EmissionSectorSource.AI)
+
+    line = next(line for line in _voucher(client, "4821")["lines"]
+                if line["id"] == books["line_a1"])
+
+    calculation = line["emission_calculation"]
+    assert (Decimal(calculation["spend"]), calculation["currency"]) == (Decimal("80.00"), "DKK")
+    assert Decimal(calculation["rate"]) == Decimal("0.145")
+    assert calculation["rate_date"] == "2025-07-01"
+    assert Decimal(calculation["converted"]) == Decimal("11.60")
+    assert (Decimal(calculation["factor"]), calculation["factor_currency"]) == (Decimal("0.5"),
+                                                                                "USD")
+    assert calculation["factor_area"] == "DK"
+    assert calculation["sector"]["code"] == "518200"
+    assert Decimal(calculation["kg_co2e"]) == Decimal("5.800")
+
+
+def test_a_line_without_an_estimate_carries_no_calculation(client, engine, books, hosting):
+    line = next(line for line in _voucher(client, "4821")["lines"]
+                if line["id"] == books["line_a2"])
+
+    assert line["emission_calculation"] is None
+
+
+def test_the_voucher_detail_carries_the_calculation_too(client, engine, books, hosting):
+    _set_line(engine, books["line_a1"], emission_sector_id=hosting,
+              emission_sector_source=EmissionSectorSource.AI)
+
+    res = client.get("/api/v1/erp-entries/vouchers/4821", headers=auth("tokA"))
+
+    assert res.status_code == 200, res.text
+    line = next(line for line in res.json()["invoice"]["lines"]
+                if line["id"] == books["line_a1"])
+    assert Decimal(line["emission_calculation"]["kg_co2e"]) == Decimal("5.800")

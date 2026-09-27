@@ -7,6 +7,7 @@ from decimal import Decimal
 from pydantic import BaseModel, ConfigDict, model_validator
 
 from ... import config
+from ..emissions.calculation import EmissionCalculationRead
 from ..emissions.sectors import EmissionSectorRead
 
 
@@ -51,6 +52,7 @@ class InvoiceLineRead(BaseModel):
     emission_needs_review: bool = False
     kg_co2e: Decimal | None = None
     emission_area: str | None = None
+    emission_calculation: EmissionCalculationRead | None = None
 
     @model_validator(mode="after")
     def _derive_category_stale(self) -> "InvoiceLineRead":

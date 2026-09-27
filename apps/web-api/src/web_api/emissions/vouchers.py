@@ -43,7 +43,7 @@ def estimate_vouchers(session: Session, groups: Mapping[Key, list[EntryRow]],
 
     sector_ids = {line.sector_id for group in lines.values() for line in group if line.sector_id}
     estimator = Estimator(FactorLookup.load(session, factor_set, sector_ids),
-                          _rate_for(fx, factor_set.currency))
+                          _rate_for(fx, factor_set.currency), factor_set.currency)
 
     results: dict[Key, VoucherEmissions] = {}
     for key, rows in groups.items():
