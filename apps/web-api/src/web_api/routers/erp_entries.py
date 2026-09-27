@@ -18,6 +18,7 @@ from web_api.db.models import (
 )
 from .. import config, spend_coverage
 from ..auth.deps import TenantScope, get_session, resolve_company_ids, tenant_scope
+from ..emissions.factor_set_read import factor_set_read
 from ..emissions.factors import active_factor_set
 from ..emissions.reads import lines_with_emissions, with_emissions
 from ..emissions.summary import SummarizedVoucher, summarize
@@ -339,7 +340,8 @@ def summarize_voucher_emissions(
 ) -> EmissionsSummaryRead:
     """Estimated emissions over every voucher the same filters list."""
     company_ids = resolve_company_ids(scope, company_id)
-    factor_set = active_factor_set(session)
+    active = active_factor_set(session)
+    factor_set = factor_set_read(session, active) if active is not None else None
     if not company_ids:
         return summarize(factor_set, [])
 

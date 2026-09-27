@@ -5,6 +5,7 @@ from datetime import date
 from decimal import Decimal
 from typing import NamedTuple
 
+from .deflation import Deflation
 from .status import EmissionsStatus
 
 
@@ -20,6 +21,7 @@ class LineEmissions(NamedTuple):
     rate_date: date
     factor: Decimal
     factor_currency: str
+    deflation: Deflation | None = None
 
 
 class VoucherEmissions(NamedTuple):

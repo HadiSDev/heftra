@@ -7,7 +7,7 @@ from decimal import Decimal
 import pytest
 from sqlmodel import Session, select
 
-from emission_factors import Factors, euro_rates
+from emission_factors import Factors, consumer_prices, euro_rates
 from web_api.db.models import (
     AuditLog,
     Company,
@@ -237,6 +237,51 @@ def test_an_estimated_line_carries_the_calculation_that_multiplies_out(client, e
     assert calculation["factor_area"] == "DK"
     assert calculation["sector"]["code"] == "518200"
     assert Decimal(calculation["kg_co2e"]) == Decimal("5.800")
+
+
+def test_a_deflated_line_carries_its_deflation(client, engine, books, hosting):
+    with Session(engine) as s:
+        consumer_prices(s, m2025_07="330")
+    _set_line(engine, books["line_a1"], emission_sector_id=hosting,
+              emission_sector_source=EmissionSectorSource.AI)
+
+    line = next(line for line in _voucher(client, "4821")["lines"]
+                if line["id"] == books["line_a1"])
+
+    calculation = line["emission_calculation"]
+    deflation = calculation["deflation"]
+    assert Decimal(calculation["converted"]) == Decimal("11.60")
+    assert (deflation["series"], deflation["label"]) == ("CPIAUCSL", "US CPI")
+    assert (deflation["month"], Decimal(deflation["index"])) == ("2025-07-01", Decimal("330"))
+    assert (deflation["base_year"], Decimal(deflation["base_index"])) == (2023, Decimal("300"))
+    assert Decimal(deflation["deflated"]) == Decimal("10.55")
+    assert Decimal(calculation["kg_co2e"]) == Decimal("5.273")
+
+
+def test_an_unadjusted_line_has_no_deflation(client, engine, books, hosting):
+    _set_line(engine, books["line_a1"], emission_sector_id=hosting,
+              emission_sector_source=EmissionSectorSource.AI)
+
+    line = next(line for line in _voucher(client, "4821")["lines"]
+                if line["id"] == books["line_a1"])
+
+    assert line["emission_calculation"]["deflation"] is None
+
+
+def test_the_summary_names_the_price_index(client, engine, books, hosting):
+    with Session(engine) as s:
+        consumer_prices(s, m2026_08="334.131")
+
+    body = client.get(_EMISSIONS, headers=auth("tokA")).json()
+
+    assert body["factor_set"]["price_index"] == {
+        "series": "CPIAUCSL", "label": "US CPI", "latest_month": "2026-08-01"}
+
+
+def test_an_unadjusted_summary_names_no_price_index(client, engine, books, hosting):
+    body = client.get(_EMISSIONS, headers=auth("tokA")).json()
+
+    assert body["factor_set"]["price_index"] is None
 
 
 def test_a_line_without_an_estimate_carries_no_calculation(client, engine, books, hosting):

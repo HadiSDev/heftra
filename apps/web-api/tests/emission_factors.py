@@ -12,6 +12,7 @@ from web_api.db.models import (
     EmissionFactorSet,
     EmissionSector,
     FxRate,
+    PriceIndexValue,
 )
 
 
@@ -57,4 +58,17 @@ def euro_rates(session: Session, on: date, **per_euro: str) -> None:
     for currency, rate in per_euro.items():
         session.add(FxRate(quote_currency=currency, rate_date=on, published_date=on,
                            rate=Decimal(rate), source="test"))
+    session.commit()
+
+
+def consumer_prices(session: Session, *, year: int = 2023, level: str = "300",
+                    **months: str) -> None:
+    """US CPI at `level` in every month of `year`, plus the given months (`m2026_09="330"`)."""
+    values = {date(year, month, 1): level for month in range(1, 13)}
+    for name, value in months.items():
+        month_year, month = name.removeprefix("m").split("_")
+        values[date(int(month_year), int(month), 1)] = value
+    for month, value in values.items():
+        session.add(PriceIndexValue(series="CPIAUCSL", month=month, value=Decimal(value),
+                                    source="test"))
     session.commit()

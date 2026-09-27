@@ -7,7 +7,7 @@ from decimal import Decimal
 import pytest
 from sqlmodel import Session, select
 
-from emission_factors import Factors, euro_rates
+from emission_factors import Factors, consumer_prices, euro_rates
 from spend_books import Books
 from web_api.db.models import InvoiceLine
 from web_api.spend_analytics.emissions import spend_emissions
@@ -71,3 +71,14 @@ def test_without_a_factor_set_there_are_no_figures(session):
     assert report.factor_set is None
     assert report.kg_co2e is None
     assert report.months == []
+
+
+def test_the_report_names_the_price_index_it_deflated_with(session):
+    books = Books(session)
+    Factors(session)
+    consumer_prices(session, m2026_09="330")
+
+    report = spend_emissions(session, [books.company.id], SEPTEMBER)
+
+    assert report.factor_set.price_index.label == "US CPI"
+    assert report.factor_set.price_index.latest_month == date(2026, 9, 1)

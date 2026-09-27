@@ -1,6 +1,7 @@
 """Destroying a company, and the things a deletion must leave alone."""
 from __future__ import annotations
 
+from datetime import date
 from decimal import Decimal
 
 from sqlmodel import Session, select
@@ -20,6 +21,7 @@ from web_api.db.models import (
     Invoice,
     InvoiceLine,
     PipelineRun,
+    PriceIndexValue,
     Recommendation,
     SpendCategory,
     SpendCategorySuggestion,
@@ -237,6 +239,17 @@ def test_emission_factors_and_sectors_its_lines_used_survive(client, seed, engin
         assert s.get(EmissionFactorSet, set_id) is not None
         assert s.get(EmissionSector, sector_id) is not None
         assert _count(engine, EmissionFactor) == 1
+
+
+def test_price_indices_survive(client, seed, engine):
+    with Session(engine) as s:
+        s.add(PriceIndexValue(series="CPIAUCSL", month=date(2026, 8, 1),
+                              value=Decimal("334.131"), source="fred"))
+        s.commit()
+
+    assert _delete(client, seed["comp_a"], confirm=True).status_code == 200
+
+    assert _count(engine, PriceIndexValue) == 1
 
 
 def test_a_shared_spend_tree_survives(client, seed, engine):

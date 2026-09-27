@@ -1,4 +1,4 @@
-"""kg CO2e for a voucher: its spend split across its lines, converted, times each line's factor."""
+"""kg CO2e for a voucher: its spend split across its lines, converted, deflated, times each line's factor."""
 from __future__ import annotations
 
 from collections.abc import Callable
@@ -7,6 +7,7 @@ from decimal import Decimal
 
 from ..vouchers.amounts import ZERO
 from ..vouchers.shares import split
+from .deflation import Deflator
 from .factors import FactorLookup
 from .inputs import LineInput, VoucherInput
 from .results import LineEmissions, VoucherEmissions
@@ -18,12 +19,17 @@ RateFor = Callable[[str, date], Decimal | None]
 
 
 class Estimator:
-    """Estimates vouchers with one factor set's factors, converting spend with `rate_for`."""
+    """Estimates vouchers with one factor set's factors, converting spend with `rate_for`.
 
-    def __init__(self, lookup: FactorLookup, rate_for: RateFor, factor_currency: str) -> None:
+    With a `deflator`, converted spend is taken back to the factor set's price year first.
+    """
+
+    def __init__(self, lookup: FactorLookup, rate_for: RateFor, factor_currency: str,
+                 deflator: Deflator | None = None) -> None:
         self._lookup = lookup
         self._rate_for = rate_for
         self._factor_currency = factor_currency
+        self._deflator = deflator
 
     @staticmethod
     def without_factors() -> VoucherEmissions:
@@ -48,17 +54,20 @@ class Estimator:
         if rate is None:
             return _nothing(EmissionsStatus.UNCONVERTED)
 
+        deflation = self._deflator.for_date(voucher.spent_on) if self._deflator else None
+        ratio = deflation.ratio if deflation is not None else Decimal(1)
         lines: dict[str, LineEmissions] = {}
         for line_id, share in spent.items():
             sector_id = sectors[line_id]
             factor = self._lookup.find(sector_id, voucher.supplier_country,
                                        voucher.company_country) if sector_id else None
             if factor is not None:
-                kg = (share * rate * factor.kg_co2e_per_unit).quantize(KG_PLACES)
+                kg = (share * rate * ratio * factor.kg_co2e_per_unit).quantize(KG_PLACES)
                 lines[line_id] = LineEmissions(
                     kg_co2e=kg, area=factor.area, sector_id=sector_id, spend=share,
                     currency=voucher.currency, rate=rate, rate_date=voucher.spent_on,
                     factor=factor.kg_co2e_per_unit, factor_currency=self._factor_currency,
+                    deflation=deflation,
                 )
 
         if not lines:

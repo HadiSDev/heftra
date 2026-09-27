@@ -8,12 +8,13 @@ from typing import NamedTuple
 from sqlmodel import Session, select
 
 from web_api.db.models import EmissionSector
+from web_api.emissions.factor_set_read import factor_set_read
 from web_api.emissions.factors import active_factor_set
 from web_api.emissions.results import VoucherEmissions
 from web_api.emissions.vouchers import estimate_vouchers
 from web_api.fx.service import FxService
 from web_api.schemas import MonthEmissions, SectorEmissions, SpendEmissions
-from web_api.schemas.emissions import EmissionsSpendRow, FactorSetRead
+from web_api.schemas.emissions import EmissionsSpendRow
 from web_api.vouchers.amounts import ZERO, voucher_amount
 from web_api.vouchers.dates import spent_on
 from web_api.vouchers.groups import vouchers_between
@@ -50,7 +51,7 @@ def spend_emissions(session: Session, company_ids: list[str], period: Period) ->
 
     return SpendEmissions(
         **periods.model_dump(),
-        factor_set=FactorSetRead.model_validate(factor_set),
+        factor_set=factor_set_read(session, factor_set),
         kg_co2e=_kg(in_period),
         comparison_kg_co2e=_kg(e for e in dated if comparison.contains(e.spent_on)),
         months=[

@@ -47,6 +47,11 @@ FX_ENABLED = _env_flag("FX_ENABLED", "false")
 FX_PROVIDER_URL = os.getenv("FX_PROVIDER_URL", "https://api.frankfurter.dev/v1")
 FX_HTTP_TIMEOUT_SECONDS = float(os.getenv("FX_HTTP_TIMEOUT_SECONDS", "10"))
 
+PRICE_INDEX_CSV_URL = os.getenv(
+    "PRICE_INDEX_CSV_URL", "https://fred.stlouisfed.org/graph/fredgraph.csv"
+)
+PRICE_INDEX_HTTP_TIMEOUT_SECONDS = float(os.getenv("PRICE_INDEX_HTTP_TIMEOUT_SECONDS", "30"))
+
 CLERK_WEBHOOK_SIGNING_SECRET = os.getenv("CLERK_WEBHOOK_SIGNING_SECRET", "")
 CLERK_SECRET_KEY = os.getenv("CLERK_SECRET_KEY", "")
 CLERK_API_BASE_URL = os.getenv("CLERK_API_BASE_URL", "https://api.clerk.com/v1")

@@ -5,6 +5,8 @@ from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict
 
+from .price_index import PriceIndexRead
+
 
 class FactorSetRead(BaseModel):
     """The factor set every figure comes from, and how it must be credited."""
@@ -17,6 +19,7 @@ class FactorSetRead(BaseModel):
     price_year: int
     price_basis: str
     attribution: str
+    price_index: PriceIndexRead | None = None
 
 
 class EmissionsSpendRow(BaseModel):

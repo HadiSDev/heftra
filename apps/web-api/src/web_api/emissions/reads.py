@@ -3,9 +3,10 @@ from __future__ import annotations
 
 from decimal import Decimal
 
-from ..schemas.emissions import EmissionCalculationRead
+from ..schemas.emissions import EmissionCalculationRead, EmissionDeflationRead
 from ..schemas.erp.entries import VoucherGroupRead
 from ..schemas.invoices.lines import InvoiceLineRead
+from .deflation import Deflation
 from .results import LineEmissions, VoucherEmissions
 
 MONEY_PLACES = Decimal("0.01")
@@ -42,15 +43,31 @@ def lines_with_emissions(lines: list[InvoiceLineRead],
 
 
 def _calculation(line: InvoiceLineRead, estimate: LineEmissions) -> EmissionCalculationRead:
+    converted = estimate.spend * estimate.rate
     return EmissionCalculationRead(
         spend=estimate.spend,
         currency=estimate.currency,
         rate=estimate.rate,
         rate_date=estimate.rate_date,
-        converted=(estimate.spend * estimate.rate).quantize(MONEY_PLACES),
+        converted=converted.quantize(MONEY_PLACES),
+        deflation=_deflation(converted, estimate.deflation),
         factor=estimate.factor,
         factor_currency=estimate.factor_currency,
         factor_area=estimate.area,
         sector=line.emission_sector,
         kg_co2e=estimate.kg_co2e,
+    )
+
+
+def _deflation(converted: Decimal, deflation: Deflation | None) -> EmissionDeflationRead | None:
+    if deflation is None:
+        return None
+    return EmissionDeflationRead(
+        series=deflation.series,
+        label=deflation.label,
+        month=deflation.month,
+        index=deflation.index,
+        base_year=deflation.base_year,
+        base_index=deflation.base_index.quantize(Decimal("0.0001")),
+        deflated=(converted * deflation.ratio).quantize(MONEY_PLACES),
     )

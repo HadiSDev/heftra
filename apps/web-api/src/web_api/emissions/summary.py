@@ -6,7 +6,6 @@ from collections.abc import Iterable
 from decimal import Decimal
 from typing import NamedTuple
 
-from ..db.models import EmissionFactorSet
 from ..schemas.emissions import EmissionsSpendRow, EmissionsSummaryRead, FactorSetRead
 from ..vouchers.amounts import ZERO
 from .results import VoucherEmissions
@@ -18,7 +17,7 @@ class SummarizedVoucher(NamedTuple):
     emissions: VoucherEmissions
 
 
-def summarize(factor_set: EmissionFactorSet | None,
+def summarize(factor_set: FactorSetRead | None,
               vouchers: Iterable[SummarizedVoucher]) -> EmissionsSummaryRead:
     posted: dict[str, Decimal] = {}
     estimated: dict[str, Decimal] = {}
@@ -32,7 +31,7 @@ def summarize(factor_set: EmissionFactorSet | None,
         statuses[voucher.emissions.status.value] += 1
         kg += voucher.emissions.kg_co2e or ZERO
     return EmissionsSummaryRead(
-        factor_set=FactorSetRead.model_validate(factor_set) if factor_set is not None else None,
+        factor_set=factor_set,
         kg_co2e=kg if factor_set is not None else None,
         spend=[
             EmissionsSpendRow(currency=currency, posted_spend=posted[currency],

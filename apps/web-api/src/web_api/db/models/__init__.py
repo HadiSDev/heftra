@@ -27,6 +27,7 @@ from .pipeline_run import (
     PipelineRunKind,
     PipelineRunStatus,
 )
+from .price_index_value import PriceIndexValue
 from .recommendation import Recommendation
 from .spend_category import SpendCategory
 from .spend_category_suggestion import (
@@ -64,6 +65,7 @@ __all__ = [
     "PipelineRunKind",
     "PipelineRunStatus",
     "SYSTEM_REQUESTER",
+    "PriceIndexValue",
     "Recommendation",
     "SpendCategory",
     "SpendCategorySuggestion",

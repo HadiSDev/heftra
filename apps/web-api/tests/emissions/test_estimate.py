@@ -7,7 +7,7 @@ from decimal import Decimal
 import pytest
 from sqlmodel import Session, select
 
-from emission_factors import Factors, euro_rates
+from emission_factors import Factors, consumer_prices, euro_rates
 from spend_books import Books
 from web_api.db.models import InvoiceLine
 from web_api.emissions.status import EmissionsStatus
@@ -83,6 +83,31 @@ def test_a_single_line_voucher(session, books, hosting):
     assert result.kg_co2e == Decimal("72.500")
     assert result.estimated_spend == Decimal("1000.00")
     assert result.lines[line.id].area == "DE"
+
+
+def test_spend_is_deflated_to_the_price_year(session, books, hosting):
+    consumer_prices(session, m2026_09="330")
+    invoice = books.purchase(ON, "1000.00", vendor=_supplier(books),
+                             lines=[("1000.00", "Technology", "Hosting", "verified")])
+    (line,) = _match(session, invoice, hosting)
+
+    result = _only(session, books)
+
+    assert result.status is EmissionsStatus.ESTIMATED
+    assert result.kg_co2e == Decimal("65.909")
+    assert result.lines[line.id].deflation.month == date(2026, 9, 1)
+
+
+def test_without_an_index_the_estimate_is_unadjusted(session, books, hosting):
+    invoice = books.purchase(ON, "1000.00", vendor=_supplier(books),
+                             lines=[("1000.00", "Technology", "Hosting", "verified")])
+    (line,) = _match(session, invoice, hosting)
+
+    result = _only(session, books)
+
+    assert result.status is EmissionsStatus.ESTIMATED
+    assert result.kg_co2e == Decimal("72.500")
+    assert result.lines[line.id].deflation is None
 
 
 def test_the_posted_net_is_used_not_the_printed_gross(session, books, hosting):
