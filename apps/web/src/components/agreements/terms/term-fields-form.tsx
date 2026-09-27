@@ -8,6 +8,7 @@ import {
   Textarea,
   cn,
 } from '#/components/ui'
+import { CurrencyField } from '#/components/fields/currency-field'
 import type { AgreementTermKind } from '#/lib/api/agreement-types'
 import type { TermFormValues } from '#/lib/agreements/term-form'
 
@@ -143,11 +144,12 @@ export function TermFieldsForm({
       ) : null}
       {kind !== 'preferred_supplier' ? (
         <Field label="Currency">
-          <Input
+          <CurrencyField
             value={values.currency}
-            onChange={set('currency')}
-            maxLength={3}
-            placeholder="DKK"
+            onChange={(currency) => {
+              onChange({ ...values, currency })
+            }}
+            aria-label="Currency"
           />
         </Field>
       ) : null}

@@ -11,6 +11,7 @@ import {
   DatePicker,
   Input,
 } from '#/components/ui'
+import { CurrencyField } from '#/components/fields/currency-field'
 import type { AgreementPatch, AgreementRead } from '#/lib/api/agreement-types'
 import type { VendorRead } from '#/lib/api/types'
 import { fromIsoDate, toIsoDate } from '#/lib/format/format'
@@ -153,13 +154,11 @@ export function HeaderForm({
             />
           </Field>
           <Field label="Currency">
-            <Input
+            <CurrencyField
               value={currency}
-              maxLength={3}
+              onChange={setCurrency}
               disabled={!canEdit}
-              onChange={(event) => {
-                setCurrency(event.target.value)
-              }}
+              aria-label="Currency"
             />
           </Field>
           <Field label="Starts">

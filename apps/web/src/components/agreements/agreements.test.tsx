@@ -362,6 +362,42 @@ describe('TermCard', () => {
     })
   })
 
+  it('picks the currency of an agreed price from the currency list', async () => {
+    const onUpdate = vi.fn(async () => {})
+    render(
+      <TermCard
+        term={{
+          ...TERM,
+          kind: 'agreed_price',
+          scope: 'Lenovo ThinkPad T14 Gen 5',
+          item: 'Lenovo ThinkPad T14 Gen 5',
+          unit: 'piece',
+          unit_price: '8000',
+        }}
+        canEdit
+        busy={false}
+        onUpdate={onUpdate}
+        onShowPage={vi.fn()}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Edit' }))
+    const currency = screen.getByRole<HTMLInputElement>('combobox', {
+      name: 'Currency',
+    })
+    expect(currency.value).toContain('DKK')
+    fireEvent.click(currency)
+    fireEvent.change(currency, { target: { value: 'euro' } })
+    fireEvent.click(await screen.findByRole('option', { name: /^EUR/ }))
+    fireEvent.click(screen.getByRole('button', { name: 'Save and confirm' }))
+
+    await waitFor(() => {
+      expect(onUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({ currency: 'EUR', status: 'confirmed' }),
+      )
+    })
+  })
+
   it('shows the error when a change is refused', async () => {
     render(
       <TermCard
