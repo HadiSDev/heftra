@@ -8,6 +8,7 @@ import { describePeriod } from '#/lib/dashboard-search'
 import { ChangeBadge } from '../change-badge'
 import { formatShare } from '../change'
 import { Sparkline } from '../tiles/sparkline'
+import { EmissionsMethod } from '#/components/entries/emissions/emissions-method'
 
 export interface EmissionsLinkSearch {
   from: string
@@ -117,8 +118,7 @@ export function EmissionsFigures({
         />
         <ShareEstimated rows={report.spend} />
         <p className="text-xs text-muted-foreground">
-          Spend-based estimate · {factorSet.version} · {factorSet.price_year}{' '}
-          {factorSet.currency} · {factorSet.attribution}
+          <EmissionsMethod factorSet={factorSet} /> · {factorSet.attribution}
         </p>
         <Link
           to="/invoice-lines"

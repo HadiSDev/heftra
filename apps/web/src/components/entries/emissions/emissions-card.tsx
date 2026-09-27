@@ -9,14 +9,11 @@ import type {
 } from '#/lib/api/emission-types'
 import { Metric } from '../summary/metric'
 import { formatShare } from '../summary/spend-coverage'
+import { EmissionsMethod } from './emissions-method'
 import { EMISSIONS_STATUS_REASON, NOT_ESTIMATED } from './status-labels'
 
 const CARD_CLASS =
   'grid divide-y divide-border p-0 md:grid-cols-3 md:divide-x md:divide-y-0'
-
-function methodLine(factorSet: FactorSetRead): string {
-  return `Spend-based estimate · ${factorSet.version} · ${factorSet.price_year} ${factorSet.currency}`
-}
 
 function estimatedShare(row: EmissionsSpendRow): number | null {
   const posted = toNumber(row.posted_spend)
@@ -105,7 +102,7 @@ function EmissionsFigures({
         value={formatEmissions(summary.kg_co2e ?? 0)}
       >
         <div className="flex flex-col gap-0.5">
-          <span>{methodLine(factorSet)}</span>
+          <EmissionsMethod factorSet={factorSet} />
           <span className="text-xs">{factorSet.attribution}</span>
         </div>
       </Metric>

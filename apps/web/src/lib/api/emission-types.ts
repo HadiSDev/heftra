@@ -22,6 +22,13 @@ export interface EmissionSectorRead {
 }
 
 /** The factor set every emission figure comes from, and how it must be credited. */
+/** The price index a factor set's estimates are deflated with. */
+export interface PriceIndexRead {
+  series: string
+  label: string
+  latest_month: string | null
+}
+
 export interface FactorSetRead {
   source: string
   version: string
@@ -29,6 +36,8 @@ export interface FactorSetRead {
   price_year: number
   price_basis: string
   attribution: string
+  /** Null when estimates are not adjusted for inflation. */
+  price_index: PriceIndexRead | null
 }
 
 /** How much of one base currency's posted spend the estimate covers. */
@@ -47,13 +56,27 @@ export interface EmissionsSummaryRead {
   vouchers_by_status: Partial<Record<EmissionsStatus, number>>
 }
 
-/** How a line's emissions were multiplied out: spend × rate = converted; converted × factor = kg. */
+/** converted × base_index ÷ index = deflated, in `base_year` money. */
+export interface EmissionDeflationRead {
+  series: string
+  label: string
+  /** The month whose index value was used. */
+  month: string
+  index: Money
+  base_year: number
+  base_index: Money
+  deflated: Money
+}
+
+/** How a line's emissions were multiplied out: spend × rate = converted, deflated, × factor = kg. */
 export interface EmissionCalculationRead {
   spend: Money
   currency: string
   rate: Money
   rate_date: string
   converted: Money
+  /** Null when the estimate is not adjusted for inflation. */
+  deflation: EmissionDeflationRead | null
   factor: Money
   factor_currency: string
   /** The country code or region the factor is for. */

@@ -202,6 +202,11 @@ const EMISSIONS: SpendEmissions = {
     price_year: 2023,
     price_basis: 'purchaser',
     attribution: 'CEDA by Watershed',
+    price_index: {
+      series: 'CPIAUCSL',
+      label: 'US CPI',
+      latest_month: '2026-08-01',
+    },
   },
   kg_co2e: '2400',
   comparison_kg_co2e: '2000',
@@ -377,6 +382,7 @@ describe('DashboardView — emissions', () => {
     expect(section.getByText('87% of DKK spend estimated')).toBeTruthy()
     expect(section.getByText('Air transportation')).toBeTruthy()
     expect(section.getByText(/CEDA by Watershed/)).toBeTruthy()
+    expect(section.getByText(/adjusted with US CPI/)).toBeTruthy()
     expect(
       section
         .getByRole('link', { name: 'See the vouchers in Spend Lines' })

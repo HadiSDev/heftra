@@ -19,7 +19,7 @@ For a line with no estimate it SHALL say why.
 #### Scenario: A reviewer sees how a line's emissions were reached
 
 - **WHEN** a reviewer opens a line estimated at 65.9 kg CO₂e
-- **THEN** the panel shows DKK 1,000.00 × 0.145 = USD 145.00, × US CPI 2023 average 300 ÷ Aug 2026 330 = USD 131.82 in 2023 dollars, × 0.5 kg CO₂e per USD (factor for DE) = 65.9 kg CO₂e, and the AI's reasoning for the sector
+- **THEN** the panel shows DKK 1,000.00 × 0.145 = USD 145.00, × US CPI 2023 average 300 ÷ Aug 2026 330 = USD 131.82 in 2023 prices, × 0.5 kg CO₂e per USD (factor for DE) = 65.9 kg CO₂e, and the AI's reasoning for the sector
 
 #### Scenario: An unadjusted line has no deflation step
 

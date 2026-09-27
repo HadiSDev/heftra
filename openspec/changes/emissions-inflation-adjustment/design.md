@@ -87,7 +87,7 @@ This covers the October 2025 gap and the months not yet published. The calculati
 - **`EmissionCalculationRead`**: gains `deflation`, holding `series`, `label`, `month`, `index`, `base_year`, `base_index` and `deflated` (the converted amount × the ratio, to cents). It is null when the estimate is unadjusted.
 - **`FactorSetRead`**: gains `price_index`, holding `series`, `label` and `latest_month`, or null. The Spend Lines summary and the dashboard report both use it.
 - **Web**:
-  - `calculationSteps` inserts "× US CPI 2023 avg 304.70 ÷ Aug 2026 334.13 = US$121.33 in 2023 dollars" between the conversion and the factor.
+  - `calculationSteps` inserts "× US CPI 2023 avg 304.70 ÷ Aug 2026 334.13 = US$121.33 in 2023 prices" between the conversion and the factor.
   - The method lines append "adjusted with US CPI", or "not adjusted for inflation" when `price_index` is null.
 
 ## Risks / Trade-offs

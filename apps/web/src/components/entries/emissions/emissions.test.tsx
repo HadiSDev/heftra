@@ -26,6 +26,7 @@ const FACTOR_SET = {
   price_year: 2023,
   price_basis: 'purchaser',
   attribution: 'CEDA by Watershed',
+  price_index: null,
 }
 
 function summary(
@@ -114,10 +115,40 @@ describe('EmissionsCard', () => {
 
     expect(screen.getByText('12.4 t CO₂e')).toBeTruthy()
     expect(
-      screen.getByText('Spend-based estimate · CEDA 2025 · 2023 USD'),
+      screen.getByText(
+        'Spend-based estimate · CEDA 2025 · 2023 USD · not adjusted for inflation',
+      ),
     ).toBeTruthy()
     expect(screen.getByText('CEDA by Watershed')).toBeTruthy()
     expect(screen.getByText('87%')).toBeTruthy()
+  })
+
+  it('says the figures are adjusted with US CPI, and how far the index runs', () => {
+    render(
+      <EmissionsCard
+        summary={summary({
+          factor_set: {
+            ...FACTOR_SET,
+            price_index: {
+              series: 'CPIAUCSL',
+              label: 'US CPI',
+              latest_month: '2026-08-01',
+            },
+          },
+        })}
+        error={false}
+        onRetry={vi.fn()}
+      />,
+    )
+
+    expect(
+      screen.getByText(
+        'Spend-based estimate · CEDA 2025 · 2023 USD · adjusted with US CPI',
+      ),
+    ).toBeTruthy()
+    expect(
+      screen.getByLabelText(/US CPI \(CPIAUCSL\) through Aug 2026/),
+    ).toBeTruthy()
   })
 
   it('counts the vouchers not estimated, with their reasons', () => {
@@ -333,6 +364,21 @@ const CALCULATION = {
   factor_area: 'DE',
   sector: HOSTING,
   kg_co2e: '72.500',
+  deflation: null,
+}
+
+const DEFLATED = {
+  ...CALCULATION,
+  deflation: {
+    series: 'CPIAUCSL',
+    label: 'US CPI',
+    month: '2026-08-01',
+    index: '330',
+    base_year: 2023,
+    base_index: '300',
+    deflated: '131.82',
+  },
+  kg_co2e: '65.909',
 }
 
 describe('LineEmissionsPanel', () => {
@@ -359,6 +405,27 @@ describe('LineEmissionsPanel', () => {
     expect(panel.textContent).toContain('× 0.5 kg CO₂e per USD')
     expect(panel.textContent).toContain('factor for DE')
     expect(screen.getByText('72.5 kg CO₂e')).toBeTruthy()
+  })
+
+  it('shows the deflation to the factor’s price year between the conversion and the factor', () => {
+    render(
+      <LineEmissionsPanel
+        line={line({
+          emission_sector: HOSTING,
+          emission_sector_source: 'human',
+          kg_co2e: '65.909',
+          emission_calculation: DEFLATED,
+        })}
+      />,
+    )
+
+    const panel = screen.getByRole('region', { name: 'Emissions' })
+    const text = panel.textContent.replace(/\s/g, ' ')
+    expect(text).toContain(
+      '× US CPI 2023 avg 300.00 ÷ Aug 2026 330.00 = US$131.82 in 2023 prices',
+    )
+    expect(text.indexOf('US$145.00')).toBeLessThan(text.indexOf('US CPI'))
+    expect(text.indexOf('US CPI')).toBeLessThan(text.indexOf('× 0.5 kg CO₂e'))
   })
 
   it('says a line with a sector but no calculation was not estimated, and why it might be', () => {
