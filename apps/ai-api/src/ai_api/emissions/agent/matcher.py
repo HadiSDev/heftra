@@ -15,6 +15,7 @@ from ...parsing import parse_model
 from ..answer import MatchFailed, SectorAnswer, bounded
 from ..line_context import LineContext
 from .prompt import BACKSTORY, GOAL, ROLE, agent_prompt
+from .tools import AgentTools
 from .reply import AgentReply
 
 logger = logging.getLogger("ai_api.emissions.agent")
@@ -22,13 +23,16 @@ logger = logging.getLogger("ai_api.emissions.agent")
 Kickoff = Callable[[list[Tool], str], str]
 
 
-def agent_match(context: LineContext, tools: list[Tool],
+def agent_match(context: LineContext, agent_tools: AgentTools,
                 sectors_by_code: dict[str, EmissionSector], *,
                 kickoff: Kickoff | None = None) -> SectorAnswer:
-    """The agent's sector for the line, or MatchFailed when it gives no usable one."""
+    """The agent's sector for the line, or MatchFailed when it gives no usable one.
+
+    The code must be one a tool showed the agent, so it cannot answer from memory.
+    """
     run = kickoff or _kickoff
     try:
-        reply = run(tools, agent_prompt(context))
+        reply = run(agent_tools.tools, agent_prompt(context))
     except Exception as error:  # noqa: BLE001
         raise MatchFailed(f"the agent stopped: {error}") from error
     try:
@@ -38,9 +42,12 @@ def agent_match(context: LineContext, tools: list[Tool],
 
     if answer.code is None or not answer.code.strip():
         return SectorAnswer(None, bounded(answer.confidence), answer.rationale)
-    sector = sectors_by_code.get(answer.code.strip())
+    code = answer.code.strip()
+    if code not in agent_tools.shown_codes:
+        raise MatchFailed(f"the agent answered {code!r}, which no tool showed it")
+    sector = sectors_by_code.get(code)
     if sector is None:
-        raise MatchFailed(f"the agent answered {answer.code!r}, which is no sector")
+        raise MatchFailed(f"the agent answered {code!r}, which is no sector")
     return SectorAnswer(sector.id, bounded(answer.confidence), answer.rationale)
 
 

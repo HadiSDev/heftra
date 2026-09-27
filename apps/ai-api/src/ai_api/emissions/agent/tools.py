@@ -1,6 +1,8 @@
 """The agent's tools, bound to the one line it is matching."""
 from __future__ import annotations
 
+from typing import NamedTuple
+
 from crewai.tools import tool
 from crewai.tools.base_tool import Tool
 
@@ -11,9 +13,17 @@ from ..line_context import LineContext
 from ..sector_index import SectorIndex
 
 
+class AgentTools(NamedTuple):
+    """The tools, and every sector code they have shown the agent so far."""
+
+    tools: list[Tool]
+    shown_codes: set[str]
+
+
 def make_tools(context: LineContext, index: SectorIndex, classification: str,
-               sectors_by_code: dict[str, EmissionSector]) -> list[Tool]:
+               sectors_by_code: dict[str, EmissionSector]) -> AgentTools:
     """Search, sector details, supplier profile and other lines, for `context`'s line."""
+    shown_codes: set[str] = set()
 
     @tool("search_sectors")
     def search_sectors(query: str) -> str:
@@ -23,6 +33,7 @@ def make_tools(context: LineContext, index: SectorIndex, classification: str,
         hits = index.search(classification, query, config.EMISSION_SEARCH_RESULTS)
         if not hits:
             return "No sectors matched. Try other words."
+        shown_codes.update(hit.code for hit in hits)
         return "\n".join(f"{hit.code} — {hit.name}: {hit.summary}" for hit in hits)
 
     @tool("sector_details")
@@ -31,6 +42,7 @@ def make_tools(context: LineContext, index: SectorIndex, classification: str,
         sector = sectors_by_code.get(code.strip())
         if sector is None:
             return f"No sector has the code {code!r}."
+        shown_codes.add(sector.code)
         return f"{sector.code} — {sector.name}: {sector.description or '(no description)'}"
 
     @tool("supplier_profile")
@@ -54,4 +66,4 @@ def make_tools(context: LineContext, index: SectorIndex, classification: str,
             return "The invoice has no other lines."
         return "\n".join(f"- {label}" for label in context.other_lines)
 
-    return [search_sectors, sector_details, supplier_profile, other_lines]
+    return AgentTools([search_sectors, sector_details, supplier_profile, other_lines], shown_codes)

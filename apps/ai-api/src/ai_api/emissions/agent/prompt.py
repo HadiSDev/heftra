@@ -1,11 +1,9 @@
 """What the agent is asked to do for one line."""
 from __future__ import annotations
 
-from ...parsing import json_format_hint
 from ..facts import line_facts
 from ..line_context import LineContext
 from ..rules import MATCHING_RULES
-from .reply import AgentReply
 
 ROLE = "Emission Sector Analyst"
 GOAL = (
@@ -24,20 +22,29 @@ INSTRUCTIONS = (
     "\n"
     f"{MATCHING_RULES}\n"
     "\n"
-    "Sector codes are six-character codes such as 518200 or 5241XX. You do not know them in "
-    "advance: call search_sectors before answering, and answer only with a code a tool showed "
-    "you. Never make up a code or a category name.\n"
-    "\n"
-    "Use search_sectors with short descriptions of what was bought, in English, and try other "
-    "wording if the results do not fit. Use sector_details to compare close candidates. Use "
-    "supplier_profile or other_lines when the line alone does not say what was bought.\n"
-    "\n"
     "Give a sector whenever one is plausible, even if unsure, and put your doubt in the "
     "confidence. Answer with no code only when the line buys nothing: a tax, levy or rounding "
     "line."
 )
 
+STEPS = (
+    "Work in steps. You do not know any sector codes in advance, so your first action must be a "
+    "search_sectors call with a short English description of what was bought. Search again with "
+    "other words if the results do not fit, use sector_details to compare close sectors, and use "
+    "supplier_profile or other_lines when the line alone does not say what was bought.\n"
+    "\n"
+    "Only after searching, give your final answer as a single JSON object with the keys "
+    "\"code\" (a code from a tool result for this line, or null when nothing fits), "
+    "\"confidence\" (0 to 1) and \"rationale\" (one sentence). Any code no tool showed you is "
+    "rejected."
+)
+
 
 def agent_prompt(context: LineContext) -> str:
+    """The task, the line, then the steps, so the JSON is asked for only as the final answer.
+
+    The project's usual "return only JSON" hint makes a small model answer at once without
+    calling a tool, so the agent's answer format is stated as its last step instead.
+    """
     facts = "\n".join(line_facts(context))
-    return f"{INSTRUCTIONS}\n\nInvoice line:\n{facts}\n\n{json_format_hint(AgentReply)}"
+    return f"{INSTRUCTIONS}\n\nInvoice line:\n{facts}\n\n{STEPS}"
