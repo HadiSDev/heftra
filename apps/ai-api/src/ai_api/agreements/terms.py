@@ -15,7 +15,14 @@ MIN_QUOTE_CHARS = 12
 _SPACES = re.compile(r"\s+")
 _EDGES = " \t\n\"'“”‘’«».,;:"
 _KINDS = {kind.value for kind in AgreementTermKind}
-_PERIODS = {"month", "quarter", "year", "agreement"}
+_PERIOD_WORDS = {
+    "month": "month", "monthly": "month",
+    "quarter": "quarter", "quarterly": "quarter",
+    "year": "year", "yearly": "year", "annual": "year", "annually": "year", "annum": "year",
+    "agreement": "agreement", "term": "agreement", "contract": "agreement",
+}
+_WORDS = re.compile(r"[a-z]+")
+SUPPLIER_SPEND = "All purchases from the supplier"
 
 
 @dataclass
@@ -62,6 +69,8 @@ def draft_term(read: ReadTerm, pages: list[AgreementPage]) -> DraftTerm | None:
     """The term as a draft, or None when its kind, fields or quote don't hold up."""
     kind = read.kind.strip().lower()
     scope = read.scope.strip() or (read.item or "").strip()
+    if not scope and kind == AgreementTermKind.VOLUME_COMMITMENT.value:
+        scope = SUPPLIER_SPEND
     if kind not in _KINDS or not scope:
         return None
     page = quoted_page(read.quote, read.page, pages)
@@ -84,7 +93,7 @@ def draft_term(read: ReadTerm, pages: list[AgreementPage]) -> DraftTerm | None:
         quotes=[{"text": read.quote.strip(), "page": page}],
         confidence=_confidence(read.confidence),
     )
-    return term if _complete(term) else None
+    return _kind_fields_only(term) if _complete(term) else None
 
 
 def merge_terms(terms: list[DraftTerm]) -> list[DraftTerm]:
@@ -115,6 +124,19 @@ def _complete(term: DraftTerm) -> bool:
     return True
 
 
+def _kind_fields_only(term: DraftTerm) -> DraftTerm:
+    if term.kind != AgreementTermKind.AGREED_PRICE.value:
+        term.unit = None
+        term.unit_price = None
+    if term.kind != AgreementTermKind.DISCOUNT.value:
+        term.discount_percent = None
+    if term.kind != AgreementTermKind.VOLUME_COMMITMENT.value:
+        term.commitment_amount = None
+        term.commitment_period = None
+        term.tiers = []
+    return term
+
+
 def _text(value: str | None) -> str | None:
     cleaned = (value or "").strip()
     return cleaned or None
@@ -141,5 +163,7 @@ def _currency(value: str | None) -> str | None:
 
 
 def _period(value: str | None) -> str | None:
-    period = (value or "").strip().lower()
-    return period if period in _PERIODS else None
+    for word in _WORDS.findall((value or "").lower()):
+        if word in _PERIOD_WORDS:
+            return _PERIOD_WORDS[word]
+    return None

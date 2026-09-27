@@ -105,8 +105,8 @@ def _read(session: Session, agreement: Agreement, store: FileStore, complete: Co
     session.add(agreement)
     session.flush()
     settle_status(session, agreement)
-    logger.info("agreement %s: %d draft term(s) from %d part(s), %d dropped, %d unread",
-                agreement.id, added, read.chunks, read.dropped_terms, read.failed_chunks)
+    logger.info("agreement %s: %d draft term(s) from %d page(s), %d dropped, %d unread",
+                agreement.id, added, read.pages, read.dropped_terms, read.failed_pages)
 
 
 def _fail(session: Session, agreement_id: str, error: str) -> None:

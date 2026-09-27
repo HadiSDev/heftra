@@ -46,6 +46,16 @@ class ReadTerm(BaseModel):
     page: int | None = None
     confidence: float | None = None
 
+    @field_validator("kind", "scope", "quote", mode="before")
+    @classmethod
+    def _required_text(cls, value: object) -> object:
+        return "" if value is None else value
+
+    @field_validator("tiers", mode="before")
+    @classmethod
+    def _tiers(cls, value: object) -> object:
+        return [] if value is None else value
+
     @field_validator("unit_price", "discount_percent", "commitment_amount", "confidence",
                      mode="before")
     @classmethod

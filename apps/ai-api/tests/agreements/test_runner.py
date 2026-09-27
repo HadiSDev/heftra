@@ -8,6 +8,7 @@ from sqlmodel import Session, select
 
 from agreement_pdf import FRAMEWORK, agreement_pdf
 from ai_api import config
+from ai_api.agreements.prompts import page_marker
 from ai_api.agreements.runner import read_pending
 from web_api.db.models import (
     Agreement,
@@ -36,6 +37,8 @@ TERMS = [
 
 
 class Model:
+    """Answers the header, then each page with the terms that quote it."""
+
     def __init__(self, terms=TERMS, fail: bool = False) -> None:
         self.calls = 0
         self.terms = terms
@@ -47,12 +50,9 @@ class Model:
             raise RuntimeError("model down")
         if self.calls == 1:
             return json.dumps(HEADER)
-        return json.dumps({"terms": self.terms if self.calls == 2 else []})
-
-
-@pytest.fixture
-def one_part(monkeypatch):
-    monkeypatch.setattr(config, "AGREEMENT_CHUNK_PAGES", 10)
+        sent = "\n".join(part.get("text", "") for part in messages[0]["content"])
+        return json.dumps({"terms": [term for term in self.terms
+                                     if page_marker(term["page"]) in sent]})
 
 
 @pytest.fixture
@@ -89,7 +89,7 @@ def _read(engine, store, model):
     return read_pending(engine, store, model, limit=5, suggest_for=_no_suggestions)
 
 
-def test_a_pending_agreement_is_read_into_review(engine, make_tenant, store, one_part):
+def test_a_pending_agreement_is_read_into_review(engine, make_tenant, store):
     company_id = make_tenant()["company_id"]
     agreement_id = _pending(engine, company_id)
 
@@ -108,7 +108,7 @@ def test_a_pending_agreement_is_read_into_review(engine, make_tenant, store, one
         assert terms[0].scope_category_ids == ["category-1"]
 
 
-def test_reading_again_keeps_confirmed_terms(engine, make_tenant, store, one_part):
+def test_reading_again_keeps_confirmed_terms(engine, make_tenant, store):
     company_id = make_tenant()["company_id"]
     agreement_id = _pending(engine, company_id)
     _read(engine, store, Model())
@@ -132,7 +132,7 @@ def test_reading_again_keeps_confirmed_terms(engine, make_tenant, store, one_par
         assert s.get(Agreement, agreement_id).status == "active"
 
 
-def test_a_failed_read_is_retried_then_failed(engine, make_tenant, store, one_part, monkeypatch):
+def test_a_failed_read_is_retried_then_failed(engine, make_tenant, store, monkeypatch):
     monkeypatch.setattr(config, "AGREEMENT_MAX_ATTEMPTS", 2)
     company_id = make_tenant()["company_id"]
     agreement_id = _pending(engine, company_id, with_supplier=False)
@@ -148,7 +148,7 @@ def test_a_failed_read_is_retried_then_failed(engine, make_tenant, store, one_pa
         assert "could be read" in agreement.read_error
 
 
-def test_a_missing_file_fails_the_read(engine, make_tenant, one_part):
+def test_a_missing_file_fails_the_read(engine, make_tenant):
     company_id = make_tenant()["company_id"]
     agreement_id = _pending(engine, company_id, with_supplier=False)
 

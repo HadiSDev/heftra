@@ -1,4 +1,4 @@
-"""Reading an agreement's pages into its header and draft terms, a few pages at a time."""
+"""Reading an agreement into its header and draft terms, one page at a time."""
 from __future__ import annotations
 
 import base64
@@ -30,8 +30,8 @@ class AgreementUnreadable(RuntimeError):
 class ReadAgreement:
     header: ReadHeader
     terms: list[DraftTerm]
-    chunks: int
-    failed_chunks: int
+    pages: int
+    failed_pages: int
     dropped_terms: int
 
 
@@ -42,28 +42,25 @@ def read_agreement(pages: list[AgreementPage], *, complete: Complete) -> ReadAgr
 
     header = _ask(complete, HEADER, readable[:config.AGREEMENT_HEADER_PAGES], ReadHeader) \
         or ReadHeader()
-    chunk_size = max(1, config.AGREEMENT_CHUNK_PAGES)
-    chunks = [readable[start:start + chunk_size]
-              for start in range(0, len(readable), chunk_size)]
     drafts: list[DraftTerm] = []
     failed = 0
     dropped = 0
-    for chunk in chunks:
-        read = _ask(complete, TERMS, chunk, ReadTerms)
+    for page in readable:
+        read = _ask(complete, TERMS, [page], ReadTerms)
         if read is None:
             failed += 1
             continue
         for term in read.terms:
-            draft = draft_term(term, chunk)
+            draft = draft_term(term, [page])
             if draft is None:
                 dropped += 1
                 logger.info("agreement: dropped a %s term whose quote or fields don't hold up",
                             term.kind or "unknown")
             else:
                 drafts.append(draft)
-    if failed == len(chunks):
-        raise AgreementUnreadable(f"none of the {len(chunks)} part(s) could be read")
-    return ReadAgreement(header, merge_terms(drafts), len(chunks), failed, dropped)
+    if failed == len(readable):
+        raise AgreementUnreadable(f"none of the {len(readable)} page(s) could be read")
+    return ReadAgreement(header, merge_terms(drafts), len(readable), failed, dropped)
 
 
 def _ask(complete: Complete, instructions: str, pages: list[AgreementPage],

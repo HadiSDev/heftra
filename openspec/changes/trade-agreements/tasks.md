@@ -38,10 +38,10 @@
 - [x] 3.1 `agreements/pages.py`: text per page with pdfplumber, and vision for pages without text, capped (tests with small generated PDFs)
 - [x] 3.2 `agreements/models.py`: the pydantic models for the header and each term kind
 - [x] 3.3 `agreements/prompts.py` and `agreements/extract.py`:
-  - [x] 3.3.1 The header from the first pages, and terms chunk by chunk
+  - [x] 3.3.1 The header from the first pages, and terms one page per call
   - [x] 3.3.2 Parse with `parse_model`
   - [x] 3.3.3 The quote check against the page
-  - [x] 3.3.4 Merge across chunks
+  - [x] 3.3.4 Merge across pages
   - [x] 3.3.5 Tests with a stub LLM: an invented quote dropped, duplicates merged, a malformed answer
 - [x] 3.4 `agreements/supplier.py`: link by international VAT, then suggest by website root or name keys (tests)
 - [x] 3.5 `agreements/scope_categories.py`: suggest spend categories for a term from the company's tree index (test)
@@ -67,7 +67,6 @@
   - [x] 4.6.4 Tests: re-runs are incremental, an exception survives, not-in-scope is learnt
 - [x] 4.7 Register the `analyse_agreements` executor. Queue a system run after a successful sync, `read_documents` or `categorize` when the company has an active agreement (tests)
 - [x] 4.8 Config and `.env.example`:
-  - `AGREEMENT_CHUNK_PAGES`
   - `AGREEMENT_VISION_MAX_PAGES`
   - `AGREEMENT_SIMILARITY_MIN`
   - `AGREEMENT_CANDIDATES_MAX`

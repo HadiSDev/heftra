@@ -63,7 +63,7 @@ The bucket is created at web-api startup if it's missing, logged and skipped whe
 - **Local disk:** doesn't survive more than one host.
 - **MinIO:** ruled out by the user.
 
-### 2. Agreements are read like documents, in page chunks, with quotes checked
+### 2. Agreements are read like documents, one page per call, with quotes checked
 
 The `Agreement` row carries:
 - `read_status`: `pending`, `reading`, `review`, `active`, `failed`;
@@ -74,13 +74,13 @@ After upload the status is `pending`. The worker's idle loop claims pending agre
 Reading happens in steps:
 1. **Text per page:** pdfplumber first. Pages with no text layer are rendered for vision, capped by `AGREEMENT_VISION_MAX_PAGES`.
 2. **Header:** from the first pages. The supplier's name, VAT/CVR number and website, the customer party, the reference, the start and end dates, the currency and the governing summary.
-3. **Terms:** extracted chunk by chunk, `AGREEMENT_CHUNK_PAGES` (default 4) at a time, so each prompt fits the model. Each term has:
+3. **Terms:** extracted one page per call, so each prompt fits the model and a reply that can't be parsed costs only its page. Each term has:
    - `kind`, `scope` (a short description of what it covers) and `conditions` (e.g. "when in stock");
-   - the kind's fields: `item`, `unit`, `unit_price`, `discount_percent`, `commitment_amount`, `period` and `tiers`;
+   - the kind's fields: `item`, `unit`, `unit_price`, `discount_percent`, `commitment_amount`, `period` and `tiers`. Fields of other kinds are cleared, a missing text field is read as empty, and a commitment without a scope covers all purchases from the supplier;
    - `quote`, the clause verbatim, and its `page`;
    - `confidence`.
 4. **Quote check:** a term whose quote isn't found on its page, after whitespace and case folding, is dropped. This is the guard against invented terms, like the emission agent's "only codes a tool showed you".
-5. **Merge:** terms of the same kind with the same normalised scope or item, from overlapping chunks, are merged, keeping every quote.
+5. **Merge:** terms of the same kind with the same normalised scope or item, from different pages, are merged, keeping every quote.
 6. **Scope categories:** suggested for each term by retrieving the company's spend tree categories closest to its scope (`rag/indexer.retrieve_categories`).
 
 When reading finishes, the agreement moves to `review`, with every term in `draft`.

@@ -39,7 +39,7 @@ Reading SHALL take each page's text from its text layer, using vision for pages 
   - the clause it came from, quoted verbatim, with its page number;
   - a confidence.
 
-A term whose quote isn't found on its page SHALL be dropped. Terms repeated across chunks SHALL be merged. Each term SHALL be given suggested spend categories from the company's tree.
+A term whose quote isn't found on its page SHALL be dropped. Terms SHALL be read one page per call, and terms repeated across pages SHALL be merged. Each term SHALL be given suggested spend categories from the company's tree.
 
 The supplier SHALL be linked to a known vendor with the same international VAT number when there is one, and suggested by website or name otherwise. All extracted terms SHALL be stored as `draft` with source `ai`.
 
