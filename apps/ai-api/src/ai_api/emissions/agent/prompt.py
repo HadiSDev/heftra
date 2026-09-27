@@ -4,6 +4,7 @@ from __future__ import annotations
 from ...parsing import json_format_hint
 from ..facts import line_facts
 from ..line_context import LineContext
+from ..rules import MATCHING_RULES
 from .reply import AgentReply
 
 ROLE = "Emission Sector Analyst"
@@ -21,13 +22,19 @@ BACKSTORY = (
 INSTRUCTIONS = (
     "Match this invoice line to one emission sector.\n"
     "\n"
+    f"{MATCHING_RULES}\n"
+    "\n"
+    "Sector codes are six-character codes such as 518200 or 5241XX. You do not know them in "
+    "advance: call search_sectors before answering, and answer only with a code a tool showed "
+    "you. Never make up a code or a category name.\n"
+    "\n"
     "Use search_sectors with short descriptions of what was bought, in English, and try other "
     "wording if the results do not fit. Use sector_details to compare close candidates. Use "
     "supplier_profile or other_lines when the line alone does not say what was bought.\n"
     "\n"
-    "Always give a sector when one is plausible, even if unsure; put your doubt in the "
-    "confidence (0.9 plainly right, 0.3 closest of poor options). Answer with no code only when "
-    "the line is not a purchase at all, such as a rounding line."
+    "Give a sector whenever one is plausible, even if unsure, and put your doubt in the "
+    "confidence. Answer with no code only when the line buys nothing: a tax, levy or rounding "
+    "line."
 )
 
 

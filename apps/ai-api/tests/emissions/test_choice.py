@@ -48,3 +48,13 @@ def test_the_prompt_numbers_the_sectors_and_tells_the_supplier():
 
     assert "1. 518200 — Data processing, hosting" in prompt
     assert "German hosting company." in prompt
+
+
+def test_a_real_code_instead_of_a_number_is_taken():
+    answer = choose_sector(
+        context(), HITS,
+        complete=lambda _: '{"choice": 311920, "confidence": 0.8, "rationale": "Coffee."}',
+        sector_ids_by_code={"311920": "s-coffee"},
+    )
+
+    assert answer.sector_id == "s-coffee"

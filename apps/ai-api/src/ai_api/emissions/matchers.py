@@ -28,6 +28,7 @@ class Matchers(NamedTuple):
 def default_matchers(index: SectorIndex, classification: str,
                      sectors: list[EmissionSector]) -> Matchers:
     by_code = {sector.code: sector for sector in sectors}
+    ids_by_code = {sector.code: sector.id for sector in sectors}
 
     def agent(context: LineContext) -> SectorAnswer:
         return agent_match(context, make_tools(context, index, classification, by_code), by_code)
@@ -35,6 +36,6 @@ def default_matchers(index: SectorIndex, classification: str,
     def fallback(context: LineContext) -> SectorAnswer:
         hits = index.search(classification, search_query(context),
                             config.EMISSION_FALLBACK_CANDIDATES)
-        return choose_sector(context, hits)
+        return choose_sector(context, hits, sector_ids_by_code=ids_by_code)
 
     return Matchers(agent if config.EMISSION_AGENT_ENABLED else None, fallback)

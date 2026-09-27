@@ -4,6 +4,7 @@ from __future__ import annotations
 from ...parsing import json_format_hint
 from ..facts import line_facts
 from ..line_context import LineContext
+from ..rules import MATCHING_RULES
 from ..sector_index import SectorHit
 from .reply import ChoiceReply
 
@@ -13,8 +14,10 @@ INSTRUCTIONS = (
     "Classify by what was bought, not by who sold it.\n"
     "\n"
     "Choose the best sector from the numbered list and answer with its number. Give a sector "
-    "whenever one is plausible and put your doubt in the confidence (0.9 plainly right, 0.3 "
-    "closest of poor options). Answer 0 only when the line is not a purchase at all."
+    "whenever one is plausible and put your doubt in the confidence. Answer 0 only when the "
+    "line buys nothing: a tax, levy or rounding line.\n"
+    "\n"
+    f"{MATCHING_RULES}"
 )
 
 

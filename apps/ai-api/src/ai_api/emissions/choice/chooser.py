@@ -15,8 +15,12 @@ Complete = Callable[[str], str]
 
 
 def choose_sector(context: LineContext, hits: list[SectorHit], *,
-                  complete: Complete | None = None) -> SectorAnswer:
-    """The shortlisted sector the model picks, none when it says none fits, else MatchFailed."""
+                  complete: Complete | None = None,
+                  sector_ids_by_code: dict[str, str] | None = None) -> SectorAnswer:
+    """The shortlisted sector the model picks, none when it says none fits, else MatchFailed.
+
+    A model that answers with a real sector code instead of a list number is taken at its word.
+    """
     if not hits:
         raise MatchFailed("no sectors were found to choose from")
     ask = complete or _complete
@@ -32,9 +36,12 @@ def choose_sector(context: LineContext, hits: list[SectorHit], *,
     confidence = bounded(answer.confidence)
     if answer.choice == 0:
         return SectorAnswer(None, confidence, answer.rationale)
-    if not 1 <= answer.choice <= len(hits):
-        raise MatchFailed(f"the model chose {answer.choice}, outside the {len(hits)} offered")
-    return SectorAnswer(hits[answer.choice - 1].sector_id, confidence, answer.rationale)
+    if 1 <= answer.choice <= len(hits):
+        return SectorAnswer(hits[answer.choice - 1].sector_id, confidence, answer.rationale)
+    named = (sector_ids_by_code or {}).get(str(answer.choice))
+    if named is not None:
+        return SectorAnswer(named, confidence, answer.rationale)
+    raise MatchFailed(f"the model chose {answer.choice}, outside the {len(hits)} offered")
 
 
 def _complete(prompt: str) -> str:
