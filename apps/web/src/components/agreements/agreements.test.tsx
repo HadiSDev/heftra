@@ -83,6 +83,7 @@ const AGREEMENT: AgreementRead = {
   read_at: '2026-09-20T10:05:00Z',
   file: { filename: 'atea.pdf', file_size: 1000 },
   terms: [],
+  analysis: null,
 }
 
 const TERM: TermRead = {
@@ -537,6 +538,50 @@ describe('ReportTab', () => {
         .getByRole('button', { name: 'Show less' })
         .getAttribute('aria-expanded'),
     ).toBe('true')
+  })
+
+  it('says while the spend is being checked', () => {
+    renderReport({
+      agreement: {
+        ...AGREEMENT,
+        analysis: {
+          id: 'r1',
+          status: 'running',
+          requested_at: '2026-09-27T09:59:00Z',
+          started_at: '2026-09-27T10:00:00Z',
+          finished_at: null,
+          error: null,
+        },
+      },
+      analysing: true,
+    })
+
+    expect(screen.getByRole('status').textContent).toContain(
+      'Checking your spend against the agreement',
+    )
+    expect(
+      screen.getByRole('button', { name: /Checking/ }).hasAttribute('disabled'),
+    ).toBe(true)
+  })
+
+  it('says when the last check did not finish', () => {
+    renderReport({
+      agreement: {
+        ...AGREEMENT,
+        analysis: {
+          id: 'r1',
+          status: 'failed',
+          requested_at: '2026-09-27T09:59:00Z',
+          started_at: '2026-09-27T10:00:00Z',
+          finished_at: '2026-09-27T10:01:00Z',
+          error: 'the worker stopped before the run finished',
+        },
+      },
+    })
+
+    expect(screen.getByRole('status').textContent).toContain(
+      'the worker stopped before the run finished',
+    )
   })
 
   it('says the report waits for a confirmed agreement', () => {

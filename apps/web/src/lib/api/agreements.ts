@@ -26,6 +26,12 @@ function isReading(status: AgreementSummaryRead['status']): boolean {
   return status === 'pending' || status === 'reading'
 }
 
+/** Whether the company's spend is being checked against its agreements right now. */
+export function isAnalysing(agreement: AgreementRead | undefined): boolean {
+  const status = agreement?.analysis?.status
+  return status === 'queued' || status === 'running'
+}
+
 /** The chosen company's agreements, or every active company's (`GET /agreements`). */
 export function agreementsQueryOptions(api: ApiClient, companyId?: string) {
   return queryOptions({
@@ -46,10 +52,16 @@ export function agreementQueryOptions(api: ApiClient, agreementId: string) {
   return queryOptions({
     queryKey: [...agreementsKey, 'detail', agreementId],
     queryFn: () => api.get<AgreementRead>(`/api/v1/agreements/${agreementId}`),
-    refetchInterval: (query) =>
-      query.state.data && isReading(query.state.data.status)
-        ? AGREEMENT_POLL_INTERVAL_MS
-        : false,
+    refetchInterval: (query) => {
+      const agreement = query.state.data
+      if (
+        agreement &&
+        (isReading(agreement.status) || isAnalysing(agreement))
+      ) {
+        return AGREEMENT_POLL_INTERVAL_MS
+      }
+      return false
+    },
   })
 }
 
@@ -95,7 +107,8 @@ export function agreementDocumentQueryOptions(
   })
 }
 
-function invalidateAgreements(queryClient: QueryClient) {
+/** Refetch every agreement query and the dashboard's compliance figures. */
+export function invalidateAgreements(queryClient: QueryClient) {
   return Promise.all([
     queryClient.invalidateQueries({ queryKey: agreementsKey }),
     queryClient.invalidateQueries({

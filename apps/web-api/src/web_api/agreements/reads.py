@@ -19,12 +19,14 @@ from ..db.models import (
     Vendor,
 )
 from ..schemas.agreements import (
+    AgreementAnalysisRead,
     AgreementFileRead,
     AgreementRead,
     AgreementSummaryRead,
     AgreementSupplier,
     TermRead,
 )
+from .analysis import latest_analysis
 
 
 def list_agreements(session: Session, company_ids: Sequence[str],
@@ -45,6 +47,7 @@ def agreement_read(session: Session, agreement: Agreement, today: date) -> Agree
         select(AgreementTerm).where(AgreementTerm.agreement_id == agreement.id)
         .order_by(col(AgreementTerm.created_at), col(AgreementTerm.id))
     ).all()
+    analysis = latest_analysis(session, agreement.company_id)
     return AgreementRead(
         **summary.model_dump(),
         supplier_vat_number=agreement.supplier_vat_number,
@@ -55,6 +58,8 @@ def agreement_read(session: Session, agreement: Agreement, today: date) -> Agree
                                file_size=int(file_row.file_size) if file_row and file_row.file_size
                                else None),
         terms=[TermRead.model_validate(term) for term in terms],
+        analysis=AgreementAnalysisRead.model_validate(analysis, from_attributes=True)
+        if analysis else None,
     )
 
 

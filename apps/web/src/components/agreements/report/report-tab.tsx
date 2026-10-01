@@ -13,7 +13,7 @@ import type {
   FindingReview,
 } from '#/lib/api/agreement-types'
 import type { ReportView } from '#/lib/agreement-search'
-import { formatRelativeTime } from '#/lib/format/format'
+import { AnalysisStatus } from './analysis-status'
 import { Commitments } from './commitments'
 import { FindingsList } from './findings-list'
 import { ReportFigures } from './report-figures'
@@ -61,11 +61,7 @@ export function ReportTab({
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-muted-foreground">
-          {agreement.analysed_at
-            ? `Checked ${formatRelativeTime(agreement.analysed_at)}.`
-            : 'Not checked yet.'}
-        </p>
+        <AnalysisStatus agreement={agreement} />
         {canEdit ? (
           <Button
             size="sm"

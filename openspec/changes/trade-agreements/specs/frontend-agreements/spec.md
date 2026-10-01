@@ -51,7 +51,7 @@ The agreement page's **Report** tab SHALL show:
 - then a **Rule breaks** table: date, supplier, item, amount, the reason, and the term's conditions;
 - then price checks, discount checks and commitment progress.
 
-Each finding SHALL open its line's voucher in the voucher drawer. A manager SHALL be able to mark a finding as an exception or not in scope with a note, or reopen it. The report SHALL say when it was last analysed, and SHALL offer managers a **Re-analyse** action.
+Each finding SHALL open its line's voucher in the voucher drawer. A manager SHALL be able to mark a finding as an exception or not in scope with a note, or reopen it. The report SHALL say when it was last analysed, and SHALL offer managers a **Check again** action. While the company's analysis is queued or running, the report SHALL say so, the action SHALL be unavailable, and the page SHALL poll until it finishes and then refresh its figures. When the last analysis failed, the report SHALL say so with its error. `GET /agreements/{id}` SHALL carry the company's latest analysis (its status, times and error) for this.
 
 #### Scenario: Following up a rule break
 

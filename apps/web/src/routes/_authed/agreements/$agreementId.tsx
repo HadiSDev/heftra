@@ -23,6 +23,8 @@ import {
   agreementQueryOptions,
   agreementReportQueryOptions,
   analyseAgreementsMutation,
+  invalidateAgreements,
+  isAnalysing,
   deleteAgreementMutation,
   readAgreementAgainMutation,
   reviewFindingMutation,
@@ -32,6 +34,7 @@ import {
 import type { FindingReviewStatus } from '#/lib/api/agreement-types'
 import { vendorsQueryOptions } from '#/lib/api/vendors'
 import { canManageCompanies, useApi, usePrincipal } from '#/lib/auth/auth'
+import { useAnalysisFinished } from '#/lib/use-analysis-finished'
 import { useDebouncedValue } from '#/lib/use-debounced-value'
 
 export const Route = createFileRoute('/_authed/agreements/$agreementId')({
@@ -85,6 +88,10 @@ function AgreementPage() {
   const review = useMutation(reviewFindingMutation(api, queryClient))
   const analyse = useMutation(analyseAgreementsMutation(api, queryClient))
   const remove = useMutation(deleteAgreementMutation(api, queryClient))
+  const refresh = React.useCallback(() => {
+    void invalidateAgreements(queryClient)
+  }, [queryClient])
+  useAnalysisFinished(agreement.data, refresh)
 
   if (agreement.isError) {
     return (
@@ -189,7 +196,7 @@ function AgreementPage() {
             void navigate({ search: { ...search, view: next } })
           }}
           canEdit={canEdit}
-          analysing={analyse.isPending}
+          analysing={analyse.isPending || isAnalysing(current)}
           onAnalyse={() => {
             analyse.mutate(current.company_id)
           }}

@@ -6,7 +6,7 @@ from decimal import Decimal
 
 from pydantic import BaseModel, Field
 
-from web_api.db.models import AgreementStatus
+from web_api.db.models import AgreementStatus, PipelineRunStatus
 
 from .terms import TermRead
 
@@ -43,6 +43,17 @@ class AgreementSummaryRead(BaseModel):
     base_currency: str | None = None
 
 
+class AgreementAnalysisRead(BaseModel):
+    """The company's latest check of its spend against its agreements."""
+
+    id: str
+    status: PipelineRunStatus
+    requested_at: datetime
+    started_at: datetime | None = None
+    finished_at: datetime | None = None
+    error: str | None = None
+
+
 class AgreementRead(AgreementSummaryRead):
     """An agreement with everything its page shows."""
 
@@ -52,6 +63,7 @@ class AgreementRead(AgreementSummaryRead):
     read_at: datetime | None = None
     file: AgreementFileRead
     terms: list[TermRead] = []
+    analysis: AgreementAnalysisRead | None = None
 
 
 class AgreementPatch(BaseModel):

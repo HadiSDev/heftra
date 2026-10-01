@@ -193,6 +193,28 @@ def test_a_manager_asks_for_analysis_once(client, engine, seed):
                        headers=auth("tok_viewerA")).status_code == 403
 
 
+def test_an_agreement_shows_its_company_s_analysis(client, engine, seed):
+    with Session(engine) as s:
+        agreement_id = agreement(s, seed["comp_a"]).id
+    url = f"/api/v1/agreements/{agreement_id}"
+
+    assert client.get(url, headers=auth("tokA")).json()["analysis"] is None
+
+    run_id = client.post(f"/api/v1/companies/{seed['comp_a']}/agreements/analyse",
+                         headers=auth("tokA")).json()["id"]
+    assert client.get(url, headers=auth("tok_viewerA")).json()["analysis"]["status"] == "queued"
+
+    with Session(engine) as s:
+        run = s.get(PipelineRun, run_id)
+        run.status = "failed"
+        run.error = "the worker stopped before the run finished"
+        s.add(run)
+        s.commit()
+    analysis = client.get(url, headers=auth("tokA")).json()["analysis"]
+    assert (analysis["status"], analysis["error"]) == (
+        "failed", "the worker stopped before the run finished")
+
+
 def test_a_change_during_a_running_analysis_queues_another(client, engine, seed):
     running = client.post(f"/api/v1/companies/{seed['comp_a']}/agreements/analyse",
                           headers=auth("tokA")).json()["id"]

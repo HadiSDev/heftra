@@ -1,4 +1,4 @@
-import type { Money } from './types'
+import type { Money, PipelineRunStatus } from './types'
 import type { ReportPeriods } from './spend-report-types'
 
 export type AgreementStatus =
@@ -93,6 +93,16 @@ export interface AgreementSummaryRead {
   base_currency: string | null
 }
 
+/** The company's latest check of its spend against its agreements. */
+export interface AgreementAnalysis {
+  id: string
+  status: PipelineRunStatus
+  requested_at: string
+  started_at: string | null
+  finished_at: string | null
+  error: string | null
+}
+
 export interface AgreementRead extends AgreementSummaryRead {
   supplier_vat_number: string | null
   supplier_website: string | null
@@ -100,6 +110,7 @@ export interface AgreementRead extends AgreementSummaryRead {
   read_at: string | null
   file: { filename: string; file_size: number | null }
   terms: Array<TermRead>
+  analysis: AgreementAnalysis | null
 }
 
 export interface AgreementPatch {
