@@ -22,6 +22,9 @@ const ACME: CompanyRead = {
   deactivated_at: null,
   spend_tree_id: null,
   spend_tree_name: null,
+  website: null,
+  description: null,
+  description_source: null,
 }
 
 function supplier(

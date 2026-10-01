@@ -96,6 +96,8 @@ function CompaniesSection() {
           country_code: values.country_code || null,
           vat_number: values.vat_number || null,
           spend_tree_id: values.spend_tree_id || null,
+          website: values.website || null,
+          description: values.description || null,
           integration: {
             erp_type: values.erp_type,
             credentials: Object.fromEntries(
@@ -122,6 +124,12 @@ function CompaniesSection() {
               : {}),
             ...(changes.spend_tree_id !== undefined
               ? { spend_tree_id: changes.spend_tree_id || null }
+              : {}),
+            ...(changes.website !== undefined
+              ? { website: changes.website || null }
+              : {}),
+            ...(changes.description !== undefined
+              ? { description: changes.description || null }
               : {}),
           },
         })

@@ -49,6 +49,12 @@ export interface CompanyRead {
   /** The spend tree this company categorizes against. */
   spend_tree_id: string | null
   spend_tree_name: string | null
+  /** The company's own site, as its root. */
+  website: string | null
+  /** What the company does, as the models that read its spend are told. */
+  description: string | null
+  /** `web` when researched from the website, `human` when a manager wrote it. */
+  description_source: 'web' | 'human' | null
 }
 
 /** One credential input an ERP connector declares. */
@@ -88,6 +94,8 @@ export interface CompanyCreate {
   integration: IntegrationSpec
   /** Omitted means the organization's copy of the default template. */
   spend_tree_id?: string | null
+  website?: string | null
+  description?: string | null
 }
 
 /** What `POST /companies` returns: the company plus the integration it got. */
@@ -143,6 +151,9 @@ export interface CompanyUpdate {
   vat_number?: string | null
   base_currency?: string
   spend_tree_id?: string | null
+  website?: string | null
+  /** Empty clears it, and the website is researched again. */
+  description?: string | null
 }
 
 /** What `PATCH /companies/{id}` returns: the company plus what the change cost. */

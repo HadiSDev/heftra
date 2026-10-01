@@ -43,6 +43,9 @@ const ACME: CompanyRead = {
   deactivated_at: null,
   spend_tree_id: 'tree1',
   spend_tree_name: 'Default spend tree',
+  website: null,
+  description: null,
+  description_source: null,
 }
 
 const INTEGRATION: ErpIntegrationRead = {

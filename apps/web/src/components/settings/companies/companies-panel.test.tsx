@@ -66,6 +66,9 @@ const ACME: CompanyRead = {
   deactivated_at: null,
   spend_tree_id: 'tree1',
   spend_tree_name: 'Default spend tree',
+  website: null,
+  description: null,
+  description_source: null,
 }
 
 const RETIRED: CompanyRead = {
@@ -78,6 +81,9 @@ const RETIRED: CompanyRead = {
   deactivated_at: '2026-02-01T00:00:00Z',
   spend_tree_id: 'tree1',
   spend_tree_name: 'Default spend tree',
+  website: null,
+  description: null,
+  description_source: null,
 }
 
 /** Acme's connected integration, as `GET /erp-integrations` reports it. */
@@ -329,6 +335,8 @@ describe('changedFields', () => {
       vat_number: 'DK1',
       base_currency: 'DKK',
       spend_tree_id: 'tree1',
+      website: '',
+      description: '',
     }
     const after = {
       name: 'Acme Group',
@@ -336,6 +344,8 @@ describe('changedFields', () => {
       vat_number: 'DK1',
       base_currency: 'DKK',
       spend_tree_id: 'tree1',
+      website: '',
+      description: '',
     }
     expect(changedFields(before, after)).toEqual({ name: 'Acme Group' })
   })
@@ -347,6 +357,8 @@ describe('changedFields', () => {
       vat_number: 'DK1',
       base_currency: 'DKK',
       spend_tree_id: 'tree1',
+      website: '',
+      description: '',
     }
     expect(changedFields(values, values)).toEqual({})
   })
@@ -410,6 +422,8 @@ describe('CompaniesPanel', () => {
         vat_number: '',
         base_currency: 'DKK',
         spend_tree_id: '',
+        website: '',
+        description: '',
         erp_type: 'mock',
         credentials: { base_url: 'http://localhost:8001', api_key: '' },
       }),
@@ -578,6 +592,51 @@ describe('CompaniesPanel', () => {
     )
     expect(props.onUpdateIntegration).not.toHaveBeenCalled()
     expect(props.onConnectIntegration).not.toHaveBeenCalled()
+  })
+
+  it('shows a researched description and sends a correction as written by the team', async () => {
+    const props = renderPanel({
+      companies: [
+        {
+          ...ACME,
+          website: 'https://acme.dk/',
+          description: 'Sells office furniture.',
+          description_source: 'web',
+        },
+      ],
+    })
+
+    await clickRowAction('Acme A/S', 'Edit')
+    const description = await screen.findByLabelText('What the company does')
+    expect((description as HTMLTextAreaElement).value).toBe(
+      'Sells office furniture.',
+    )
+    expect(screen.getByText(/Researched from the website/)).toBeTruthy()
+
+    fireEvent.change(description, {
+      target: { value: 'Builds apps for smartwatches.' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Save changes' }))
+
+    await waitFor(() =>
+      expect(props.onUpdate).toHaveBeenCalledWith('c1', {
+        description: 'Builds apps for smartwatches.',
+      }),
+    )
+  })
+
+  it('sends a new website on its own', async () => {
+    const props = renderPanel()
+
+    await clickRowAction('Acme A/S', 'Edit')
+    fireEvent.change(await screen.findByLabelText('Website'), {
+      target: { value: 'acme.dk' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Save changes' }))
+
+    await waitFor(() =>
+      expect(props.onUpdate).toHaveBeenCalledWith('c1', { website: 'acme.dk' }),
+    )
   })
 
   it('reports stored credentials without showing or prefilling them', async () => {

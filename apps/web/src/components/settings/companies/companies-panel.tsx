@@ -657,6 +657,8 @@ export function CompaniesPanel({
                   vat_number: values.vat_number,
                   base_currency: values.base_currency,
                   spend_tree_id: values.spend_tree_id,
+                  website: values.website,
+                  description: values.description,
                   erp_type: values.erp_type,
                   credentials: values.credentials,
                 })

@@ -15,6 +15,9 @@ export interface CompanyValues {
   base_currency: string
   /** The spend tree to categorize against; empty means the organization's default. */
   spend_tree_id: string
+  website: string
+  /** What the company does; empty asks for it to be researched from the website. */
+  description: string
 }
 
 /** Company fields plus the ERP connection created alongside it. */
@@ -66,6 +69,8 @@ export function toValues(company: CompanyRead): CompanyValues {
     vat_number: company.vat_number ?? '',
     base_currency: company.base_currency,
     spend_tree_id: company.spend_tree_id ?? '',
+    website: company.website ?? '',
+    description: company.description ?? '',
   }
 }
 
@@ -89,6 +94,8 @@ function companyFields(values: CompanyValues): CompanyValues {
     vat_number: values.vat_number,
     base_currency: values.base_currency,
     spend_tree_id: values.spend_tree_id,
+    website: values.website,
+    description: values.description,
   }
 }
 

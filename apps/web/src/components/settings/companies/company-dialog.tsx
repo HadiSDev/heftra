@@ -28,6 +28,7 @@ import { currencyForCountry, findCurrency } from '#/lib/format/currencies'
 import { CountryField } from '#/components/fields/country-field'
 import { CurrencyField } from '#/components/fields/currency-field'
 import { SubmitRow, useSettingsSubmit } from '#/components/settings/form'
+import { BusinessContextFields } from './business-context-fields'
 import { defaultCredentials, toValues } from './company-values'
 import type { CompanyFormValues } from './company-values'
 import { ErpConnectionFields } from './erp-connection-fields'
@@ -69,6 +70,8 @@ export function CompanyDialog({
             vat_number: '',
             base_currency: '',
             spend_tree_id: '',
+            website: '',
+            description: '',
           }),
       erp_type: integration?.erp_type ?? preselected?.erp_type ?? '',
       credentials: defaultCredentials(preselected),
@@ -164,6 +167,7 @@ export function CompanyDialog({
                 )}
               />
             </div>
+            <BusinessContextFields form={form} company={company} />
             <FormField
               control={form.control}
               name="base_currency"
