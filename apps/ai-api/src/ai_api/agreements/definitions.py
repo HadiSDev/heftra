@@ -43,8 +43,9 @@ def with_definitions(terms: list[DraftTerm], definitions: list[Definition]) -> l
         used = [definition for definition in unique.values()
                 if _mentions(term.scope, definition.term)]
         if used:
-            meanings = "; ".join(f"{definition.term}: {definition.meaning}" for definition in used)
-            term = replace(term, scope=f"{term.scope} ({meanings})")
+            meanings = " ".join(f'In this agreement, "{definition.term}" means {definition.meaning}.'
+                                for definition in used)
+            term = replace(term, scope=f"{term.scope.rstrip('. ')}. {meanings}")
         expanded.append(term)
     return expanded
 

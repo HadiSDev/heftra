@@ -152,7 +152,8 @@ def test_a_scope_carries_the_definitions_of_the_words_it_uses():
 
     read = read_agreement(pages, complete=model)
 
-    assert [term.scope for term in read.terms] == [f"Accessories (Accessories: {definition})"]
+    assert [term.scope for term in read.terms] == [
+        f'Accessories. In this agreement, "Accessories" means {definition}.']
 
 
 def test_a_definition_not_on_its_page_is_left_out():

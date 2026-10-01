@@ -45,6 +45,10 @@ def judge_prompt(term: AgreementTerm, line: AnalysedLine) -> str:
         "You check purchases against a term of a trade agreement. Judge only what the line "
         "bought, not who sold it.",
         _KIND_QUESTIONS.get(term.kind, _KIND_QUESTIONS[AgreementTermKind.PREFERRED_SUPPLIER.value]),
+        "When the scope says what one of its words means (In this agreement, \"Accessories\" "
+        "means keyboards, mice and cables), the line is covered by that word only if what it "
+        "bought is one of the things listed in that meaning. Something of another kind is not, "
+        "however much it seems to belong with them.",
         "Give a confidence from 0 to 1 and one short sentence of reason.",
         "",
         "Term:",
