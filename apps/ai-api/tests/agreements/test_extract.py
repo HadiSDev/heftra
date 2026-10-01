@@ -165,3 +165,12 @@ def test_a_definition_not_on_its_page_is_left_out():
     ], page)
 
     assert kept == [Definition("Accessories", "keyboards, mice and cables")]
+
+
+def test_the_reader_is_told_who_the_customer_is():
+    model = StubModel([[], [], []])
+
+    read_agreement(PAGES, complete=model, buyer="VectorLab ApS: builds apps for smartwatches")
+
+    assert all("The customer is VectorLab ApS: builds apps for smartwatches" in _texts(request)
+               for request in model.requests)

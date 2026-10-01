@@ -19,6 +19,7 @@ from web_api.db.models import (
     FindingReviewStatus,
     Vendor,
 )
+from web_api.company_context import business_context
 from web_api.fx.service import FxService
 from web_api.vat import international_vat
 
@@ -47,8 +48,9 @@ def analyse_company(session: Session, company_id: str, *, ask: Ask, embed_fn: Em
         return {**summary, "judged": 0, "cached": 0, "unjudged": 0, "findings": {}}
 
     fx = fx or FxService(session)
-    judge = Judge(session, ask)
-    base_currency = session.get(Company, company_id).base_currency
+    company = session.get(Company, company_id)
+    judge = Judge(session, ask, business_context(company))
+    base_currency = company.base_currency
     found: Counter[str] = Counter()
     for agreement in agreements:
         terms = session.exec(

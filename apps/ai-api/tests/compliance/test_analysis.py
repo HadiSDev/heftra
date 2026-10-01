@@ -176,6 +176,29 @@ def test_lines_before_the_agreement_are_not_checked(session, books):
     assert _findings(session) == {}
 
 
+def test_the_judge_hears_what_the_buyer_does_and_asks_again_when_it_changes(session, books):
+    agreement = books.agreement()
+    books.term(agreement, AgreementTermKind.PREFERRED_SUPPLIER, "Laptops")
+    books.line(books.proshop, "Dell laptop", unit_price="9000")
+    prompts = []
+
+    def judge(prompt):
+        prompts.append(prompt)
+        return Judge(("laptop",))(prompt)
+
+    books.company.description = "Builds apps for smartwatches."
+    session.add(books.company)
+    session.commit()
+    _analyse(session, books, judge)
+    books.company.description = "Runs a bakery."
+    session.add(books.company)
+    session.commit()
+    summary = _analyse(session, books, judge)
+
+    assert "The buyer: Acme: Builds apps for smartwatches." in prompts[0]
+    assert (summary["judged"], summary["cached"]) == (1, 0)
+
+
 def test_a_second_run_only_asks_about_new_lines(session, books):
     agreement = books.agreement()
     books.term(agreement, AgreementTermKind.PREFERRED_SUPPLIER, "Laptops")

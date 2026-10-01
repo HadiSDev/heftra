@@ -36,19 +36,20 @@ class ReadAgreement:
     dropped_terms: int
 
 
-def read_agreement(pages: list[AgreementPage], *, complete: Complete) -> ReadAgreement:
+def read_agreement(pages: list[AgreementPage], *, complete: Complete,
+                   buyer: str = "") -> ReadAgreement:
     readable = [page for page in pages if page.text or page.image]
     if not readable:
         raise AgreementUnreadable("no page of the agreement has text or could be pictured")
 
-    header = _ask(complete, HEADER, readable[:config.AGREEMENT_HEADER_PAGES], ReadHeader) \
-        or ReadHeader()
+    header = _ask(complete, HEADER, readable[:config.AGREEMENT_HEADER_PAGES], ReadHeader,
+                  buyer) or ReadHeader()
     drafts: list[DraftTerm] = []
     definitions: list[Definition] = []
     failed = 0
     dropped = 0
     for page in readable:
-        read = _ask(complete, TERMS, [page], ReadTerms)
+        read = _ask(complete, TERMS, [page], ReadTerms, buyer)
         if read is None:
             failed += 1
             continue
@@ -68,17 +69,20 @@ def read_agreement(pages: list[AgreementPage], *, complete: Complete) -> ReadAgr
 
 
 def _ask(complete: Complete, instructions: str, pages: list[AgreementPage],
-         model: type[T]) -> T | None:
+         model: type[T], buyer: str) -> T | None:
     try:
-        return parse_model(complete(_messages(instructions, pages, model)), model)
+        return parse_model(complete(_messages(instructions, pages, model, buyer)), model)
     except Exception as error:  # noqa: BLE001
         logger.warning("agreement: pages %s could not be read: %s",
                        [page.number for page in pages], error)
         return None
 
 
-def _messages(instructions: str, pages: list[AgreementPage], model: type[BaseModel]) -> list[dict]:
+def _messages(instructions: str, pages: list[AgreementPage], model: type[BaseModel],
+              buyer: str) -> list[dict]:
     parts: list[dict] = [{"type": "text", "text": instructions}]
+    if buyer:
+        parts.append({"type": "text", "text": f"The customer is {buyer}"})
     for page in pages:
         if page.text:
             parts.append({"type": "text", "text": f"{page_marker(page.number)}\n{page.text}"})

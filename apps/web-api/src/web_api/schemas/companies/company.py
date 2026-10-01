@@ -21,6 +21,9 @@ class CompanyRead(BaseModel):
     deactivated_at: datetime | None = None
     spend_tree_id: str | None = None
     spend_tree_name: str | None = None
+    website: str | None = None
+    description: str | None = None
+    description_source: str | None = None
 
 
 class CompanyCreate(BaseModel):
@@ -33,6 +36,8 @@ class CompanyCreate(BaseModel):
     organization_id: str | None = None
     integration: IntegrationSpec
     spend_tree_id: str | None = None
+    website: str | None = None
+    description: str | None = Field(default=None, max_length=2000)
 
 
 class CompanyUpdate(BaseModel):
@@ -43,3 +48,5 @@ class CompanyUpdate(BaseModel):
     vat_number: str | None = None
     base_currency: CurrencyCode | None = None
     spend_tree_id: str | None = None
+    website: str | None = None
+    description: str | None = Field(default=None, max_length=2000)

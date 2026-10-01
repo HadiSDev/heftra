@@ -144,6 +144,7 @@ def categorize_lines(
     vendors = _VendorFacts(session)
     company = session.get(Company, company_id)
     buyer_name = company.name if company else None
+    buyer_description = company.description if company else None
     retrieve = retriever_for(company)
     narrowed_total = 0
     lines_seen = 0
@@ -170,7 +171,7 @@ def categorize_lines(
             supplier_name = vendor_name or inv.supplier_name
             key = question_key(
                 ln.item_name, ln.description, supplier_name, ln.native_account_code,
-                vendor_description,
+                vendor_description, buyer_description,
             )
             offered_hash = hash_for(tuple(offered))
             cached = cached_answer(session, key, offered_hash)
@@ -182,6 +183,7 @@ def categorize_lines(
                 supplier=supplier_name,
                 supplier_description=vendor_description,
                 buyer=buyer_name,
+                buyer_description=buyer_description,
                 amount=ln.amount,
                 currency=inv.currency,
             )

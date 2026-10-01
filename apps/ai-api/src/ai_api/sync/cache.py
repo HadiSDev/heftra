@@ -17,15 +17,20 @@ def question_key(
     supplier: str | None,
     native_account_code: str | None,
     supplier_description: str | None = None,
+    buyer_description: str | None = None,
 ) -> str:
-    """A digest of what makes this line the categorization question it is."""
-    payload = json.dumps(
-        [
-            _norm(item_name), _norm(description), _norm(supplier),
-            _norm(native_account_code), _norm(supplier_description),
-        ],
-        ensure_ascii=False,
-    )
+    """A digest of what makes this line the categorization question it is.
+
+    The buyer's description joins the digest only when there is one, so the questions of an
+    undescribed company keep their keys.
+    """
+    parts = [
+        _norm(item_name), _norm(description), _norm(supplier),
+        _norm(native_account_code), _norm(supplier_description),
+    ]
+    if buyer_description:
+        parts.append(_norm(buyer_description))
+    payload = json.dumps(parts, ensure_ascii=False)
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 

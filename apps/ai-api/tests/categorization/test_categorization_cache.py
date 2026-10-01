@@ -52,6 +52,18 @@ def test_the_amount_is_not_part_of_the_question():
     )
 
 
+def test_what_the_buyer_does_is_part_of_the_question():
+    asked = question_key("Enduro 3", None, "Garmin", None, None, "Builds apps for smartwatches")
+    assert asked != question_key("Enduro 3", None, "Garmin", None, None, "Runs a bakery")
+    assert asked != question_key("Enduro 3", None, "Garmin", None)
+
+
+def test_an_undescribed_buyer_keeps_the_earlier_question():
+    assert question_key("Enduro 3", None, "Garmin", None, None, None) == question_key(
+        "Enduro 3", None, "Garmin", None
+    )
+
+
 def test_the_same_tree_hashes_the_same():
     assert tree_hash(TREE) == tree_hash(TREE)
 

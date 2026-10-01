@@ -23,15 +23,16 @@ Ask = Callable[[str], str]
 class Judge:
     """Answers for one run, from the stored judgements first, counting what it asked."""
 
-    def __init__(self, session: Session, ask: Ask) -> None:
+    def __init__(self, session: Session, ask: Ask, buyer: str = "") -> None:
         self._session = session
         self._ask = ask
+        self._buyer = buyer
         self.judged = 0
         self.cached = 0
         self.unjudged = 0
 
     def judge(self, term: AgreementTerm, line: AnalysedLine) -> AgreementScopeJudgement | None:
-        key = term_key(term)
+        key = term_key(term, self._buyer)
         stored = self._session.exec(
             select(AgreementScopeJudgement).where(
                 AgreementScopeJudgement.term_id == term.id,
@@ -43,7 +44,7 @@ class Judge:
             self.cached += 1
             return stored
         try:
-            reply = parse_model(self._ask(judge_prompt(term, line)), JudgeReply)
+            reply = parse_model(self._ask(judge_prompt(term, line, self._buyer)), JudgeReply)
         except Exception as error:  # noqa: BLE001
             self.unjudged += 1
             logger.warning("compliance: line %s against term %s not judged: %s",

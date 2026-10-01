@@ -10,7 +10,8 @@ from sqlalchemy.engine import Engine
 from sqlmodel import Session, col, select
 
 from web_api.agreements.status import settle_status
-from web_api.db.models import Agreement, AgreementStatus, File
+from web_api.company_context import business_context
+from web_api.db.models import Agreement, AgreementStatus, Company, File
 from web_api.storage.blocking import run_blocking
 from web_api.storage.errors import StorageUnavailable, StoredFileMissing
 from web_api.storage.store import FileStore
@@ -89,7 +90,9 @@ def _read(session: Session, agreement: Agreement, store: FileStore, complete: Co
     if file_row is None:
         raise StoredFileMissing(agreement.file_id)
     pages = agreement_pages(run_blocking(store.get(file_row.storage_path)))
-    read = read_agreement(pages, complete=complete)
+    company = session.get(Company, agreement.company_id)
+    read = read_agreement(pages, complete=complete,
+                          buyer=business_context(company) if company else "")
     apply_header(agreement, file_row, read.header)
     if agreement.vendor_id is None:
         agreement.vendor_id = link_vendor(

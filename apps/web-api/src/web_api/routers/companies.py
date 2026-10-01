@@ -10,6 +10,7 @@ from web_api.db.models import Company, InvoiceLine, LineStatus, SpendTree
 from ..audit import record_audit
 from ..db.models.audit_log import SYSTEM_ACTOR
 from ..agreements.stored_files import discard_company_files
+from ..company_context import apply_context
 from ..company_deletion import company_records, delete_company
 from ..auth.deps import (
     TenantScope,
@@ -100,6 +101,7 @@ def create_company(
         base_currency=body.base_currency,
         spend_tree_id=spend_tree_id,
     )
+    apply_context(company, body.model_dump(include={"website", "description"}, exclude_unset=True))
     session.add(company)
     integration = provision_integration(session, company.id, body.integration)
     session.commit()
@@ -130,6 +132,8 @@ def update_company(
             session, company.organization_id, changes.pop("spend_tree_id")
         )
 
+    apply_context(company, {field: changes.pop(field) for field in ("website", "description")
+                            if field in changes})
     for field, value in changes.items():
         setattr(company, field, value)
 

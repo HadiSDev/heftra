@@ -19,6 +19,12 @@ class Company(SQLModel, table=True):
     spend_tree_id: Optional[str] = Field(
         sa_type=String, foreign_key="spend_trees.id", nullable=True, default=None
     )
+    website: Optional[str] = Field(sa_type=String, nullable=True, default=None)
+    description: Optional[str] = Field(sa_type=String, nullable=True, default=None)
+    description_source: Optional[str] = Field(sa_type=String, nullable=True, default=None)
+    researched_at: Optional[datetime] = Field(
+        sa_type=DateTime(timezone=True), nullable=True, default=None
+    )
     is_active: bool = Field(sa_type=Boolean, nullable=False, default=True)
     deactivated_at: Optional[datetime] = Field(sa_type=DateTime(timezone=True), nullable=True, default=None)
     created_at: datetime = Field(sa_column=_ts())

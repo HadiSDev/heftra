@@ -23,7 +23,7 @@ _KIND_QUESTIONS = {
 }
 
 
-def judge_prompt(term: AgreementTerm, line: AnalysedLine) -> str:
+def judge_prompt(term: AgreementTerm, line: AnalysedLine, buyer: str = "") -> str:
     term_lines = [f"Kind: {term.kind}", f"Scope: {term.scope}"]
     if term.item:
         term_lines.append(f"Item: {term.item}")
@@ -49,7 +49,13 @@ def judge_prompt(term: AgreementTerm, line: AnalysedLine) -> str:
         "means keyboards, mice and cables), the line is covered by that word only if what it "
         "bought is one of the things listed in that meaning. Something of another kind is not, "
         "however much it seems to belong with them.",
+        "Use what the buyer does only to tell what an item is to them: a smartwatch is a "
+        "development device to a company that builds software for watches, and a personal "
+        "item to most others. Do not count something as in scope because the buyer might use "
+        "it for work, and never let it override what the scope lists.",
         "Give a confidence from 0 to 1 and one short sentence of reason.",
+        "",
+        f"The buyer: {buyer or '(not described)'}",
         "",
         "Term:",
         *term_lines,
