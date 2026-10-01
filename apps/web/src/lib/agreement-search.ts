@@ -1,3 +1,5 @@
+import type { AgreementRead } from '#/lib/api/agreement-types'
+
 export type AgreementTab = 'terms' | 'report'
 
 /** Which findings the report lists: open ones, reviewed ones, or all. */
@@ -19,4 +21,15 @@ export function validateAgreementSearch(
     tab: TABS.find((tab) => tab === search.tab),
     view: VIEWS.find((view) => view === search.view),
   }
+}
+
+/** The tab an agreement opens on: its report once it is active and nothing is left to review. */
+export function defaultAgreementTab(
+  agreement: Pick<AgreementRead, 'status' | 'terms'> | undefined,
+): AgreementTab {
+  if (agreement?.status !== 'active') {
+    return 'terms'
+  }
+  const drafts = agreement.terms.some((term) => term.status === 'draft')
+  return drafts ? 'terms' : 'report'
 }

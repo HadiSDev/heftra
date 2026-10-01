@@ -12,7 +12,10 @@ import {
 import { AgreementHeading } from '#/components/agreements/detail/agreement-heading'
 import { ReportTab } from '#/components/agreements/report/report-tab'
 import { TermsTab } from '#/components/agreements/terms/terms-tab'
-import { validateAgreementSearch } from '#/lib/agreement-search'
+import {
+  defaultAgreementTab,
+  validateAgreementSearch,
+} from '#/lib/agreement-search'
 import type { AgreementTab, ReportView } from '#/lib/agreement-search'
 import { ApiError } from '#/lib/api/api-client'
 import {
@@ -62,8 +65,7 @@ function AgreementPage() {
 
   const agreement = useQuery(agreementQueryOptions(api, agreementId))
   const status = agreement.data?.status
-  const tab: AgreementTab =
-    search.tab ?? (status === 'active' ? 'report' : 'terms')
+  const tab: AgreementTab = search.tab ?? defaultAgreementTab(agreement.data)
   const view: ReportView = search.view ?? 'open'
   const report = useQuery({
     ...agreementReportQueryOptions(api, agreementId, {
