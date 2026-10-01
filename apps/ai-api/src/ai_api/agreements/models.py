@@ -69,5 +69,21 @@ class ReadTerm(BaseModel):
         return int(amount) if amount is not None else None
 
 
+class ReadDefinition(BaseModel):
+    term: str = ""
+    meaning: str = ""
+
+    @field_validator("term", "meaning", mode="before")
+    @classmethod
+    def _text(cls, value: object) -> object:
+        return "" if value is None else value
+
+
 class ReadTerms(BaseModel):
     terms: list[ReadTerm] = []
+    definitions: list[ReadDefinition] = []
+
+    @field_validator("terms", "definitions", mode="before")
+    @classmethod
+    def _lists(cls, value: object) -> object:
+        return [] if value is None else value

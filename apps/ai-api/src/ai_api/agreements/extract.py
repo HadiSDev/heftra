@@ -11,6 +11,7 @@ from pydantic import BaseModel
 
 from .. import config
 from ..parsing import json_format_hint, parse_model
+from .definitions import Definition, checked_definitions, with_definitions
 from .models import ReadHeader, ReadTerms
 from .pages import AgreementPage
 from .prompts import HEADER, TERMS, page_marker
@@ -43,6 +44,7 @@ def read_agreement(pages: list[AgreementPage], *, complete: Complete) -> ReadAgr
     header = _ask(complete, HEADER, readable[:config.AGREEMENT_HEADER_PAGES], ReadHeader) \
         or ReadHeader()
     drafts: list[DraftTerm] = []
+    definitions: list[Definition] = []
     failed = 0
     dropped = 0
     for page in readable:
@@ -50,6 +52,7 @@ def read_agreement(pages: list[AgreementPage], *, complete: Complete) -> ReadAgr
         if read is None:
             failed += 1
             continue
+        definitions.extend(checked_definitions(read.definitions, page))
         for term in read.terms:
             draft = draft_term(term, [page])
             if draft is None:
@@ -60,7 +63,8 @@ def read_agreement(pages: list[AgreementPage], *, complete: Complete) -> ReadAgr
                 drafts.append(draft)
     if failed == len(readable):
         raise AgreementUnreadable(f"none of the {len(readable)} page(s) could be read")
-    return ReadAgreement(header, merge_terms(drafts), len(readable), failed, dropped)
+    terms = with_definitions(merge_terms(drafts), definitions)
+    return ReadAgreement(header, terms, len(readable), failed, dropped)
 
 
 def _ask(complete: Complete, instructions: str, pages: list[AgreementPage],

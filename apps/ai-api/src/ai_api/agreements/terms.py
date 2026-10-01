@@ -68,7 +68,11 @@ def quoted_page(quote: str, stated: int | None, pages: list[AgreementPage]) -> i
 def draft_term(read: ReadTerm, pages: list[AgreementPage]) -> DraftTerm | None:
     """The term as a draft, or None when its kind, fields or quote don't hold up."""
     kind = read.kind.strip().lower()
-    scope = read.scope.strip() or (read.item or "").strip()
+    item = (read.item or "").strip()
+    if kind == AgreementTermKind.AGREED_PRICE.value and item:
+        scope = item
+    else:
+        scope = read.scope.strip() or item
     if not scope and kind == AgreementTermKind.VOLUME_COMMITMENT.value:
         scope = SUPPLIER_SPEND
     if kind not in _KINDS or not scope:

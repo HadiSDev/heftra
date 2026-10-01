@@ -26,10 +26,14 @@ TERMS = (
     "or agreement) in commitment_period, and any rebate tiers as thresholds with rebate "
     "percentages.\n"
     "Leave fields that don't apply to a term's kind as null, not 0.\n"
+    "Also list in definitions every word or phrase the page defines (for example "
+    "\"Accessories\" means keyboards, mice and cables): the defined word in term, and its "
+    "meaning copied word for word in meaning.\n"
     "For every term, copy the sentence it comes from word for word into quote, and give the "
     "page number printed in the \"--- Page N ---\" marker. Give a confidence "
     "from 0 to 1. Leave out general legal clauses (liability, termination, confidentiality). "
-    "If the page holds no such terms, return an empty list. Do not invent terms or quotes."
+    "If the page holds no such terms or definitions, return empty lists. Do not invent "
+    "terms, definitions or quotes."
 )
 
 

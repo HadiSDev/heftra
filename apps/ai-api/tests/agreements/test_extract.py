@@ -6,7 +6,9 @@ import re
 
 import pytest
 
+from ai_api.agreements.definitions import Definition, checked_definitions
 from ai_api.agreements.extract import AgreementUnreadable, read_agreement
+from ai_api.agreements.models import ReadDefinition
 from ai_api.agreements.pages import AgreementPage
 
 PAGES = [
@@ -33,7 +35,9 @@ class StubModel:
         answer = self.parts.pop(0)
         if isinstance(answer, Exception):
             raise answer
-        return answer if isinstance(answer, str) else json.dumps({"terms": answer})
+        if isinstance(answer, (str, dict)):
+            return answer if isinstance(answer, str) else json.dumps(answer)
+        return json.dumps({"terms": answer})
 
 
 def _texts(messages: list[dict]) -> str:
@@ -114,3 +118,49 @@ def test_null_scopes_and_zeroed_fields_are_read_as_missing():
     assert commitment_term.unit_price is None
     assert price_term.scope == "Lenovo ThinkPad T14 Gen 5"
     assert (price_term.discount_percent, price_term.commitment_amount) == (None, None)
+
+
+def test_an_agreed_price_is_scoped_to_its_item():
+    price = "Lenovo ThinkPad T14 Gen 5 21ML003XMX piece 8,000.00"
+    pages = [AgreementPage(1, text=f"Annex 1 - Fixed unit prices in DKK.\n{price}")]
+    model = StubModel([[
+        {"kind": "agreed_price", "scope": "Fixed unit prices in DKK.",
+         "item": "Lenovo ThinkPad T14 Gen 5", "unit": "piece", "unit_price": 8000,
+         "quote": price, "page": 1},
+    ]])
+
+    read = read_agreement(pages, complete=model)
+
+    assert [term.scope for term in read.terms] == ["Lenovo ThinkPad T14 Gen 5"]
+
+
+def test_a_scope_carries_the_definitions_of_the_words_it_uses():
+    definition = "keyboards, mice, docking stations and cables"
+    discount = "Accessories carry a discount of 10 percent off list price."
+    pages = [
+        AgreementPage(1, text=f'"Accessories" means {definition}.'),
+        AgreementPage(2, text=discount),
+    ]
+    model = StubModel([
+        {"terms": [], "definitions": [
+            {"term": "Accessories", "meaning": definition},
+            {"term": "Monitors", "meaning": "screens of any size and make"},
+        ]},
+        {"terms": [{"kind": "discount", "scope": "Accessories", "discount_percent": 10,
+                    "quote": discount, "page": 2}], "definitions": None},
+    ])
+
+    read = read_agreement(pages, complete=model)
+
+    assert [term.scope for term in read.terms] == [f"Accessories (Accessories: {definition})"]
+
+
+def test_a_definition_not_on_its_page_is_left_out():
+    page = AgreementPage(1, text='"Accessories" means keyboards, mice and cables.')
+
+    kept = checked_definitions([
+        ReadDefinition(term="Accessories", meaning="keyboards, mice and cables"),
+        ReadDefinition(term="Accessories", meaning="anything sold by the supplier"),
+    ], page)
+
+    assert kept == [Definition("Accessories", "keyboards, mice and cables")]
