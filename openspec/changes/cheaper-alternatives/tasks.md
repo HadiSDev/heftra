@@ -40,7 +40,7 @@
 - [x] 5.6 Distributor connectors: Farnell, Mouser and Digi-Key clients (RS left out: no public API specification), keyword search, price breaks at the item's typical order quantity (tests with recorded responses)
 - [x] 5.7 Open-web connector: the `SearchProvider` interface with SearXNG (JSON API, market language) as default and DuckDuckGo as fallback, the block list, found product pages read as in 5.4 (tests with a stub search)
 - [x] 5.8 A failing connector is logged, counted and skipped for the rest of the run (tests)
-- [ ] 5.9 Agreement conflicts: preferred-supplier and behind commitments from the item's in-scope rulings (tests)
+- [x] 5.9 Agreement conflicts: preferred-supplier and behind commitments from the item's in-scope rulings (tests)
 
 ## 6. Searching and runs (ai-api)
 
