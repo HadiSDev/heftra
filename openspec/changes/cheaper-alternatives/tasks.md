@@ -73,6 +73,6 @@
 
 ## 9. Verification
 
-- [ ] 9.1 Run the ai-api, web-api and web suites, and tsc
-- [ ] 9.2 A real-model sample: extract specifications for 100 items of the test companies (materials, parts and finished goods) and check the class, pricing unit and pack size by hand; record accuracy in `design.md`
+- [x] 9.1 Run the ai-api, web-api and web suites, and tsc
+- [x] 9.2 A real-model sample: extract specifications for 100 items of the test companies (materials, parts and finished goods) and check the class, pricing unit and pack size by hand; record accuracy in `design.md`
 - [ ] 9.3 With the user's go-ahead: run the migration on dev, search a few items on request (a laptop, a cable box, toilet paper, a steel bar), and check the alternatives, tiers and prices against the offers

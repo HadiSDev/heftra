@@ -194,6 +194,21 @@ The `procurement_agent` and `redundancy` packages and their `_call_stub` calls i
 - **Quantity missing on many ERP lines.** → Those items have no unit price and say why. History and the benchmark still show identifiers and prices, but no saving.
 - **One worker assumed** for the host interval. → Documented. A shared limiter (a table) is needed before running several workers.
 
+## Specification accuracy (sample)
+
+97 items of the dev and benchmark companies (real invoices and synthetic lines), read in batches of 8 by the dev model and checked by hand:
+
+- **Read:** 95 of 97. Two items were dropped because their replies could not be parsed; they are retried on the next refresh.
+- **Services:** all 60 (insurance, shipping, fees, subscriptions, travel, utilities, advisory) were classed as `service`, so they are never searched. Before the `service` class existed, they were read as materials or finished goods.
+- **Physical goods (35):** the class and pricing unit were right for 30. These include the SanDisk card, Apple adapter, trackpad and keyboard, the Seagate drive, the MacBook (Apple M5 Pro), the DJI camera, the toner set and the 1000 ml coolant (per litre). The errors were:
+  - The Garmin Enduro 3 was read as a "sports accessory" part instead of a smartwatch.
+  - The fragrance decants were split between `material` and `finished_good`, so the same kind of item is not compared across organizations.
+  - Printer paper (5 × 500 sheets) was priced per pack instead of per sheet.
+- **Pack sizes:** 13 of 16 stated sizes were found, including 12 of the 13 "5g" decants (per kg, 0.005) and the 1000 ml premix. The three misses (a 10 g thermal paste, a 5000 ml coolant can and one decant) were priced per piece, so they are compared with alternatives of the same size only.
+- **Identifiers:** real part numbers and EANs were read correctly. The synthetic bench codes such as `[OM-2099]` were taken as part numbers; real invoices don't carry them, and a code only gives an exact match when an offer shares it.
+
+A manager's correction overrides each of these. Low confidence keeps an item out of the web search.
+
 ## Migration Plan
 
 1. Migrations `0023_cheaper_alternatives` and `0024_item_class_and_offer_text`:
