@@ -122,6 +122,8 @@ A **full** run SHALL recalculate every line of every confirmed term. A full run 
 
 The watermark SHALL move only when the run completes. A run that stops part-way SHALL leave its committed pages in place, and the next run SHALL redo the agreement from the old watermark.
 
+An item the judge could not answer for (the model timed out or replied with something unreadable) SHALL keep the findings it had, and the watermark SHALL NOT move, so the next run asks about it again. The report SHALL say how many items the last completed check could not judge.
+
 A finding's review SHALL survive re-analysis while the same term, line and kind is still produced. Its review status is `open`, `exception` or `not_in_scope`, with a note, who reviewed it and when.
 
 A manager SHALL be able to review a finding through `PATCH /api/v1/agreement-findings/{id}`: mark it as an exception or as not in scope with a note, or reopen it. That SHALL be audited. Once any finding of a line against a term is marked `not_in_scope`, later runs SHALL NOT raise that line against that term, and SHALL keep that finding as the record of the decision.
@@ -150,6 +152,11 @@ A manager SHALL be able to review a finding through `PATCH /api/v1/agreement-fin
 
 - **WHEN** the worker stops half-way through an agreement's run
 - **THEN** its watermark is unchanged and the next run covers the same lines again, without duplicating findings or totals
+
+#### Scenario: The model does not answer for an item
+
+- **WHEN** the model times out on an item that had an off-contract finding
+- **THEN** the finding stays, the report says one item could not be judged, and the next run asks about that item again
 
 ### Requirement: Analysis SHALL run when terms or spend change, and on request
 

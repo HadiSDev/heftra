@@ -25,6 +25,11 @@ export function CoverageNotes({ agreement }: { agreement: AgreementRead }) {
       'Similar items could not be searched, so only the terms’ spend categories were checked.',
     )
   }
+  if (analysis.unjudged_items > 0) {
+    notes.push(
+      `${analysis.unjudged_items === 1 ? 'One item' : `${analysis.unjudged_items} items`} could not be judged because the model did not answer; their earlier findings are kept, and the next check asks again.`,
+    )
+  }
   if (notes.length === 0) {
     return null
   }

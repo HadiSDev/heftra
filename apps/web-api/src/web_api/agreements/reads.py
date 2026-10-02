@@ -127,4 +127,5 @@ def _analysis(session: Session, company_id: str) -> AgreementAnalysisRead | None
     summary = completed.summary if completed is not None and completed.summary else {}
     read.capped_terms = int(summary.get("capped_terms", 0))
     read.similarity_available = bool(summary.get("similarity", True))
+    read.unjudged_items = int(summary.get("unjudged", 0))
     return read

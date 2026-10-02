@@ -54,6 +54,7 @@ class AgreementAnalysisRead(BaseModel):
     error: str | None = None
     capped_terms: int = 0
     similarity_available: bool = True
+    unjudged_items: int = 0
 
 
 class AgreementRead(AgreementSummaryRead):

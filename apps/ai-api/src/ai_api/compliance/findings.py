@@ -2,10 +2,10 @@
 from __future__ import annotations
 
 from collections import Counter
-from collections.abc import Callable
+from collections.abc import Callable, Collection
 from datetime import datetime, timezone
 
-from sqlalchemy import and_, delete, exists
+from sqlalchemy import and_, delete, exists, or_
 from sqlmodel import Session, col, select
 
 from web_api.db.models import (
@@ -58,17 +58,21 @@ def write_page(session: Session, agreement: Agreement, context: TermContext,
     return Counter(draft.kind.value for draft in drafts)
 
 
-def prune_out_of_scope(session: Session, term_id: str, term_key: str) -> None:
+def prune_out_of_scope(session: Session, term_id: str, term_key: str, *,
+                       keep: Collection[str] = ()) -> None:
     """Delete the term's findings whose line's item isn't judged in scope under `term_key`,
-    keeping not-in-scope rulings; commits."""
+    keeping not-in-scope rulings and the items in `keep` the judge could not answer for; commits."""
+    judged_in_scope = exists().where(and_(
+        AgreementScopeJudgement.question_key == InvoiceLine.item_key,
+        AgreementScopeJudgement.term_id == term_id,
+        AgreementScopeJudgement.term_key == term_key,
+        AgreementScopeJudgement.in_scope == True,  # noqa: E712
+    ))
+    if keep:
+        judged_in_scope = or_(judged_in_scope, col(InvoiceLine.item_key).in_(list(keep)))
     in_scope = exists().where(
         InvoiceLine.id == AgreementFinding.invoice_line_id,
-        exists().where(and_(
-            AgreementScopeJudgement.question_key == InvoiceLine.item_key,
-            AgreementScopeJudgement.term_id == term_id,
-            AgreementScopeJudgement.term_key == term_key,
-            AgreementScopeJudgement.in_scope == True,  # noqa: E712
-        )),
+        judged_in_scope,
     )
     session.exec(delete(AgreementFinding).where(
         AgreementFinding.term_id == term_id,

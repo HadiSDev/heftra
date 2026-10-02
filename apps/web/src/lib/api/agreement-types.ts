@@ -105,6 +105,8 @@ export interface AgreementAnalysis {
   capped_terms: number
   /** Whether the last completed check could search for similar items. */
   similarity_available: boolean
+  /** Items the model could not judge in the last completed check. */
+  unjudged_items: number
 }
 
 export interface AgreementRead extends AgreementSummaryRead {

@@ -248,13 +248,15 @@ def test_an_agreement_says_what_its_last_check_could_not_cover(client, engine, s
         s.add(PipelineRun(company_id=seed["comp_a"], kind="analyse_agreements",
                           status="succeeded", requested_by="system",
                           finished_at=datetime(2026, 9, 1, tzinfo=timezone.utc),
-                          summary={"capped_terms": 1, "similarity": False}))
+                          summary={"capped_terms": 1, "similarity": False,
+                                   "unjudged": 3}))
         s.commit()
 
     analysis = client.get(f"/api/v1/agreements/{agreement_id}", headers=auth("tokA")).json()[
         "analysis"]
 
-    assert (analysis["capped_terms"], analysis["similarity_available"]) == (1, False)
+    assert (analysis["capped_terms"], analysis["similarity_available"],
+            analysis["unjudged_items"]) == (1, False, 3)
 
 
 def test_a_change_during_a_running_analysis_queues_another(client, engine, seed):

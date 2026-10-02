@@ -1,7 +1,7 @@
 """Runs that judge items once, redo only what changed, survive a crash, and keep totals right."""
 from __future__ import annotations
 
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 
 import pytest
@@ -24,6 +24,19 @@ from web_api.db.models import (
 )
 
 LONG_AGO = datetime(2020, 1, 1, tzinfo=timezone.utc)
+
+
+class Unanswering:
+    """The judge, timing out on every prompt that names `word`."""
+
+    def __init__(self, judge: Judge, word: str) -> None:
+        self.judge = judge
+        self.word = word
+
+    def __call__(self, prompt: str) -> str:
+        if self.word in prompt.lower():
+            raise TimeoutError("the model did not answer")
+        return self.judge(prompt)
 
 
 @pytest.fixture
@@ -155,6 +168,48 @@ def test_a_run_that_stops_part_way_is_redone_without_duplicates(session, books, 
 
     assert summary["runs"] == {agreement.id: "full"}
     assert len(_findings(session)) == 3
+
+
+def test_an_item_the_judge_cannot_answer_keeps_its_findings(session, books, analyse):
+    agreement = books.agreement()
+    term = books.term(agreement, AgreementTermKind.PREFERRED_SUPPLIER, "Laptops")
+    books.line(books.proshop, "Dell laptop", unit_price="9000")
+    books.line(books.proshop, "HP laptop", unit_price="7000")
+    analyse(Judge(("laptop",)))
+    checked_from = session.get(Agreement, agreement.id).analysed_from
+    term.scope = "Laptops and notebooks"
+    term.updated_at = datetime.now(timezone.utc)
+    session.add(term)
+    session.commit()
+
+    summary = analyse(Unanswering(Judge(("laptop",)), "hp"))
+
+    assert (summary["judged"], summary["unjudged"]) == (1, 1)
+    assert len(_findings(session)) == 2
+    assert session.get(Agreement, agreement.id).analysed_from == checked_from
+
+
+def test_an_item_the_judge_could_not_answer_is_asked_again(session, books, monkeypatch,
+                                                            analyse):
+    monkeypatch.setattr(config, "AGREEMENT_WATERMARK_MARGIN_MINUTES", 0)
+    agreement = books.agreement()
+    books.term(agreement, AgreementTermKind.PREFERRED_SUPPLIER, "Laptops")
+    books.line(books.proshop, "Dell laptop", unit_price="9000")
+    analyse(Judge(("laptop",)))
+    first_run = session.get(Agreement, agreement.id).analysed_from
+    _age_everything(session)
+    books.line(books.proshop, "HP laptop", unit_price="7000")
+    analyse(Unanswering(Judge(("laptop",)), "hp"))
+    for row in [*session.exec(select(InvoiceLine)).all(), *session.exec(select(Invoice)).all()]:
+        row.changed_at = first_run + timedelta(microseconds=1)
+        session.add(row)
+    session.commit()
+
+    summary = analyse(Judge(("laptop",)))
+
+    assert (summary["judged"], summary["unjudged"]) == (1, 0)
+    assert len(_findings(session)) == 2
+    assert session.get(Agreement, agreement.id).analysed_from > first_run
 
 
 def test_totals_follow_a_judgement_that_flips(session, books, analyse):

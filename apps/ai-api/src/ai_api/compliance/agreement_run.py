@@ -64,23 +64,26 @@ class RunTools:
 def analyse_agreement(session: Session, agreement: Agreement, tools: RunTools,
                       counts: RunCounts) -> None:
     """Recalculate the agreement's findings and totals, all of them or what changed since its
-    watermark, and move the watermark once done."""
+    watermark, and move the watermark once every candidate item was judged."""
     started = datetime.now(timezone.utc)
     scope = run_scope(agreement)
     counts.runs[agreement.id] = "full" if scope.full else "incremental"
     terms = _confirmed_terms(session, agreement)
     _drop_unconfirmed(session, agreement, {term.id for term in terms})
+    unjudged = 0
     if terms and agreement.starts_on is not None:
-        _analyse_terms(session, agreement, terms, scope, tools, counts)
-    agreement.analysed_from = started
-    agreement.full_analysis = False
+        unjudged = _analyse_terms(session, agreement, terms, scope, tools, counts)
+    if unjudged == 0:
+        agreement.analysed_from = started
+        agreement.full_analysis = False
     agreement.analysed_at = datetime.now(timezone.utc)
     session.add(agreement)
     session.commit()
 
 
 def _analyse_terms(session: Session, agreement: Agreement, terms: list[AgreementTerm],
-                   scope: RunScope, tools: RunTools, counts: RunCounts) -> None:
+                   scope: RunScope, tools: RunTools, counts: RunCounts) -> int:
+    """Check every term; returns how many candidate items the judge could not answer for."""
     company_id = agreement.company_id
     refresh_item_keys(session, company_id, watermark(agreement))
     if scope.full:
@@ -100,14 +103,17 @@ def _analyse_terms(session: Session, agreement: Agreement, terms: list[Agreement
     supplier_ids = supplier_vendor_ids(session, agreement, vat)
     supplier_name = vendor.name if vendor else (agreement.supplier_name or "the supplier")
     convert = _converter(tools.fx)
+    unjudged = 0
     for term in terms:
         key = keys[term.id]
         window = Window(company_id, agreement.starts_on, agreement.ends_on,
                         keys=None if since[term.id] is None else changed)
         categories = descendants(session, term.scope_category_ids or tools.suggest()(term.scope))
         candidates = term_candidates(session, term, window, categories, tools.similarity)
-        tools.judge.judge_items(term, candidates.items)
+        judgements = tools.judge.judge_items(term, candidates.items)
         session.commit()
+        unanswered = {item.key for item in candidates.items if item.key not in judgements}
+        unjudged += len(unanswered)
         counts.terms += 1
         counts.candidates += len(candidates.items)
         counts.capped_terms += int(candidates.capped)
@@ -121,8 +127,9 @@ def _analyse_terms(session: Session, agreement: Agreement, terms: list[Agreement
                 convert=convert, base_currency=tools.base_currency))
             counts.lines += len(page)
             counts.pages += 1
-        prune_out_of_scope(session, term.id, key)
+        prune_out_of_scope(session, term.id, key, keep=unanswered)
         recompute_totals(session, wanted, supplier_ids, touched_months(session, wanted))
+    return unjudged
 
 
 def _confirmed_terms(session: Session, agreement: Agreement) -> list[AgreementTerm]:

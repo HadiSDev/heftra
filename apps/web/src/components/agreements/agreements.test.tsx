@@ -553,6 +553,7 @@ describe('ReportTab', () => {
           error: null,
           capped_terms: 0,
           similarity_available: true,
+          unjudged_items: 0,
         },
       },
       analysing: true,
@@ -579,6 +580,7 @@ describe('ReportTab', () => {
           error: 'the worker stopped before the run finished',
           capped_terms: 0,
           similarity_available: true,
+          unjudged_items: 0,
         },
       },
     })
@@ -619,6 +621,7 @@ describe('ReportTab', () => {
           error: null,
           capped_terms: 2,
           similarity_available: false,
+          unjudged_items: 1,
         },
       },
     })
@@ -628,5 +631,6 @@ describe('ReportTab', () => {
     }).textContent
     expect(notes).toContain('2 terms had more items to check than the limit')
     expect(notes).toContain('Similar items could not be searched')
+    expect(notes).toContain('One item could not be judged')
   })
 })

@@ -96,3 +96,4 @@
 - [x] 8.2 Rerun the benchmark at 1,000,000 lines (full and incremental) and record peak RSS, wall time and items judged against the baseline in `design.md`
 - [x] 8.3 A real-model sample: 200 items, batched against single. Keep `AGREEMENT_JUDGE_BATCH` only if accuracy is within 2 points
 - [ ] 8.4 With the user's go-ahead: run migration 0022 on dev, analyse the test agreement in full, and check that the report matches what it showed before (except the removed compliant rows)
+- [x] 8.5 An item the judge could not answer for keeps its findings and is asked again on the next run; the report counts those items (tests)
