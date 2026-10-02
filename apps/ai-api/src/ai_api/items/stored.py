@@ -9,6 +9,7 @@ from sqlmodel import Session, col, select
 
 from web_api.db.models import Company, CompanyItem, Invoice, InvoiceLine
 from web_api.fx.service import FxService
+from web_api.items.net import invoice_net_shares, net_base_amount
 from web_api.items.window import WINDOW_DAYS
 from web_api.specs.pricing import PriceNote, price_item
 
@@ -66,16 +67,19 @@ def company_eur_rate(session: Session, company_id: str, on: date,
 def _grouped(session: Session, company_id: str, since: date, after: str, size: int,
              item_keys: list[str] | None) -> list:
     stated = col(InvoiceLine.quantity) > 0
+    shares = invoice_net_shares()
+    net = net_base_amount(shares)
     statement = (
         select(InvoiceLine.item_key, func.min(InvoiceLine.item_name),
                func.min(InvoiceLine.description), func.min(InvoiceLine.unit),
                func.min(InvoiceLine.spend_category_id), func.min(Invoice.vendor_id),
                func.max(InvoiceLine.base_currency), func.count(),
-               func.sum(InvoiceLine.base_amount), func.max(Invoice.invoice_date),
+               func.sum(net), func.max(Invoice.invoice_date),
                func.sum(case((stated, InvoiceLine.quantity))),
-               func.sum(case((stated, InvoiceLine.base_amount))),
+               func.sum(case((stated, net))),
                func.avg(case((stated, InvoiceLine.quantity))))
         .join(Invoice, Invoice.id == InvoiceLine.invoice_id)
+        .outerjoin(shares, shares.c.invoice_id == InvoiceLine.invoice_id)
         .where(InvoiceLine.company_id == company_id, col(InvoiceLine.item_key).is_not(None),
                col(InvoiceLine.item_key) > after, col(InvoiceLine.base_amount) > 0,
                Invoice.invoice_date >= since)

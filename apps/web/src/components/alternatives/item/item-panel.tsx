@@ -60,11 +60,9 @@ function Header({ item }: { item: ItemRead }) {
           <span className="font-display text-xl font-semibold tabular-nums">
             {perUnit(item.unit_price, item.currency, unit)}
           </span>
-          {item.price_note ? (
-            <span className="text-sm text-muted-foreground">
-              {PRICE_NOTES[item.price_note]}
-            </span>
-          ) : null}
+          <span className="text-sm text-muted-foreground">
+            {item.price_note ? PRICE_NOTES[item.price_note] : 'Excl. VAT'}
+          </span>
         </div>
         <div className="flex flex-col gap-1 px-5 py-4">
           <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
@@ -76,7 +74,7 @@ function Header({ item }: { item: ItemRead }) {
               : '—'}
           </span>
           <span className="text-sm text-muted-foreground">
-            {formatMoney(item.spend, item.currency)} over{' '}
+            {formatMoney(item.spend, item.currency)} excl. VAT over{' '}
             <button
               type="button"
               onClick={showLines}

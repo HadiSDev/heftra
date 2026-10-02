@@ -44,3 +44,19 @@ def parse_amount(printed: object) -> float | None:
         return normalize_parse_amount(text)
     except Exception:  # noqa: BLE001
         return None
+
+
+MISREAD_RATIO = 2.0
+
+
+def consistent_unit_price(unit_price: float | None, quantity: float | None,
+                          amount: float | None) -> float | None:
+    """The unit price, unless quantity times it is off from the line's amount by more than
+    `MISREAD_RATIO` either way, which VAT or a discount never explains; then the amount over
+    the quantity."""
+    if unit_price is None or not quantity or not amount:
+        return unit_price
+    ratio = abs(unit_price * quantity / amount)
+    if 1 / MISREAD_RATIO <= ratio <= MISREAD_RATIO:
+        return unit_price
+    return amount / quantity

@@ -9,7 +9,7 @@ from sqlmodel import Session, select
 
 from agreement_books import Books
 from ai_api.items.stored import refresh_company_items
-from web_api.db.models import CompanyItem
+from web_api.db.models import CompanyItem, Invoice
 
 TODAY = date(2026, 6, 1)
 CABLE = {"item_class": "material", "product_type": "installation cable", "name": "Cat6 U/UTP",
@@ -103,3 +103,58 @@ def test_an_item_not_bought_for_a_year_keeps_its_row_and_specification(session, 
     item = _item(session)
     assert (item.lines, item.spend, item.unit_price) == (0, Decimal("0"), None)
     assert (item.price_note, item.spec) == ("not_bought", CABLE)
+
+
+ADAPTER = {"item_class": "part", "product_type": "laptop power adapter",
+           "name": "Apple 96W USB-C", "pricing_unit": "piece", "units_per_line_unit": 1,
+           "confidence": 0.9}
+
+
+def _priced(session, books) -> CompanyItem:
+    _refresh(session, books)
+    _specify(session, ADAPTER)
+    _refresh(session, books)
+    return _item(session)
+
+
+def _invoice_totals(session, line, *, total: str, tax: str) -> None:
+    invoice = session.get(Invoice, line.invoice_id)
+    invoice.document_total = Decimal(total)
+    invoice.document_subtotal = Decimal(total) - Decimal(tax)
+    session.add(invoice)
+    session.commit()
+
+
+def test_lines_that_include_vat_are_priced_without_it(session, books):
+    line = books.line(books.proshop, "Apple adapter 96W", unit_price="484", unit="stk")
+    _invoice_totals(session, line, total="484", tax="96.80")
+
+    item = _priced(session, books)
+
+    assert (item.spend, item.unit_price) == (Decimal("387.20"), Decimal("387.20"))
+
+
+def test_lines_without_vat_keep_their_amounts(session, books):
+    line = books.line(books.proshop, "Apple adapter 96W", unit_price="387.20", unit="stk")
+    _invoice_totals(session, line, total="484", tax="96.80")
+
+    assert _priced(session, books).unit_price == Decimal("387.20")
+
+
+def test_a_net_amount_printed_on_the_line_is_used(session, books):
+    line = books.line(books.proshop, "Apple adapter 96W", unit_price="484", unit="stk")
+    line.subtotal = Decimal("400")
+    session.add(line)
+    session.commit()
+
+    assert _priced(session, books).unit_price == Decimal("400")
+
+
+def test_a_net_amount_equal_to_the_line_amount_leaves_it_to_the_invoice(session, books):
+    line = books.line(books.proshop, "Apple adapter 96W", unit_price="484", unit="stk")
+    line.subtotal = Decimal("484")
+    session.add(line)
+    session.commit()
+    _invoice_totals(session, line, total="484", tax="96.80")
+
+    assert _priced(session, books).unit_price == Decimal("387.20")

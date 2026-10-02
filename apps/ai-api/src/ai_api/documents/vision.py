@@ -11,7 +11,7 @@ from ..models import ExtractedInvoice, LineItem
 from ..parsing import json_format_hint, parse_model
 from .errors import VisionUnreadableError
 from .images import DocumentImage
-from .numbers import parse_amount
+from .numbers import consistent_unit_price, parse_amount
 from .prompts import SUPPLIER_WEBSITE, TOTALS_BLOCK_CHARGES
 from .summary_rows import without_summary_rows
 
@@ -67,13 +67,15 @@ class VisionLine(BaseModel):
 
     def to_line_item(self) -> LineItem:
         """Convert to the domain ``LineItem``."""
+        quantity = parse_amount(self.quantity)
+        amount = parse_amount(self.amount)
         return LineItem(
             item_name=_clean(self.item_name),
             description=_clean(self.description),
-            quantity=parse_amount(self.quantity),
+            quantity=quantity,
             unit_type=_clean(self.unit_type),
-            unit_price=parse_amount(self.unit_price),
-            amount=parse_amount(self.amount),
+            unit_price=consistent_unit_price(parse_amount(self.unit_price), quantity, amount),
+            amount=amount,
             subtotal=parse_amount(self.subtotal),
             tax_amount=parse_amount(self.tax_amount),
             discount=parse_amount(self.discount),

@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import pytest
 
-from ai_api.documents.numbers import normalize_numbers
+from ai_api.documents.numbers import consistent_unit_price, normalize_numbers
 
 
 @pytest.mark.parametrize(
@@ -44,3 +44,15 @@ def test_a_quantity_beside_an_amount_stays_two_numbers():
 def test_normalization_is_idempotent():
     once = normalize_numbers("Totalt 2 399,00")
     assert normalize_numbers(once) == once
+
+
+def test_a_unit_price_far_from_the_amount_is_taken_from_it():
+    assert consistent_unit_price(1484.0, 1.0, 484.0) == 484.0
+    assert consistent_unit_price(12.0, 100.0, 60.0) == 0.6
+
+
+def test_vat_or_a_discount_keeps_the_printed_unit_price():
+    assert consistent_unit_price(387.2, 1.0, 484.0) == 387.2
+    assert consistent_unit_price(100.0, 3.0, 240.0) == 100.0
+    assert consistent_unit_price(None, 1.0, 484.0) is None
+    assert consistent_unit_price(50.0, None, 484.0) == 50.0
