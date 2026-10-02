@@ -203,6 +203,13 @@ Notes on the measurements:
 - The slowest query is the findings page, at 59 ms: a sequential scan of the 9,600 findings, which the planner prefers at that size.
 - No index was added.
 
+**Batching with the real model** (gemma-4-E4B on vLLM):
+- **The test:** 200 items of the 100k company (50 IT, 150 others), judged against the preferred-supplier term with the buyer's description, 4 prompts at a time. They were scored against the benchmark's keyword labels, which are a rough truth.
+- **One at a time:** 86.5% right, 196 answered, 200 prompts, 27.5 min.
+- **Batches of 8:** 87.0% right, all 200 answered, 25 prompts, 5.5 min.
+- **Agreement:** the two methods gave the same answer for 187 items.
+- **Decision:** batching costs no accuracy and is 5 times faster, so `AGREEMENT_JUDGE_BATCH` stays at 8.
+
 ## Risks / Trade-offs
 
 - **[Batched prompts lower the small model's accuracy]** → Batch size is configurable and defaults to 8. The benchmark includes a real-model sample of 200 items, scored batched against single and compared against the stub's ground truth. Batching is set to 1 if accuracy drops by more than 2 points.
