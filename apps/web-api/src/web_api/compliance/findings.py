@@ -7,7 +7,6 @@ from sqlmodel import Session, col, select
 from ..db.models import (
     AgreementFinding,
     AgreementTerm,
-    ErpEntry,
     FindingSeverity,
     InvoiceLine,
     User,
@@ -15,6 +14,7 @@ from ..db.models import (
 )
 from ..schemas.agreements import FindingRead
 from ..schemas.common import Page
+from ..vouchers.invoices import voucher_ids
 
 SEVERITY_ORDER = case(
     (AgreementFinding.severity == FindingSeverity.RULE_BREAK.value, 0),
@@ -60,7 +60,7 @@ def _finding_rows():
 
 
 def _reads(session: Session, rows) -> list[FindingRead]:
-    vouchers = _voucher_ids(session, {row[0].invoice_id for row in rows})
+    vouchers = voucher_ids(session, {row[0].invoice_id for row in rows})
     return [
         FindingRead(
             id=finding.id,
@@ -93,14 +93,3 @@ def _reads(session: Session, rows) -> list[FindingRead]:
         )
         for finding, term, item_name, description, supplier_name, reviewer_name in rows
     ]
-
-
-def _voucher_ids(session: Session, invoice_ids: set[str]) -> dict[str, str]:
-    if not invoice_ids:
-        return {}
-    rows = session.exec(
-        select(ErpEntry.source_invoice_id, ErpEntry.voucher_id)
-        .where(col(ErpEntry.source_invoice_id).in_(invoice_ids),
-               col(ErpEntry.voucher_id).is_not(None))
-    ).all()
-    return {invoice_id: voucher_id for invoice_id, voucher_id in rows if invoice_id}

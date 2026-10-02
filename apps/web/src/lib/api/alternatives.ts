@@ -6,6 +6,7 @@ import type {
   AlternativeRead,
   AlternativeReview,
   AlternativesPage,
+  ItemLineRead,
   ItemRead,
   Specification,
 } from './alternative-types'
@@ -47,6 +48,15 @@ export function itemQueryOptions(api: ApiClient, itemId: string) {
     queryFn: () => api.get<ItemRead>(`/api/v1/items/${itemId}`),
     refetchInterval: (query) =>
       query.state.data?.searching ? SEARCH_POLL_INTERVAL_MS : false,
+  })
+}
+
+/** The spend lines an item was bought on in the last 12 months (`GET /items/{id}/lines`). */
+export function itemLinesQueryOptions(api: ApiClient, itemId: string) {
+  return queryOptions({
+    queryKey: [...alternativesKey, 'item', itemId, 'lines'],
+    queryFn: () =>
+      api.get<Array<ItemLineRead>>(`/api/v1/items/${itemId}/lines`),
   })
 }
 

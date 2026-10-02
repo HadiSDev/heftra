@@ -141,6 +141,20 @@ export interface ItemRead {
   alternatives: Array<AlternativeRead>
 }
 
+/** A spend line the item was bought on; `voucher_id` is null until its invoice is posted. */
+export interface ItemLineRead {
+  id: string
+  invoice_id: string
+  voucher_id: string | null
+  invoice_number: string | null
+  invoice_date: string | null
+  item_name: string | null
+  quantity: Money | null
+  unit: string | null
+  base_amount: Money | null
+  base_currency: string | null
+}
+
 export interface AlternativeReview {
   review_status: AlternativeReviewStatus
   dismiss_reason?: DismissReason | null

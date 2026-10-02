@@ -9,12 +9,11 @@ from sqlmodel import Session, col, select
 
 from web_api.db.models import Company, CompanyItem, Invoice, InvoiceLine
 from web_api.fx.service import FxService
+from web_api.items.window import WINDOW_DAYS
 from web_api.specs.pricing import PriceNote, price_item
 
 from .. import config
 from .refresh import refresh_item_keys
-
-WINDOW_DAYS = 365
 
 
 def refresh_company_items(session: Session, company_id: str, *, today: date | None = None,

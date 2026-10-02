@@ -3,6 +3,7 @@ import { Loader2, Pencil, Search } from 'lucide-react'
 import { Button, Card } from '#/components/ui'
 import type {
   AlternativeReview,
+  ItemLineRead,
   ItemRead,
   Specification,
 } from '#/lib/api/alternative-types'
@@ -14,6 +15,7 @@ import {
   toNumber,
 } from '#/lib/format/format'
 import { AlternativeCard } from './alternative-card'
+import { ITEM_LINES_ID, ItemLinesCard } from './item-lines-card'
 import { SpecificationCard } from './specification-card'
 import { SpecificationForm } from './specification-form'
 
@@ -75,7 +77,12 @@ function Header({ item }: { item: ItemRead }) {
           </span>
           <span className="text-sm text-muted-foreground">
             {formatMoney(item.spend, item.currency)} over{' '}
-            {formatCount(item.lines)} {item.lines === 1 ? 'line' : 'lines'}
+            <a
+              href={`#${ITEM_LINES_ID}`}
+              className="font-medium text-primary hover:underline"
+            >
+              {formatCount(item.lines)} {item.lines === 1 ? 'line' : 'lines'}
+            </a>
           </span>
         </div>
         <div className="flex flex-col gap-1 px-5 py-4">
@@ -108,6 +115,8 @@ function bestSaving(item: ItemRead): string {
 
 export interface ItemPanelProps {
   item: ItemRead
+  /** The item's spend lines, newest first; undefined while loading, null when they failed. */
+  lines: Array<ItemLineRead> | undefined | null
   canManage: boolean
   searchPending: boolean
   onSearch: () => void
@@ -118,6 +127,7 @@ export interface ItemPanelProps {
 /** An item: what it costs, its specification, and its alternatives, best saving first. */
 export function ItemPanel({
   item,
+  lines,
   canManage,
   searchPending,
   onSearch,
@@ -189,6 +199,7 @@ export function ItemPanel({
           ) : (
             <SpecificationCard item={item} />
           )}
+          <ItemLinesCard companyId={item.company_id} lines={lines} />
         </aside>
       </div>
     </div>

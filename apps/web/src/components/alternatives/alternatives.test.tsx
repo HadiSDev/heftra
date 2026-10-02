@@ -12,6 +12,7 @@ import type * as RouterModule from '@tanstack/react-router'
 import type {
   AlternativeRead,
   AlternativesPage,
+  ItemLineRead,
   ItemRead,
   ItemSummary,
 } from '#/lib/api/alternative-types'
@@ -27,18 +28,21 @@ vi.mock('@tanstack/react-router', async (importOriginal) => {
       to,
       children,
       params,
+      search,
       ...props
     }: {
       to: string
       children?: ReactNode
       params?: Record<string, string>
+      search?: Record<string, string>
     }) => {
       const path = Object.entries(params ?? {}).reduce(
         (href, [key, value]) => href.replace(`$${key}`, value),
         to,
       )
+      const query = search ? `?${new URLSearchParams(search).toString()}` : ''
       return (
-        <a href={path} {...props}>
+        <a href={`${path}${query}`} {...props}>
           {children}
         </a>
       )
@@ -228,7 +232,38 @@ describe('AlternativesPanel', () => {
   })
 })
 
-function renderItem(item: ItemRead, canManage = true) {
+const LINES: Array<ItemLineRead> = [
+  {
+    id: 'l2',
+    invoice_id: 'inv2',
+    voucher_id: null,
+    invoice_number: 'A2',
+    invoice_date: '2026-09-20',
+    item_name: 'Round bar',
+    quantity: '40',
+    unit: 'kg',
+    base_amount: '400.00',
+    base_currency: 'DKK',
+  },
+  {
+    id: 'l1',
+    invoice_id: 'inv1',
+    voucher_id: '4821',
+    invoice_number: 'A1',
+    invoice_date: '2026-08-01',
+    item_name: 'Round bar',
+    quantity: '60',
+    unit: 'kg',
+    base_amount: '600.00',
+    base_currency: 'DKK',
+  },
+]
+
+function renderItem(
+  item: ItemRead,
+  canManage = true,
+  lines: Array<ItemLineRead> | undefined | null = LINES,
+) {
   const props = {
     onSearch: vi.fn(),
     onSaveSpec: vi.fn(async () => {}),
@@ -237,6 +272,7 @@ function renderItem(item: ItemRead, canManage = true) {
   render(
     <ItemPanel
       item={item}
+      lines={lines}
       canManage={canManage}
       searchPending={false}
       {...props}
@@ -246,6 +282,23 @@ function renderItem(item: ItemRead, canManage = true) {
 }
 
 describe('ItemPanel', () => {
+  it('lists the spend lines, opening a posted one in Spend Lines', () => {
+    renderItem(ITEM)
+    const card = screen.getByRole('heading', { name: 'Spend lines' })
+      .parentElement!.parentElement!
+    const open = within(card).getByRole('link', { name: /Open the voucher/ })
+    expect(open.getAttribute('href')).toBe(
+      `/invoice-lines?company_id=${ITEM.company_id}&voucher=4821&tab=lines`,
+    )
+    expect(within(card).getByText('Not posted yet')).toBeTruthy()
+    expect(within(card).getByText('2 in the last 12 months')).toBeTruthy()
+  })
+
+  it('says when the lines could not be loaded', () => {
+    renderItem(ITEM, true, null)
+    expect(screen.getByText('The lines could not be loaded.')).toBeTruthy()
+  })
+
   it('shows the attributes side by side and what switching would break', () => {
     renderItem(ITEM)
 

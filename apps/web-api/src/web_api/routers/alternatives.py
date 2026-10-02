@@ -6,6 +6,7 @@ from sqlmodel import Session
 
 from web_api.db.models import AlternativeMatch, AlternativeSource, ItemClass
 from ..alternatives.access import get_alternative, get_item, get_line
+from ..alternatives.lines import item_lines
 from ..alternatives.listing import AlternativeFilters, list_items
 from ..alternatives.reads import alternative_reads, item_read
 from ..alternatives.review import review_alternative
@@ -19,7 +20,13 @@ from ..auth.deps import (
     tenant_scope,
 )
 from ..schemas import PipelineRunRead
-from ..schemas.alternatives import AlternativeRead, AlternativeReview, AlternativesPage, ItemRead
+from ..schemas.alternatives import (
+    AlternativeRead,
+    AlternativeReview,
+    AlternativesPage,
+    ItemLineRead,
+    ItemRead,
+)
 from ..items.line_item import ensure_line_item, line_item
 from ..specs.specification import Specification
 
@@ -53,6 +60,16 @@ def read_item(
 ) -> ItemRead:
     """An item with its specification, price, alternatives and whether it is being searched."""
     return item_read(session, get_item(session, scope, item_id))
+
+
+@router.get("/items/{item_id}/lines", response_model=list[ItemLineRead])
+def read_item_lines(
+    item_id: str,
+    scope: TenantScope = Depends(tenant_scope),
+    session: Session = Depends(get_session),
+) -> list[ItemLineRead]:
+    """The spend lines the item was bought on in the last 12 months, newest first."""
+    return item_lines(session, get_item(session, scope, item_id))
 
 
 @router.patch("/items/{item_id}/specification", response_model=ItemRead)

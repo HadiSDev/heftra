@@ -2,13 +2,21 @@
 search, reviewing an alternative, and the organization's benchmark setting."""
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 
 import pytest
 from sqlmodel import Session, select
 
-from web_api.db.models import AuditLog, CompanyItem, ItemAlternative, Organization, PipelineRun
+from web_api.db.models import (
+    AuditLog,
+    CompanyItem,
+    Invoice,
+    InvoiceLine,
+    ItemAlternative,
+    Organization,
+    PipelineRun,
+)
 from web_api_testkit import auth
 
 CABLE = {"item_class": "material", "product_type": "network installation cable",
@@ -172,3 +180,40 @@ def test_the_run_endpoint_refuses_an_item_search_without_an_item(client, seed):
     res = client.post(f"/api/v1/companies/{seed['comp_a']}/runs", headers=auth("tok_sysadmin"),
                       json={"kind": "find_alternatives"})
     assert res.status_code == 422
+
+
+def _bought(s, company_id, item, *, days_ago: int, number: str) -> InvoiceLine:
+    invoice = Invoice(company_id=company_id, invoice_number=number, currency="DKK",
+                      invoice_date=date.today() - timedelta(days=days_ago))
+    s.add(invoice)
+    s.flush()
+    line = InvoiceLine(company_id=company_id, invoice_id=invoice.id, item_name=item.item_name,
+                       item_key=item.item_key, amount=Decimal("484"), base_amount=Decimal("484"),
+                       base_currency="DKK", quantity=Decimal("1"), status="uncategorized",
+                       sequence=0)
+    s.add(line)
+    s.flush()
+    return line
+
+
+def test_an_items_lines_of_the_last_year_come_with_their_vouchers(client, engine, voucher_seed):
+    with Session(engine) as s:
+        item = _item(s, voucher_seed["comp_a"], "Apple adapter")
+        posted = s.get(InvoiceLine, voucher_seed["line_a1"])
+        posted.item_key = item.item_key
+        s.get(Invoice, voucher_seed["inv_a"]).invoice_date = date.today() - timedelta(days=30)
+        unposted = _bought(s, voucher_seed["comp_a"], item, days_ago=10, number="A2")
+        _bought(s, voucher_seed["comp_a"], item, days_ago=400, number="A0")
+        s.commit()
+        item_id, unposted_id = item.id, unposted.id
+
+    body = client.get(f"/api/v1/items/{item_id}/lines", headers=auth("tok_viewerA")).json()
+
+    assert [line["id"] for line in body] == [unposted_id, voucher_seed["line_a1"]]
+    assert [line["voucher_id"] for line in body] == [None, "4821"]
+    assert body[1]["invoice_number"] == "A1"
+
+
+def test_another_organizations_item_lines_are_not_found(client, seed, stocked):
+    assert client.get(f"/api/v1/items/{stocked['other']}/lines",
+                      headers=auth("tokA")).status_code == 404

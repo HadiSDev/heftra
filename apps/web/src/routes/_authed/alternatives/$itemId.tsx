@@ -5,6 +5,7 @@ import { ItemPanel } from '#/components/alternatives/item/item-panel'
 import { ApiError } from '#/lib/api/api-client'
 import {
   findAlternativesMutation,
+  itemLinesQueryOptions,
   itemQueryOptions,
   reviewAlternativeMutation,
   updateSpecificationMutation,
@@ -26,6 +27,7 @@ function ItemPage() {
   const queryClient = useQueryClient()
   const canManage = canManageCompanies(usePrincipal())
   const item = useQuery(itemQueryOptions(api, itemId))
+  const lines = useQuery(itemLinesQueryOptions(api, itemId))
   const search = useMutation(findAlternativesMutation(api, queryClient))
   const saveSpec = useMutation(updateSpecificationMutation(api, queryClient))
   const review = useMutation(reviewAlternativeMutation(api, queryClient))
@@ -55,6 +57,7 @@ function ItemPage() {
   return (
     <ItemPanel
       item={item.data}
+      lines={lines.isError ? null : lines.data}
       canManage={canManage}
       searchPending={search.isPending}
       onSearch={() => {
