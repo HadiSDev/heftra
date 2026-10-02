@@ -25,6 +25,7 @@ class MarketplaceOffer(SQLModel, table=True):
     seller: str = Field(sa_type=String, nullable=False)
     url: str = Field(sa_type=String, nullable=False)
     title: str = Field(sa_type=String, nullable=False)
+    description: str = Field(sa_type=String, nullable=False, default="")
     identifiers: dict = Field(sa_type=JSON, nullable=False, default_factory=dict)
     spec: Optional[dict] = Field(sa_type=JSON, nullable=True, default=None)
     price: Decimal = Field(sa_type=Numeric(16, 4), nullable=False)

@@ -34,12 +34,12 @@
 
 - [x] 5.1 History: same product and similar specifications within the organization, cheaper, with supplier, company and last date (tests)
 - [x] 5.2 Benchmark: per-organization prices by product and by specification signature, taking-part organizations only, at least three besides the viewer, median and lowest quartile in the viewer's currency, nothing that names anyone (tests: too few, opted out)
-- [ ] 5.3 The `OfferSource` interface, `Offer` with price breaks, the per-provider rate limiter, the shared query and offer cache with expiry, and offers normalised to specifications by the extraction prompt (tests)
-- [ ] 5.4 Product page reading: Crawl4AI fetch with the robots check, per-host interval and timeout; schema.org Product/Offer from JSON-LD and microdata first; the LLM only for missing attributes or pages without structured data (tests with saved pages)
+- [x] 5.3 The `OfferSource` interface, `Offer` with price breaks, the per-provider rate limiter, the shared query and offer cache with expiry, and offers normalised to specifications by the extraction prompt (tests)
+- [x] 5.4 Product page reading: Crawl4AI fetch with the robots check, per-host interval and timeout; schema.org Product/Offer from JSON-LD and microdata first; the LLM only for missing attributes or pages without structured data (tests with saved pages)
 - [ ] 5.5 Shop-search connector: `shops.yaml` per market with search URL templates and product hosts, results page crawled for product links, identifier query then attribute query (tests with saved pages)
 - [ ] 5.6 Distributor connectors: RS, Farnell, Mouser and Digi-Key clients, part number then keyword, price breaks at the item's typical order quantity (tests with recorded responses)
 - [ ] 5.7 Open-web connector: the `SearchProvider` interface with SearXNG (JSON API, market language) as default and DuckDuckGo as fallback, the block list, found product pages read as in 5.4 (tests with a stub search)
-- [ ] 5.8 A failing connector is logged, counted and skipped for the rest of the run (tests)
+- [x] 5.8 A failing connector is logged, counted and skipped for the rest of the run (tests)
 - [ ] 5.9 Agreement conflicts: preferred-supplier and behind commitments from the item's in-scope rulings (tests)
 
 ## 6. Searching and runs (ai-api)

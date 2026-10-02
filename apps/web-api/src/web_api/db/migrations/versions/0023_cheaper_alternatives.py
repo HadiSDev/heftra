@@ -112,6 +112,7 @@ def upgrade() -> None:
         sa.Column('seller', sa.String(), nullable=False),
         sa.Column('url', sa.String(), nullable=False),
         sa.Column('title', sa.String(), nullable=False),
+        sa.Column('description', sa.String(), nullable=False, server_default=''),
         sa.Column('identifiers', sa.JSON(), nullable=False),
         sa.Column('spec', sa.JSON(), nullable=True),
         sa.Column('price', sa.Numeric(16, 4), nullable=False),
