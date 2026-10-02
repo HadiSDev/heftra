@@ -50,10 +50,7 @@ from web_api.rollup import recompute_invoice_status
 from web_api.vat import international_vat
 from web_api.verified import clear_verified, is_verified
 
-from ..aggregation import engine as aggregation
 from ..categorization.company import categorize_integration
-from ..procurement_agent import recommender
-from ..redundancy import detector as redundancy
 from .integrations import connected_integrations
 
 logger = logging.getLogger("ai_api.sync")
@@ -598,20 +595,6 @@ def _withdraw_voided_vouchers(
     return len(entries)
 
 
-def _call_stub(label: str, fn, *args) -> object:
-    """Call a downstream stub, tolerating not-yet-implemented bodies."""
-    try:
-        result = fn(*args)
-    except NotImplementedError:
-        logger.info("  %s: not implemented yet (stub)", label)
-        return "stub"
-    if result is Ellipsis or result is None:
-        logger.info("  %s: stub (no output yet)", label)
-        return "stub"
-    logger.info("  %s: %s rows", label, len(result) if hasattr(result, "__len__") else "ok")
-    return result
-
-
 def _build_summary(session: Session, company_id: str) -> dict:
     invoices = session.exec(select(Invoice).where(Invoice.company_id == company_id)).all()
     lines = session.exec(select(InvoiceLine).where(InvoiceLine.company_id == company_id)).all()
@@ -668,7 +651,7 @@ def _sync_one(
                 f"Could not reach the {integration.erp_type} ERP — is it running?"
             )
 
-        logger.info("  [1/6] Fetching accounts & vendors…")
+        logger.info("  [1/3] Fetching accounts & vendors…")
         accounts = connector.fetch_accounts()
         vendors = connector.fetch_vendors(since=since)
         account_map = _persist_accounts(session, integration_id, accounts)
@@ -692,7 +675,7 @@ def _sync_one(
         logger.info("    fetched %d entries (%d vouchers, %d invoice scans)",
                     len(entries), len(vouchers), len(invoices))
 
-        logger.info("  [2/6] Persisting to PostgreSQL…")
+        logger.info("  [2/3] Persisting to PostgreSQL…")
         vendor_map = _persist_vendors(session, vendors)
         voucher_invoice_map, n_inv, n_lines, n_queued, n_withdrawn = _persist_invoices(
             session, company_id, invoices, vendor_map, fx, base_currency, fx_counts,
@@ -719,17 +702,9 @@ def _sync_one(
                     base_currency, fx_counts[CONVERTED],
                     fx_counts[UNCONVERTED], fx_counts[UNCHANGED])
 
-        logger.info("  [3/6] Categorizing pending invoice lines…")
+        logger.info("  [3/3] Categorizing pending invoice lines…")
         cat_stats = categorize_integration(session, integration_id, company_id)
         categorization_skipped = cat_stats.get("skipped")
-
-        logger.info("  [4/6] Aggregating spend…")
-        _call_stub("spend_by_category", aggregation.spend_by_category, company_id)
-        _call_stub("spend_by_vendor", aggregation.spend_by_vendor, company_id)
-        logger.info("  [5/6] Detecting redundant vendors…")
-        _call_stub("same_category_overlaps", redundancy.find_same_category_overlaps, company_id)
-        logger.info("  [6/6] Generating savings recommendations…")
-        _call_stub("recommendations", recommender.all_recommendations, company_id)
 
         summary = _build_summary(session, company_id)
         _finish_sync_state(

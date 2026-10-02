@@ -141,7 +141,7 @@ A connector that fails SHALL be logged and counted in the run's summary, and the
 
 ### Requirement: Alternatives SHALL be found by a background scan and on request
 
-When `ALTERNATIVES_SCAN_ENABLED` is set, the worker SHALL queue a `scan_alternatives` run for each active company at most once every `ALTERNATIVES_SCAN_INTERVAL_HOURS` (default 24). A scan SHALL search the company's items, largest 12-month spend first, at most `ALTERNATIVES_SCAN_ITEMS` per run, skipping items searched within `ALTERNATIVES_RESCAN_DAYS` (default 30) whose specification hasn't changed.
+When `ALTERNATIVES_SCAN_ENABLED` is set, the worker SHALL queue a `scan_alternatives` run for each active company at most once every `ALTERNATIVES_SCAN_INTERVAL_HOURS` (default 24). A scan SHALL search the company's items, largest 12-month spend first, at most `ALTERNATIVES_SCAN_ITEMS` per run, skipping items searched within `ALTERNATIVES_RESCAN_DAYS` (default 30) whose specification hasn't changed. A scan SHALL also read the specifications of up to `ALTERNATIVES_SCAN_SPECS` (default 200) items without one, largest spend first, so more of the organization's own purchases can be compared.
 
 A person SHALL be able to ask for an item's alternatives at any time. That SHALL queue a `find_alternatives` run for the item; a request while one is queued for the item SHALL reuse it.
 

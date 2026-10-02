@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from sqlalchemy import update
+from sqlalchemy import case, update
 from sqlmodel import Session, select
 
 from web_api.db.models import (
@@ -48,11 +48,13 @@ def claim(session: Session, run_id: str) -> PipelineRun | None:
 
 
 def claim_next(session: Session) -> PipelineRun | None:
-    """Claim the oldest queued run, or None when nothing is waiting."""
+    """Claim the oldest queued run, background scans for alternatives after every other kind,
+    or None when nothing is waiting."""
+    background = case((PipelineRun.kind == PipelineRunKind.SCAN_ALTERNATIVES.value, 1), else_=0)
     queued = session.exec(
         select(PipelineRun.id)
         .where(PipelineRun.status == PipelineRunStatus.QUEUED.value)
-        .order_by(PipelineRun.requested_at, PipelineRun.id)
+        .order_by(background, PipelineRun.requested_at, PipelineRun.id)
     ).all()
     for run_id in queued:
         run = claim(session, run_id)

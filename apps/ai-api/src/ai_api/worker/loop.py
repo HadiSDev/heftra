@@ -13,6 +13,7 @@ from web_api.db.models import PipelineRunKind
 from web_api.db.session import engine
 
 from ..agreements.worker import read_pending_agreements
+from ..alternatives.scheduling import queue_due_scans
 from ..compliance.follow_up import queue_analysis_after
 from ..documents import runner as documents_runner
 from ..enrichment.company import research_pending_companies
@@ -40,10 +41,10 @@ def _run_claimed() -> bool:
         run = claim_next(session)
         if run is None:
             return False
-        run_id, kind, company_id = run.id, run.kind, run.company_id
+        run_id, kind, company_id, params = run.id, run.kind, run.company_id, run.params
         logger.info("run %s: %s for company %s", run_id, kind, company_id)
         try:
-            summary = execute(session, kind, company_id)
+            summary = execute(session, kind, company_id, params)
         except Exception as exc:  # noqa: BLE001
             session.rollback()
             logger.exception("run %s failed", run_id)
@@ -89,7 +90,8 @@ def _read_pending(document_batch: int) -> bool:
 
 
 def tick(document_batch: int) -> TickOutcome:
-    """One pass: run one queued run, else read pending documents or agreements, else research companies."""
+    """One pass: run one queued run, else read pending documents or agreements, else research
+    companies, else queue the alternatives scans that are due."""
     if _run_claimed():
         return TickOutcome.RAN
     if _read_pending(document_batch):
@@ -97,6 +99,8 @@ def tick(document_batch: int) -> TickOutcome:
     if read_pending_agreements(engine):
         return TickOutcome.READ
     if research_pending_companies(engine):
+        return TickOutcome.READ
+    if queue_due_scans(engine):
         return TickOutcome.READ
     return TickOutcome.IDLE
 

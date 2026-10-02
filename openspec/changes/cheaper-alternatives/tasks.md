@@ -45,10 +45,10 @@
 ## 6. Searching and runs (ai-api)
 
 - [x] 6.1 `alternatives/search.py`: one item's search across the enabled sources, replacing its open alternatives per source, keeping reviewed ones and skipping dismissed refs (tests)
-- [ ] 6.2 The `find_alternatives` executor: extract the item's specification first when missing; a summary per source
-- [ ] 6.3 The `scan_alternatives` executor: refresh items, extract due specifications, update the index, and search the due items by spend up to the limit (tests)
-- [ ] 6.4 The worker tick queues a scan per company when `ALTERNATIVES_SCAN_ENABLED` is set and the interval has passed, below agreements and documents
-- [ ] 6.5 Remove `procurement_agent`, `redundancy` and their calls in `sync/runner.py`, renumbering the sync's steps
+- [x] 6.2 The `find_alternatives` executor: extract the item's specification first when missing; a summary per source
+- [x] 6.3 The `scan_alternatives` executor: refresh items, extract due specifications, update the index, and search the due items by spend up to the limit (tests)
+- [x] 6.4 The worker tick queues a scan per company when `ALTERNATIVES_SCAN_ENABLED` is set and the interval has passed, below agreements and documents
+- [x] 6.5 Remove `procurement_agent`, `redundancy` and their calls in `sync/runner.py`, renumbering the sync's steps
 
 ## 7. web-api
 
