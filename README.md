@@ -36,8 +36,10 @@ PDF -> extract -> verify -> research products -> categorize (leaf + Direct/Indir
   `curl -s http://localhost:8000/v1/models`.
 - **Internet access** at run time — the buyer's website is scraped and each line
   item is web-searched (both degrade gracefully if offline).
-- Embeddings use a local `sentence-transformers` model (`all-MiniLM-L6-v2`,
-  downloaded automatically on first run).
+- Embeddings use a local `sentence-transformers` model
+  (`Snowflake/snowflake-arctic-embed-l-v2.0`, multilingual, about 2 GB, downloaded
+  automatically on first run). On a GPU it runs in half precision and needs about 1.5 GB
+  of VRAM beside the LLM.
 
 ## Setup
 

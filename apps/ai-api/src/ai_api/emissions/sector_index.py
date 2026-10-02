@@ -11,8 +11,8 @@ from qdrant_client.http import models
 from web_api.db.models import EmissionSector
 
 from .. import config
-from ..rag.collections import collection_exists, recreate_collection
-from ..rag.embedding import embed
+from ..rag.collections import collection_exists, model_collection, recreate_collection
+from ..rag.embedding import embed, query_text
 
 SUMMARY_CHARS = 220
 
@@ -65,7 +65,7 @@ class SectorIndex:
         if not query.strip() or not collection_exists(self._client, name):
             return []
         points = self._client.query_points(
-            name, query=self._embed([query])[0], limit=limit, with_payload=True
+            name, query=self._embed([query_text(query)])[0], limit=limit, with_payload=True
         ).points
         return [
             SectorHit(point.payload["sector_id"], point.payload["code"], point.payload["name"],
@@ -76,4 +76,4 @@ class SectorIndex:
 
 
 def _collection(classification: str) -> str:
-    return f"emission_sectors_{classification}"
+    return model_collection(f"emission_sectors_{classification}")

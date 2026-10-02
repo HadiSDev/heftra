@@ -28,7 +28,8 @@ VLLM_MAX_TOKENS = int(os.getenv("VLLM_MAX_TOKENS", "8192"))
 VLLM_TIMEOUT = int(os.getenv("VLLM_TIMEOUT", "120"))
 
 VLLM_TEMPERATURE = float(os.getenv("VLLM_TEMPERATURE", "0.0"))
-EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "all-MiniLM-L6-v2")
+EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "Snowflake/snowflake-arctic-embed-l-v2.0")
+EMBEDDING_QUERY_PREFIX = os.getenv("EMBEDDING_QUERY_PREFIX", "query: ")
 
 QDRANT_HOST = os.getenv("QDRANT_HOST", "localhost")
 QDRANT_PORT = int(os.getenv("QDRANT_PORT", "6333"))

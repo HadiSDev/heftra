@@ -13,7 +13,7 @@ from web_api.specs.specification import Specification
 
 from .. import config
 from ..items.index import SimilarityUnavailable
-from ..rag.collections import collection_exists
+from ..rag.collections import collection_exists, model_collection
 from ..rag.embedding import embed
 
 Embed = Callable[[list[str]], list[list[float]]]
@@ -63,10 +63,10 @@ class SpecIndex:
         """Items of the specification's class and pricing unit nearest it, best first, within
         one organization or outside one."""
         try:
-            if not collection_exists(self._client, COLLECTION):
+            if not collection_exists(self._client, _collection()):
                 return []
             points = self._client.query_points(
-                COLLECTION, query=self._embed([spec.text])[0], limit=limit, with_payload=True,
+                _collection(), query=self._embed([spec.text])[0], limit=limit, with_payload=True,
                 score_threshold=threshold,
                 query_filter=_filter(spec, organization_id, other_than_organization_id),
             ).points
@@ -78,16 +78,16 @@ class SpecIndex:
     def _ensure(self, entries: list[SpecEntry]) -> int:
         if not entries:
             return 0
-        stored = self._digests(entries) if collection_exists(self._client, COLLECTION) else {}
+        stored = self._digests(entries) if collection_exists(self._client, _collection()) else {}
         changed = [entry for entry in entries
                    if stored.get(_point_id(entry.item_id)) != entry.spec.digest]
         for begin in range(0, len(changed), EMBED_BATCH):
             batch = changed[begin:begin + EMBED_BATCH]
             vectors = self._embed([entry.spec.text for entry in batch])
-            if not collection_exists(self._client, COLLECTION):
-                self._client.create_collection(COLLECTION, vectors_config=models.VectorParams(
+            if not collection_exists(self._client, _collection()):
+                self._client.create_collection(_collection(), vectors_config=models.VectorParams(
                     size=len(vectors[0]), distance=models.Distance.COSINE))
-            self._client.upsert(COLLECTION, points=[
+            self._client.upsert(_collection(), points=[
                 models.PointStruct(id=_point_id(entry.item_id), vector=vector, payload={
                     "item_id": entry.item_id, "company_id": entry.company_id,
                     "organization_id": entry.organization_id, "product_id": entry.product_id,
@@ -102,7 +102,7 @@ class SpecIndex:
         ids = [_point_id(entry.item_id) for entry in entries]
         digests: dict[str, str] = {}
         for begin in range(0, len(ids), LOOKUP_BATCH):
-            for point in self._client.retrieve(COLLECTION, ids=ids[begin:begin + LOOKUP_BATCH],
+            for point in self._client.retrieve(_collection(), ids=ids[begin:begin + LOOKUP_BATCH],
                                                with_payload=["digest"], with_vectors=False):
                 digests[str(point.id)] = (point.payload or {}).get("digest")
         return digests
@@ -128,3 +128,7 @@ def _filter(spec: Specification, organization_id: str | None,
         must_not.append(models.FieldCondition(key="organization_id",
                                               match=models.MatchValue(value=other_than)))
     return models.Filter(must=must, must_not=must_not or None)
+
+
+def _collection() -> str:
+    return model_collection(COLLECTION)

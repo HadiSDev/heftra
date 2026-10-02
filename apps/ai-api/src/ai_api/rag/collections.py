@@ -1,8 +1,19 @@
 """Qdrant collection housekeeping shared by the indexes."""
 from __future__ import annotations
 
+import re
+
 from qdrant_client import QdrantClient
 from qdrant_client.http.models import Distance, VectorParams
+
+from .. import config
+
+
+def model_collection(name: str) -> str:
+    """`name` for the configured embedding model, so another model gets collections of its own
+    instead of searching vectors it didn't make."""
+    model = config.EMBEDDING_MODEL.rsplit("/", 1)[-1].lower()
+    return f"{name}__{re.sub(r'[^a-z0-9]+', '_', model).strip('_')}"
 
 
 def collection_exists(client: QdrantClient, name: str) -> bool:

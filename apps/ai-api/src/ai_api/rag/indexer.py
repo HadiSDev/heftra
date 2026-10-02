@@ -8,8 +8,8 @@ from qdrant_client import QdrantClient
 from qdrant_client.http import models
 
 from .. import config
-from .collections import collection_exists, recreate_collection
-from .embedding import embed
+from .collections import collection_exists, model_collection, recreate_collection
+from .embedding import embed, query_text
 
 _COLLECTION_PREFIX = "spend_tree_"
 
@@ -28,7 +28,7 @@ def _get_client() -> QdrantClient:
 
 
 def _collection_name(tenant_id: str) -> str:
-    return f"{_COLLECTION_PREFIX}{tenant_id}"
+    return model_collection(f"{_COLLECTION_PREFIX}{tenant_id}")
 
 
 def load_accounts(csv_path: str | None = None) -> list[dict]:
@@ -97,7 +97,7 @@ def retrieve_accounts(
     if not collection_exists(client, coll):
         return []
 
-    query_vector = embed_fn([query])[0]
+    query_vector = embed_fn([query_text(query)])[0]
     results = client.query_points(
         coll,
         query=query_vector,
@@ -112,7 +112,7 @@ _TREE_COLLECTION_PREFIX = "spend_categories_"
 
 
 def _tree_collection_name(tree_id: str) -> str:
-    return f"{_TREE_COLLECTION_PREFIX}{tree_id}"
+    return model_collection(f"{_TREE_COLLECTION_PREFIX}{tree_id}")
 
 
 def _node_document(node) -> str:
@@ -181,7 +181,7 @@ def retrieve_categories(
 
     results = client.query_points(
         coll,
-        query=embed_fn([query])[0],
+        query=embed_fn([query_text(query)])[0],
         limit=top_k,
         with_payload=True,
     ).points

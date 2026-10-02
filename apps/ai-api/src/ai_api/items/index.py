@@ -10,8 +10,8 @@ from qdrant_client import QdrantClient
 from qdrant_client.http import models
 
 from .. import config
-from ..rag.collections import collection_exists
-from ..rag.embedding import embed
+from ..rag.collections import collection_exists, model_collection
+from ..rag.embedding import embed, query_text
 from .item import Item
 
 Embed = Callable[[list[str]], list[list[float]]]
@@ -58,7 +58,7 @@ class ItemIndex:
             if not text.strip() or not collection_exists(self._client, name):
                 return []
             points = self._client.query_points(
-                name, query=self._embed([text])[0], limit=limit, with_payload=True,
+                name, query=self._embed([query_text(text)])[0], limit=limit, with_payload=True,
                 score_threshold=threshold,
                 query_filter=_filter(start, end, category_ids),
             ).points
@@ -104,7 +104,7 @@ class ItemIndex:
 
 
 def _collection(company_id: str) -> str:
-    return f"spend_items_{company_id}"
+    return model_collection(f"spend_items_{company_id}")
 
 
 def _point_id(key: str) -> str:

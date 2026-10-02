@@ -9,7 +9,7 @@ from sqlmodel import Session, select
 from web_api.db.models import Company, SpendCategory
 
 from .. import config
-from ..rag.embedding import embed
+from ..rag.embedding import embed, query_text
 
 logger = logging.getLogger("ai_api.agreements")
 
@@ -32,7 +32,7 @@ def category_suggester(session: Session, company_id: str, *,
 
     def suggest(scope: str) -> list[str]:
         try:
-            query = embed_fn([scope])[0]
+            query = embed_fn([query_text(scope)])[0]
         except Exception as error:  # noqa: BLE001
             logger.warning("agreement: no category suggestions for %r: %s", scope, error)
             return []
