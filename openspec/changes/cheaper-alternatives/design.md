@@ -196,7 +196,7 @@ The `procurement_agent` and `redundancy` packages and their `_call_stub` calls i
 
 ## Migration Plan
 
-1. Migration `0023_cheaper_alternatives`:
+1. Migrations `0023_cheaper_alternatives` and `0024_item_class_and_offer_text`:
    - **new tables:** `company_items`, `products`, `spec_comparisons`, `marketplace_queries`, `marketplace_offers`, `item_alternatives`;
    - **new columns:** `pipeline_runs.params` and `organizations.price_benchmark_enabled` (default true);
    - **dropped:** `recommendations`.
