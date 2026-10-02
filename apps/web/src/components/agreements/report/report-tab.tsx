@@ -13,7 +13,7 @@ import type {
   FindingReview,
 } from '#/lib/api/agreement-types'
 import type { ReportView } from '#/lib/agreement-search'
-import { AnalysisStatus } from './analysis-status'
+import { AnalysisStatus, CoverageNotes } from './analysis-status'
 import { Commitments } from './commitments'
 import { FindingsList } from './findings-list'
 import { ReportFigures } from './report-figures'
@@ -27,7 +27,8 @@ export interface ReportTabProps {
   onViewChange: (view: ReportView) => void
   canEdit: boolean
   analysing: boolean
-  onAnalyse: () => void
+  /** `true` rechecks every line, not only what changed. */
+  onAnalyse: (full: boolean) => void
   onReview: (findingId: string, review: FindingReview) => Promise<void>
 }
 
@@ -61,17 +62,34 @@ export function ReportTab({
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <AnalysisStatus agreement={agreement} />
+        <div className="flex flex-col gap-1">
+          <AnalysisStatus agreement={agreement} />
+          <CoverageNotes agreement={agreement} />
+        </div>
         {canEdit ? (
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={analysing}
-            onClick={onAnalyse}
-          >
-            <RefreshCw className={analysing ? 'animate-spin' : undefined} />
-            {analysing ? 'Checking…' : 'Check again'}
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              size="sm"
+              variant="ghost"
+              disabled={analysing}
+              onClick={() => {
+                onAnalyse(true)
+              }}
+            >
+              Check everything again
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={analysing}
+              onClick={() => {
+                onAnalyse(false)
+              }}
+            >
+              <RefreshCw className={analysing ? 'animate-spin' : undefined} />
+              {analysing ? 'Checking…' : 'Check again'}
+            </Button>
+          </div>
         ) : null}
       </div>
       {error ? (

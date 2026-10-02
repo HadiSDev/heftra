@@ -52,6 +52,8 @@ class AgreementAnalysisRead(BaseModel):
     started_at: datetime | None = None
     finished_at: datetime | None = None
     error: str | None = None
+    capped_terms: int = 0
+    similarity_available: bool = True
 
 
 class AgreementRead(AgreementSummaryRead):

@@ -82,7 +82,8 @@ def build(session: Session, *, lines: int, items: int, seed: int) -> Dataset:
 
 
 def grow(session: Session, company_id: str, lines: int, seed: int) -> None:
-    """More lines like the company's existing ones, on new invoices, as a sync would bring them."""
+    """More lines like the company's existing ones, on new invoices of the same suppliers, as a
+    sync would bring them."""
     rng = random.Random(seed)
     sample = session.exec(
         select(InvoiceLine, Invoice.vendor_id)
@@ -93,15 +94,18 @@ def grow(session: Session, company_id: str, lines: int, seed: int) -> None:
     written = 0
     while written < lines:
         size = min(CHUNK, lines - written)
-        picked = [rng.choice(sample) for _ in range(size)]
+        by_vendor: dict[str, list[InvoiceLine]] = {}
+        for line, vendor_id in (rng.choice(sample) for _ in range(size)):
+            by_vendor.setdefault(vendor_id, []).append(line)
         invoices, rows = [], []
-        for start in range(0, size, LINES_PER_INVOICE):
-            group = picked[start:start + LINES_PER_INVOICE]
-            invoice = Invoice(company_id=company_id, vendor_id=group[0][1],
-                              invoice_date=LAST_DAY - timedelta(days=rng.randrange(30)),
-                              currency="DKK", base_currency="DKK", status="posted")
-            invoices.append(invoice)
-            rows.extend((invoice, sequence, line) for sequence, (line, _) in enumerate(group))
+        for vendor_id, picked in by_vendor.items():
+            for start in range(0, len(picked), LINES_PER_INVOICE):
+                invoice = Invoice(company_id=company_id, vendor_id=vendor_id,
+                                  invoice_date=LAST_DAY - timedelta(days=rng.randrange(30)),
+                                  currency="DKK", base_currency="DKK", status="posted")
+                invoices.append(invoice)
+                rows.extend((invoice, sequence, line) for sequence, line
+                            in enumerate(picked[start:start + LINES_PER_INVOICE]))
         session.add_all(invoices)
         session.flush()
         session.execute(insert(InvoiceLine), [_copied_row(*row) for row in rows])

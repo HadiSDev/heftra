@@ -81,14 +81,14 @@
 
 - [x] 6.1 `POST /companies/{id}/agreements/analyse?full=true` sets `full_analysis` on the company's active agreements; the sync's replace path does too (tests)
 - [x] 6.2 The report's spend in scope, supplier share and commitment progress come from `agreement_term_spend` (tests; the existing report tests keep passing)
-- [ ] 6.3 The report carries `capped_terms` and `similarity_available` from the agreement's last summary
+- [x] 6.3 The report carries `capped_terms` and `similarity_available` from the agreement's last summary
 - [ ] 6.4 Check the report and dashboard queries with `EXPLAIN` on the benchmark database, adding indexes where they scan lines
 
 ## 7. Web
 
-- [ ] 7.1 A **Check everything again** action beside **Check again**, for managers, calling the full run (test)
-- [ ] 7.2 Show a capped term's note ("only the 5,000 largest items were checked") and "similarity unavailable" on the report (tests)
-- [ ] 7.3 The "Everything" view and its copy no longer imply per-line compliant rows for supplier and commitment terms
+- [x] 7.1 A **Check everything again** action beside **Check again**, for managers, calling the full run (test)
+- [x] 7.2 Show a capped term's note ("only the 5,000 largest items were checked") and "similarity unavailable" on the report (tests)
+- [x] 7.3 The "Everything" view and its copy no longer imply per-line compliant rows for supplier and commitment terms
 
 ## 8. Verification
 

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import re
 import resource
 import time
 from collections.abc import Callable
@@ -9,6 +10,8 @@ from dataclasses import asdict, dataclass, field
 
 from sqlalchemy import event
 from sqlalchemy.engine import Engine
+
+_PURCHASES = re.compile(r"^Purchase (\d+):\n(.*?)(?=\n\n)", re.M | re.S)
 
 IT_WORDS = ("laptop", "macbook", "thinkpad", "keyboard", "mouse", "trackpad", "monitor", "drive",
             "sandisk", "adapter", "headset", "webcam", "docking", "cable", "ssd")
@@ -30,11 +33,20 @@ class Cost:
 
 
 def stub_answer(prompt: str) -> str:
-    """In scope when the line names IT equipment; the priced item when it names a ThinkPad."""
-    asked = prompt.split("Invoice line:", 1)[-1].lower()
-    in_scope = any(word in asked for word in IT_WORDS)
-    return json.dumps({"in_scope": in_scope, "same_item": "thinkpad" in asked,
-                       "units_comparable": True, "confidence": 0.9, "reason": "Benchmark stub."})
+    """In scope when a purchase names IT equipment; the priced item when it names a ThinkPad.
+    A numbered batch is answered by number."""
+    numbered = _PURCHASES.findall(prompt)
+    if numbered:
+        return json.dumps({"answers": [{"n": int(number), **_verdict(text)}
+                                       for number, text in numbered]})
+    return json.dumps(_verdict(prompt.split("Purchase:", 1)[-1]))
+
+
+def _verdict(purchase: str) -> dict:
+    asked = purchase.split("\n\n", 1)[0].lower()
+    return {"in_scope": any(word in asked for word in IT_WORDS),
+            "same_item": "thinkpad" in asked, "units_comparable": True, "confidence": 0.9,
+            "reason": "Benchmark stub."}
 
 
 def measured(engine: Engine, cost: Cost, embed: Callable, ask: Callable,

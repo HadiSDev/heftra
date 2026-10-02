@@ -226,15 +226,21 @@ export function reviewFindingMutation(
   }
 }
 
+/** What to check again: the company, and whether every line or only what changed. */
+export interface AnalyseRequest {
+  companyId: string
+  full?: boolean
+}
+
 /** Ask for the company's spend to be checked against its agreements again. */
 export function analyseAgreementsMutation(
   api: ApiClient,
   queryClient: QueryClient,
-): UseMutationOptions<PipelineRunRead, Error, string> {
+): UseMutationOptions<PipelineRunRead, Error, AnalyseRequest> {
   return {
-    mutationFn: (companyId) =>
+    mutationFn: ({ companyId, full = false }) =>
       api.post<PipelineRunRead>(
-        `/api/v1/companies/${companyId}/agreements/analyse`,
+        `/api/v1/companies/${companyId}/agreements/analyse${full ? '?full=true' : ''}`,
       ),
     onSuccess: () => invalidateAgreements(queryClient),
   }

@@ -41,6 +41,17 @@ def request_full_analysis(session: Session, company_id: str, requested_by: str) 
     return request_analysis(session, company_id, requested_by)
 
 
+def last_completed_analysis(session: Session, company_id: str) -> PipelineRun | None:
+    """The company's analysis that succeeded last."""
+    return session.exec(
+        select(PipelineRun).where(
+            PipelineRun.company_id == company_id,
+            PipelineRun.kind == PipelineRunKind.ANALYSE_AGREEMENTS.value,
+            PipelineRun.status == PipelineRunStatus.SUCCEEDED.value,
+        ).order_by(col(PipelineRun.finished_at).desc(), col(PipelineRun.id).desc()).limit(1)
+    ).first()
+
+
 def latest_analysis(session: Session, company_id: str) -> PipelineRun | None:
     """The company's running analysis, else its queued one, else the one requested last."""
     runs = session.exec(

@@ -197,8 +197,8 @@ function AgreementPage() {
           }}
           canEdit={canEdit}
           analysing={analyse.isPending || isAnalysing(current)}
-          onAnalyse={() => {
-            analyse.mutate(current.company_id)
+          onAnalyse={(full) => {
+            analyse.mutate({ companyId: current.company_id, full })
           }}
           onReview={async (findingId, findingReview) => {
             try {

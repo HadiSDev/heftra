@@ -551,6 +551,8 @@ describe('ReportTab', () => {
           started_at: '2026-09-27T10:00:00Z',
           finished_at: null,
           error: null,
+          capped_terms: 0,
+          similarity_available: true,
         },
       },
       analysing: true,
@@ -575,6 +577,8 @@ describe('ReportTab', () => {
           started_at: '2026-09-27T10:00:00Z',
           finished_at: '2026-09-27T10:01:00Z',
           error: 'the worker stopped before the run finished',
+          capped_terms: 0,
+          similarity_available: true,
         },
       },
     })
@@ -590,10 +594,39 @@ describe('ReportTab', () => {
     expect(screen.getByText(/The report starts once/)).toBeTruthy()
   })
 
-  it('checks again on request', () => {
+  it('checks again on request, only what changed or everything', () => {
     const props = renderReport()
 
-    fireEvent.click(screen.getByRole('button', { name: /Check again/ }))
-    expect(props.onAnalyse).toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('button', { name: /^Check again/ }))
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Check everything again' }),
+    )
+
+    expect(props.onAnalyse).toHaveBeenNthCalledWith(1, false)
+    expect(props.onAnalyse).toHaveBeenNthCalledWith(2, true)
+  })
+
+  it('says what the last check could not cover', () => {
+    renderReport({
+      agreement: {
+        ...AGREEMENT,
+        analysis: {
+          id: 'r1',
+          status: 'succeeded',
+          requested_at: '2026-09-27T09:59:00Z',
+          started_at: '2026-09-27T10:00:00Z',
+          finished_at: '2026-09-27T10:01:00Z',
+          error: null,
+          capped_terms: 2,
+          similarity_available: false,
+        },
+      },
+    })
+
+    const notes = screen.getByRole('list', {
+      name: 'Check coverage',
+    }).textContent
+    expect(notes).toContain('2 terms had more items to check than the limit')
+    expect(notes).toContain('Similar items could not be searched')
   })
 })

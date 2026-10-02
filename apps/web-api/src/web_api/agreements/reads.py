@@ -26,7 +26,7 @@ from ..schemas.agreements import (
     AgreementSupplier,
     TermRead,
 )
-from .analysis import latest_analysis
+from .analysis import last_completed_analysis, latest_analysis
 
 
 def list_agreements(session: Session, company_ids: Sequence[str],
@@ -47,7 +47,7 @@ def agreement_read(session: Session, agreement: Agreement, today: date) -> Agree
         select(AgreementTerm).where(AgreementTerm.agreement_id == agreement.id)
         .order_by(col(AgreementTerm.created_at), col(AgreementTerm.id))
     ).all()
-    analysis = latest_analysis(session, agreement.company_id)
+    analysis = _analysis(session, agreement.company_id)
     return AgreementRead(
         **summary.model_dump(),
         supplier_vat_number=agreement.supplier_vat_number,
@@ -58,8 +58,7 @@ def agreement_read(session: Session, agreement: Agreement, today: date) -> Agree
                                file_size=int(file_row.file_size) if file_row and file_row.file_size
                                else None),
         terms=[TermRead.model_validate(term) for term in terms],
-        analysis=AgreementAnalysisRead.model_validate(analysis, from_attributes=True)
-        if analysis else None,
+        analysis=analysis,
     )
 
 
@@ -116,3 +115,16 @@ def _vendor_names(session: Session, ids: set[str]) -> dict[str, str]:
     if not ids:
         return {}
     return dict(session.exec(select(Vendor.id, Vendor.name).where(col(Vendor.id).in_(ids))).all())
+
+
+def _analysis(session: Session, company_id: str) -> AgreementAnalysisRead | None:
+    """The company's latest analysis, with what its last completed one could not cover."""
+    latest = latest_analysis(session, company_id)
+    if latest is None:
+        return None
+    read = AgreementAnalysisRead.model_validate(latest, from_attributes=True)
+    completed = last_completed_analysis(session, company_id)
+    summary = completed.summary if completed is not None and completed.summary else {}
+    read.capped_terms = int(summary.get("capped_terms", 0))
+    read.similarity_available = bool(summary.get("similarity", True))
+    return read

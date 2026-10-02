@@ -1,7 +1,7 @@
 """Uploading, listing, correcting, reading again and deleting agreements over the API."""
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime, timezone
 
 import pytest
 from sqlmodel import Session, select
@@ -240,6 +240,21 @@ def test_new_dates_on_an_agreement_check_every_line_again(client, engine, seed):
 
     with Session(engine) as s:
         assert s.get(Agreement, agreement_id).full_analysis is True
+
+
+def test_an_agreement_says_what_its_last_check_could_not_cover(client, engine, seed):
+    with Session(engine) as s:
+        agreement_id = agreement(s, seed["comp_a"]).id
+        s.add(PipelineRun(company_id=seed["comp_a"], kind="analyse_agreements",
+                          status="succeeded", requested_by="system",
+                          finished_at=datetime(2026, 9, 1, tzinfo=timezone.utc),
+                          summary={"capped_terms": 1, "similarity": False}))
+        s.commit()
+
+    analysis = client.get(f"/api/v1/agreements/{agreement_id}", headers=auth("tokA")).json()[
+        "analysis"]
+
+    assert (analysis["capped_terms"], analysis["similarity_available"]) == (1, False)
 
 
 def test_a_change_during_a_running_analysis_queues_another(client, engine, seed):

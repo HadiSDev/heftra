@@ -101,6 +101,10 @@ export interface AgreementAnalysis {
   started_at: string | null
   finished_at: string | null
   error: string | null
+  /** Terms whose candidates were capped in the last completed check. */
+  capped_terms: number
+  /** Whether the last completed check could search for similar items. */
+  similarity_available: boolean
 }
 
 export interface AgreementRead extends AgreementSummaryRead {
