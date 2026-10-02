@@ -108,7 +108,7 @@ def _analyse_terms(session: Session, agreement: Agreement, terms: list[Agreement
         key = keys[term.id]
         window = Window(company_id, agreement.starts_on, agreement.ends_on,
                         keys=None if since[term.id] is None else changed)
-        categories = descendants(session, term.scope_category_ids or tools.suggest()(term.scope))
+        categories = descendants(session, _scope_categories(session, term, tools.suggest))
         candidates = term_candidates(session, term, window, categories, tools.similarity)
         judgements = tools.judge.judge_items(term, candidates.items)
         session.commit()
@@ -148,6 +148,16 @@ def _drop_unconfirmed(session: Session, agreement: Agreement, confirmed: set[str
     ).all()
     drop_totals(session, [term_id for term_id in others if term_id not in confirmed])
     session.commit()
+
+
+def _scope_categories(session: Session, term: AgreementTerm,
+                      suggest: Callable[[], Suggest]) -> list[str]:
+    """The term's spend categories; a term without any is given the suggested ones, saved for a
+    person to see and correct."""
+    if not term.scope_category_ids:
+        term.scope_category_ids = suggest()(term.item or term.scope)
+        session.add(term)
+    return list(term.scope_category_ids)
 
 
 def _judged_before(session: Session, term_id: str, key: str) -> bool:

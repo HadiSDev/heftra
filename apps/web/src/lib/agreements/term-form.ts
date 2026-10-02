@@ -18,6 +18,8 @@ export interface TermFormValues {
   currency: string
   /** One tier per line, "threshold = rebate%". */
   tiers: string
+  /** The spend categories the term covers; empty lets the next check choose them. */
+  scope_category_ids: Array<string>
 }
 
 export const EMPTY_TERM_VALUES: TermFormValues = {
@@ -31,6 +33,7 @@ export const EMPTY_TERM_VALUES: TermFormValues = {
   commitment_period: 'year',
   currency: '',
   tiers: '',
+  scope_category_ids: [],
 }
 
 function text(value: string | number | null): string {
@@ -51,6 +54,7 @@ export function termValues(term: TermRead): TermFormValues {
     tiers: (term.tiers ?? [])
       .map((tier) => `${tier.threshold} = ${tier.rebate_percent}%`)
       .join('\n'),
+    scope_category_ids: term.scope_category_ids,
   }
 }
 
@@ -80,8 +84,8 @@ export function parseTiers(value: string): Array<RebateTier> {
 export function termFields(
   kind: AgreementTermKind,
   values: TermFormValues,
-): Omit<TermFields, 'scope_category_ids'> {
-  const fields: Omit<TermFields, 'scope_category_ids'> = {
+): TermFields {
+  const fields: TermFields = {
     scope: values.scope.trim(),
     conditions: null,
     item: null,
@@ -92,6 +96,7 @@ export function termFields(
     commitment_period: null,
     tiers: null,
     currency: optional(values.currency)?.toUpperCase() ?? null,
+    scope_category_ids: values.scope_category_ids,
   }
   if (kind === 'preferred_supplier') {
     fields.conditions = optional(values.conditions)

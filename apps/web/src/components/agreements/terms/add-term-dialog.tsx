@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from '#/components/ui'
 import type { AgreementTermKind, TermCreate } from '#/lib/api/agreement-types'
+import type { SpendCategoryRead } from '#/lib/api/types'
 import {
   EMPTY_TERM_VALUES,
   termFields,
@@ -31,9 +32,11 @@ const KINDS = (Object.keys(TERM_KIND_LABELS) as Array<AgreementTermKind>).map(
 /** Add a term the reader missed; it is confirmed as written. */
 export function AddTermDialog({
   currency,
+  nodes,
   onAdd,
 }: {
   currency: string | null
+  nodes: Array<SpendCategoryRead> | null
   onAdd: (term: TermCreate) => Promise<void>
 }) {
   const [open, setOpen] = React.useState(false)
@@ -97,7 +100,12 @@ export function AddTermDialog({
               ))}
             </SelectContent>
           </Select>
-          <TermFieldsForm kind={kind} values={values} onChange={setValues} />
+          <TermFieldsForm
+            kind={kind}
+            values={values}
+            onChange={setValues}
+            nodes={nodes}
+          />
           {error ? <p className="text-sm text-destructive">{error}</p> : null}
         </div>
         <DialogFooter>

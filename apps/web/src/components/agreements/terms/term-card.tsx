@@ -2,6 +2,8 @@ import * as React from 'react'
 import { Check, Pencil, Quote, X } from 'lucide-react'
 import { Badge, Button, Card, cn } from '#/components/ui'
 import type { TermPatch, TermRead } from '#/lib/api/agreement-types'
+import type { SpendCategoryRead } from '#/lib/api/types'
+import { scopeCategoryPaths } from '#/lib/agreements/scope-categories'
 import { termFields, termProblem, termValues } from '#/lib/agreements/term-form'
 import type { TermFormValues } from '#/lib/agreements/term-form'
 import { TERM_KIND_LABELS } from '#/lib/format/agreements'
@@ -20,15 +22,35 @@ const STATUS: Record<
 
 export interface TermCardProps {
   term: TermRead
+  /** The company's spend tree; null while it loads or when the company has none. */
+  nodes: Array<SpendCategoryRead> | null
   canEdit: boolean
   busy: boolean
   onUpdate: (patch: TermPatch) => Promise<void>
   onShowPage: (page: number) => void
 }
 
+function ScopeCategories({
+  term,
+  nodes,
+}: {
+  term: TermRead
+  nodes: Array<SpendCategoryRead>
+}) {
+  const paths = scopeCategoryPaths(nodes, term.scope_category_ids)
+  return (
+    <p className="text-xs text-muted-foreground">
+      {paths.length > 0
+        ? `Spend categories: ${paths.join(', ')}`
+        : 'Spend categories: chosen at the next check'}
+    </p>
+  )
+}
+
 /** One term: what it says, the clause it came from, and its review controls. */
 export function TermCard({
   term,
+  nodes,
   canEdit,
   busy,
   onUpdate,
@@ -92,10 +114,14 @@ export function TermCard({
           kind={term.kind}
           values={editing}
           onChange={setEditing}
+          nodes={nodes}
         />
       ) : (
-        <div className="text-sm">
+        <div className="flex flex-col gap-1 text-sm">
           <TermSummary term={term} />
+          {nodes && nodes.length > 0 ? (
+            <ScopeCategories term={term} nodes={nodes} />
+          ) : null}
         </div>
       )}
 

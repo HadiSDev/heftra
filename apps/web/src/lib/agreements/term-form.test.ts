@@ -37,6 +37,7 @@ describe('termFields', () => {
       ...termValues(PRICE),
       conditions: 'ignored',
       unit_price: '7 950,50',
+      scope_category_ids: ['c1'],
     })
 
     expect(fields).toMatchObject({
@@ -46,6 +47,7 @@ describe('termFields', () => {
       conditions: null,
       discount_percent: null,
       currency: 'DKK',
+      scope_category_ids: ['c1'],
     })
   })
 

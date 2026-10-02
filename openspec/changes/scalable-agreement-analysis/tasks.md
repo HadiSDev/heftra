@@ -97,3 +97,4 @@
 - [x] 8.3 A real-model sample: 200 items, batched against single. Keep `AGREEMENT_JUDGE_BATCH` only if accuracy is within 2 points
 - [x] 8.4 With the user's go-ahead: run migration 0022 on dev, analyse the test agreement in full, and check that the report matches what it showed before (except the removed compliant rows)
 - [x] 8.5 An item the judge could not answer for keeps its findings and is asked again on the next run; the report counts those items (tests)
+- [x] 8.6 A term without spend categories keeps the ones the check suggests; the term card shows them and the term form edits them (tests)

@@ -8,7 +8,7 @@ import type {
   TermCreate,
   TermPatch,
 } from '#/lib/api/agreement-types'
-import type { VendorRead } from '#/lib/api/types'
+import type { SpendCategoryRead, VendorRead } from '#/lib/api/types'
 import { AddTermDialog } from './add-term-dialog'
 import { AgreementDocument } from './agreement-document'
 import { HeaderForm } from './header-form'
@@ -18,6 +18,8 @@ export interface TermsTabProps {
   agreement: AgreementRead
   canEdit: boolean
   vendors: Array<VendorRead>
+  /** The company's spend tree; null while it loads or when the company has none. */
+  spendTreeNodes: Array<SpendCategoryRead> | null
   onVendorSearch: (query: string) => void
   busyTermId: string | null
   onSaveHeader: (patch: AgreementPatch) => Promise<void>
@@ -65,6 +67,7 @@ export function TermsTab({
   agreement,
   canEdit,
   vendors,
+  spendTreeNodes,
   onVendorSearch,
   busyTermId,
   onSaveHeader,
@@ -113,7 +116,11 @@ export function TermsTab({
             ) : null}
           </h2>
           {canEdit && !reading ? (
-            <AddTermDialog currency={agreement.currency} onAdd={onAddTerm} />
+            <AddTermDialog
+              currency={agreement.currency}
+              nodes={spendTreeNodes}
+              onAdd={onAddTerm}
+            />
           ) : null}
         </div>
         {!reading && agreement.terms.length === 0 ? (
@@ -125,6 +132,7 @@ export function TermsTab({
           <TermCard
             key={term.id}
             term={term}
+            nodes={spendTreeNodes}
             canEdit={canEdit}
             busy={busyTermId === term.id}
             onUpdate={(patch) => onUpdateTerm(term.id, patch)}

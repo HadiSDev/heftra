@@ -32,6 +32,8 @@ import {
   updateTermMutation,
 } from '#/lib/api/agreements'
 import type { FindingReviewStatus } from '#/lib/api/agreement-types'
+import { companiesQueryOptions } from '#/lib/api/companies'
+import { spendTreeQueryOptions } from '#/lib/api/spend-trees'
 import { vendorsQueryOptions } from '#/lib/api/vendors'
 import { canManageCompanies, useApi, usePrincipal } from '#/lib/auth/auth'
 import { useAnalysisFinished } from '#/lib/use-analysis-finished'
@@ -80,6 +82,20 @@ function AgreementPage() {
     ...vendorsQueryOptions(api, { q: debouncedVendors }),
     enabled: tab === 'terms' && canEdit,
   })
+  const companies = useQuery({
+    ...companiesQueryOptions(api),
+    enabled: tab === 'terms',
+  })
+  const company = companies.data?.find(
+    (candidate) => candidate.id === agreement.data?.company_id,
+  )
+  const spendTree = useQuery({
+    ...spendTreeQueryOptions(api, company?.spend_tree_id ?? null),
+    enabled: tab === 'terms' && Boolean(company?.spend_tree_id),
+  })
+  const spendTreeNodes = company?.spend_tree_id
+    ? (spendTree.data?.nodes ?? null)
+    : null
 
   const updateAgreement = useMutation(updateAgreementMutation(api, queryClient))
   const updateTerm = useMutation(updateTermMutation(api, queryClient))
@@ -155,6 +171,7 @@ function AgreementPage() {
           agreement={current}
           canEdit={canEdit}
           vendors={vendors.data?.items ?? []}
+          spendTreeNodes={spendTreeNodes}
           onVendorSearch={setVendorQuery}
           busyTermId={updateTerm.isPending ? updateTerm.variables.termId : null}
           onSaveHeader={async (patch) => {

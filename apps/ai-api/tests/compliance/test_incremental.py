@@ -17,6 +17,7 @@ from web_api.db.models import (
     Agreement,
     AgreementFinding,
     AgreementScopeJudgement,
+    AgreementTerm,
     AgreementTermKind,
     AgreementTermSpend,
     Invoice,
@@ -260,6 +261,19 @@ def test_similarity_finds_items_outside_the_term_s_categories(session, books, an
     analyse(Judge(("laptop",)))
 
     assert [finding.invoice_line_id for finding in _findings(session)] == [misfiled.id]
+
+
+def test_a_term_without_categories_keeps_the_suggested_ones(session, books, analyse):
+    tree = books.tree("Office Equipment")
+    agreement = books.agreement()
+    term = books.term(agreement, AgreementTermKind.PREFERRED_SUPPLIER, "Laptops")
+    books.line(books.proshop, "Dell laptop", unit_price="9000", category=tree["Office Equipment"])
+
+    analyse(Judge(("laptop",)))
+
+    saved = session.get(AgreementTerm, term.id)
+    assert saved.scope_category_ids == [tree["Office Equipment"].id]
+    assert saved.updated_at is None
 
 
 def test_a_term_with_too_many_candidates_is_capped_most_spend_first(session, books, monkeypatch,

@@ -16,6 +16,7 @@ import type {
   FindingRead,
   TermRead,
 } from '#/lib/api/agreement-types'
+import type { SpendCategoryRead } from '#/lib/api/types'
 import { AgreementHeading } from './detail/agreement-heading'
 import { AgreementsPanel } from './list/agreements-panel'
 import { ReportTab } from './report/report-tab'
@@ -85,6 +86,33 @@ const AGREEMENT: AgreementRead = {
   terms: [],
   analysis: null,
 }
+
+function category(
+  id: string,
+  parent_id: string | null,
+  levels: Array<string>,
+): SpendCategoryRead {
+  return {
+    id,
+    spend_tree_id: 'tree1',
+    parent_id,
+    depth: levels.length,
+    name: levels[levels.length - 1],
+    code: null,
+    sort_order: 0,
+    description: null,
+    level_1: levels[0] ?? null,
+    level_2: levels[1] ?? null,
+    level_3: levels[2] ?? null,
+    level_4: levels[3] ?? null,
+  }
+}
+
+const NODES: Array<SpendCategoryRead> = [
+  category('it', null, ['IT']),
+  category('hardware', 'it', ['IT', 'Hardware']),
+  category('phones', 'it', ['IT', 'Phones']),
+]
 
 const TERM: TermRead = {
   id: 't1',
@@ -319,6 +347,7 @@ describe('TermCard', () => {
     render(
       <TermCard
         term={TERM}
+        nodes={null}
         canEdit
         busy={false}
         onUpdate={onUpdate}
@@ -339,6 +368,7 @@ describe('TermCard', () => {
     render(
       <TermCard
         term={TERM}
+        nodes={null}
         canEdit
         busy={false}
         onUpdate={onUpdate}
@@ -375,6 +405,7 @@ describe('TermCard', () => {
           unit: 'piece',
           unit_price: '8000',
         }}
+        nodes={null}
         canEdit
         busy={false}
         onUpdate={onUpdate}
@@ -403,6 +434,7 @@ describe('TermCard', () => {
     render(
       <TermCard
         term={TERM}
+        nodes={null}
         canEdit
         busy={false}
         onUpdate={vi.fn(async () => {
@@ -421,6 +453,7 @@ describe('TermCard', () => {
     render(
       <TermCard
         term={TERM}
+        nodes={null}
         canEdit={false}
         busy={false}
         onUpdate={vi.fn()}
@@ -429,6 +462,53 @@ describe('TermCard', () => {
     )
 
     expect(screen.queryByRole('button', { name: 'Confirm' })).toBeNull()
+  })
+
+  it('shows the spend categories a term covers', () => {
+    render(
+      <TermCard
+        term={{ ...TERM, scope_category_ids: ['hardware'] }}
+        nodes={NODES}
+        canEdit={false}
+        busy={false}
+        onUpdate={vi.fn()}
+        onShowPage={vi.fn()}
+      />,
+    )
+
+    expect(screen.getByText('Spend categories: IT › Hardware')).toBeTruthy()
+  })
+
+  it('changes the spend categories of a term', async () => {
+    const onUpdate = vi.fn(async () => {})
+    render(
+      <TermCard
+        term={{ ...TERM, scope_category_ids: ['hardware'] }}
+        nodes={NODES}
+        canEdit
+        busy={false}
+        onUpdate={onUpdate}
+        onShowPage={vi.fn()}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Edit' }))
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Remove IT › Hardware' }),
+    )
+    fireEvent.click(screen.getByText('Add a category'))
+    fireEvent.change(
+      await screen.findByRole('textbox', { name: 'Search all categories' }),
+      { target: { value: 'phones' } },
+    )
+    fireEvent.click(await screen.findByRole('button', { name: /Phones/ }))
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+    await waitFor(() => {
+      expect(onUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({ scope_category_ids: ['phones'] }),
+      )
+    })
   })
 })
 

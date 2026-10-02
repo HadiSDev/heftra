@@ -9,7 +9,9 @@ import {
   cn,
 } from '#/components/ui'
 import { CurrencyField } from '#/components/fields/currency-field'
+import { ScopeCategoriesField } from './scope-categories-field'
 import type { AgreementTermKind } from '#/lib/api/agreement-types'
+import type { SpendCategoryRead } from '#/lib/api/types'
 import type { TermFormValues } from '#/lib/agreements/term-form'
 
 const PERIODS = [
@@ -40,6 +42,8 @@ export interface TermFieldsFormProps {
   kind: AgreementTermKind
   values: TermFormValues
   onChange: (values: TermFormValues) => void
+  /** The company's spend tree; null while it loads or when the company has none. */
+  nodes: Array<SpendCategoryRead> | null
 }
 
 /** The fields a term of `kind` has, as editable inputs. */
@@ -47,6 +51,7 @@ export function TermFieldsForm({
   kind,
   values,
   onChange,
+  nodes,
 }: TermFieldsFormProps) {
   function set(field: keyof TermFormValues) {
     return (
@@ -60,6 +65,20 @@ export function TermFieldsForm({
       <Field label="Covers" wide>
         <Input value={values.scope} onChange={set('scope')} />
       </Field>
+      {nodes && nodes.length > 0 ? (
+        <div className="flex flex-col gap-1.5 sm:col-span-2">
+          <span className="text-xs font-medium text-muted-foreground">
+            Spend categories
+          </span>
+          <ScopeCategoriesField
+            nodes={nodes}
+            value={values.scope_category_ids}
+            onChange={(scope_category_ids) => {
+              onChange({ ...values, scope_category_ids })
+            }}
+          />
+        </div>
+      ) : null}
       {kind === 'preferred_supplier' ? (
         <Field label="Conditions" wide>
           <Input

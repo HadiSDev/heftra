@@ -3,7 +3,7 @@
 ### Requirement: Lines SHALL be matched to confirmed terms by retrieval and a cached scope judgement
 
 For each confirmed term of an active agreement, analysis SHALL consider the company's **items** (see `spend-item-index`) that have lines invoiced within the agreement's validity; an agreement with no end date is open-ended. An item SHALL be a candidate for a term when either:
-- its spend category is one of the term's scope categories, or below one (or, for a term without scope categories, one of the categories suggested for its scope). This is selected in SQL.
+- its spend category is one of the term's scope categories, or below one (or, for a term without scope categories, one of the categories suggested for its item or scope; the suggestion SHALL be saved on the term, where a person sees it and can change it). This is selected in SQL.
 - it is among the items most similar to the term's scope or item, above a threshold. This is searched in the item index.
 
 Candidates per term SHALL be capped at `AGREEMENT_CANDIDATES_MAX` items, the most spend first. A capped term SHALL be counted in the run's summary.
