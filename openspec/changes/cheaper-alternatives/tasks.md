@@ -16,10 +16,10 @@
 ## 3. Specifications (ai-api)
 
 - [x] 3.1 `specs/` package: the `Specification` and `Attribute` models, the reply models, and `SPEC_VERSION`
-- [ ] 3.2 The extraction prompt (class rule, product type, pricing units, numeric attributes with direction and unit, tiered attributes with family, tier and generation) and batched extraction with one-by-one retry, as the agreement judge does (tests with a stub model)
-- [ ] 3.3 Extract only items without a specification or whose text hash or version changed; never overwrite a person's; count failures and retry later (tests)
-- [ ] 3.4 Identifier normalisation and product linking by GTIN and by brand and part number (tests: one keyboard, two suppliers)
-- [ ] 3.5 The global `item_specs` Qdrant index: ensure and search, filtered by organization, class and pricing unit; degrade when Qdrant is down (tests with the in-memory client)
+- [x] 3.2 The extraction prompt (class rule, product type, pricing units, numeric attributes with direction and unit, tiered attributes with family, tier and generation) and batched extraction with one-by-one retry, as the agreement judge does (tests with a stub model)
+- [x] 3.3 Extract only items without a specification or whose text hash or version changed; never overwrite a person's; count failures and retry later (tests)
+- [x] 3.4 Identifier normalisation and product linking by GTIN and by brand and part number (tests: one keyboard, two suppliers)
+- [x] 3.5 The global `item_specs` Qdrant index: ensure and search, filtered by organization, class and pricing unit; degrade when Qdrant is down (tests with the in-memory client)
 
 ## 4. Matching and prices (ai-api)
 

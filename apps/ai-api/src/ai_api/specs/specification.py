@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field, ValidationError, field_validator
 from web_api.db.models import ItemClass, PricingUnit
 
 from .attribute import Attribute
+from .units import line_unit
 
 SPEC_VERSION = 1
 
@@ -29,10 +30,33 @@ class Specification(BaseModel):
     units_per_line_unit: float | None = None
     confidence: float = 0.0
 
+    @field_validator("item_class", mode="before")
+    @classmethod
+    def _class(cls, value: object) -> object:
+        if not isinstance(value, str) or isinstance(value, ItemClass):
+            return value
+        return "_".join(value.strip().lower().replace("-", " ").split())
+
+    @field_validator("pricing_unit", mode="before")
+    @classmethod
+    def _pricing_unit(cls, value: object) -> object:
+        if not isinstance(value, str) or isinstance(value, PricingUnit):
+            return value
+        known = line_unit(value)
+        return known[0] if known is not None and known[1] == 1 else value.strip().lower()
+
+    @field_validator("confidence", mode="before")
+    @classmethod
+    def _confidence(cls, value: object) -> float:
+        try:
+            return min(max(float(value), 0.0), 1.0)
+        except (TypeError, ValueError):
+            return 0.0
+
     @field_validator("brand", "model", "part_number", "gtin", mode="before")
     @classmethod
     def _blank(cls, value: object) -> object:
-        return None if value in ("", "null", "none", "n/a") else value
+        return None if value in ("", "null", "none", "n/a", "<string>") else value
 
     @field_validator("units_per_line_unit", mode="before")
     @classmethod
