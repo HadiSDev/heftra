@@ -27,6 +27,8 @@ export interface OrganizationRead {
   slug: string | null
   /** `active` | `suspended`. */
   status: string
+  /** Whether the organization takes part in the anonymous price benchmark. */
+  price_benchmark_enabled: boolean
   created_at: string
 }
 
@@ -34,6 +36,7 @@ export interface OrganizationRead {
 export interface OrganizationUpdate {
   name?: string
   slug?: string
+  price_benchmark_enabled?: boolean
 }
 
 /** A company (legal entity) under the organization. */

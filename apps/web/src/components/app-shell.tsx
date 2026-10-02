@@ -15,6 +15,7 @@ import {
   LayoutDashboard,
   LogOut,
   Moon,
+  PiggyBank,
   Receipt,
   Settings,
   Sun,
@@ -135,6 +136,7 @@ export const NAV_ITEMS = [
   { label: 'Spend Lines', icon: Receipt, to: '/invoice-lines' },
   { label: 'Suppliers', icon: Building2, to: '/suppliers' },
   { label: 'Agreements', icon: FileSignature, to: '/agreements' },
+  { label: 'Alternatives', icon: PiggyBank, to: '/alternatives' },
   { label: 'Settings', icon: Settings, to: '/settings' },
 ] as const
 

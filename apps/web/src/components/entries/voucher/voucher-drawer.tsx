@@ -26,6 +26,7 @@ import type { SectorSearch } from '../emissions/sector-field'
 import type {
   ErpEntryRead,
   InvoiceLinePatch,
+  InvoiceLineRead,
   InvoiceUpdate,
   SpendCategoryRead,
   VendorRead,
@@ -76,6 +77,8 @@ export interface VoucherDrawerProps {
   onCreateLine: (invoiceId: string) => Promise<void>
   /** Delete a line from the open invoice. */
   onDeleteLine: (lineId: string) => Promise<void>
+  /** What to show under a line, beside its editor; omit to show nothing. */
+  renderLineExtra?: (line: InvoiceLineRead) => React.ReactNode
   /** The line the Lines tab opens on. */
   initialLineId?: string | null
   /** The organization's suppliers. */
@@ -165,6 +168,7 @@ export function VoucherDrawer({
   sectorSearch,
   onCreateLine,
   onDeleteLine,
+  renderLineExtra,
   initialLineId,
   vendors,
   onReprocess,
@@ -291,6 +295,7 @@ export function VoucherDrawer({
                             sectorSearch={sectorSearch}
                             onCreateLine={onCreateLine}
                             onDeleteLine={onDeleteLine}
+                            renderLineExtra={renderLineExtra}
                           />
                         </TabsPanel>
                       ) : null}

@@ -55,7 +55,10 @@ def list_items(session: Session, company_ids: list[str], filters: AlternativeFil
         items=[_summary(item, found, best_of.get(item.id), vendors) for item, found in rows],
         page=page, page_size=page_size, total=total,
         total_saving=Decimal(saving) if saving is not None and currencies == 1 else None,
-        currency=currency if currencies == 1 else None)
+        currency=currency if currencies == 1 else None,
+        searched_items=session.exec(select(func.count()).where(
+            col(CompanyItem.company_id).in_(company_ids),
+            col(CompanyItem.searched_at).is_not(None))).one())
 
 
 def _open(company_ids: list[str], filters: AlternativeFilters) -> list:

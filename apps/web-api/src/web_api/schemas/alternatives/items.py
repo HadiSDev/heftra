@@ -31,10 +31,12 @@ class ItemSummary(BaseModel):
 
 class AlternativesPage(Page[ItemSummary]):
     """`total_saving` adds up the listed items' best yearly savings, when they share a
-    currency."""
+    currency; `searched_items` is how many of the companies' items have been searched, so an
+    empty list can say whether nothing was searched or nothing cheaper was found."""
 
     total_saving: Decimal | None = None
     currency: str | None = None
+    searched_items: int = 0
 
 
 class ItemRead(BaseModel):

@@ -7,6 +7,7 @@ import type {
   InvoiceLinePatch,
   InvoiceUpdate,
   LineCorrections,
+  InvoiceLineRead,
   Page,
   SpendCategoryRead,
   VendorRead,
@@ -133,6 +134,8 @@ export interface EntriesPanelProps {
   /** Add a line to, or delete one from, the open invoice. */
   onCreateLine: (invoiceId: string) => Promise<void>
   onDeleteLine: (lineId: string) => Promise<void>
+  /** What to show under a line, beside its editor; omit to show nothing. */
+  renderLineExtra?: (line: InvoiceLineRead) => React.ReactNode
   /** Queue an invoice's document to be read again. */
   onReprocess: (invoiceId: string) => Promise<void>
   /** Whether the signed-in user holds a management role. */
@@ -170,6 +173,7 @@ export function EntriesPanel({
   sectorSearch,
   onCreateLine,
   onDeleteLine,
+  renderLineExtra,
   onReprocess,
   canManage,
 }: EntriesPanelProps) {
@@ -256,6 +260,7 @@ export function EntriesPanel({
         sectorSearch={sectorSearch}
         onCreateLine={onCreateLine}
         onDeleteLine={onDeleteLine}
+        renderLineExtra={renderLineExtra}
         vendors={vendors}
         onReprocess={onReprocess}
         canManage={canManage}

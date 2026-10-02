@@ -3,6 +3,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { EntriesPanel } from '#/components/entries/entries-panel'
 import { canManageCompanies, useApi, usePrincipal } from '#/lib/auth/auth'
+import { LineAlternatives } from '#/components/alternatives/line/line-alternatives'
 import { companiesQueryOptions } from '#/lib/api/companies'
 import {
   voucherAuditQueryOptions,
@@ -161,6 +162,12 @@ function EntriesPage() {
         await reprocess.mutateAsync({ id: invoiceId })
       }}
       canManage={canManageCompanies(principal)}
+      renderLineExtra={(line) => (
+        <LineAlternatives
+          line={line}
+          canManage={canManageCompanies(principal)}
+        />
+      )}
     />
   )
 }

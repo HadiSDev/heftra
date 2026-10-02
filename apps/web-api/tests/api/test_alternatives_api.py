@@ -62,6 +62,7 @@ def test_items_are_listed_by_their_best_saving_with_the_total(client, seed, stoc
     assert body["items"][0]["alternatives"] == 2
     assert (Decimal(body["total_saving"]), body["currency"], body["total"]) == \
         (Decimal("4932"), "DKK", 2)
+    assert body["searched_items"] == 0
 
 
 def test_the_list_filters_by_source_and_class(client, seed, stocked):

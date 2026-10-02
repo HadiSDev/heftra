@@ -63,13 +63,13 @@
 
 ## 8. Web
 
-- [ ] 8.1 API types and query and mutation options for alternatives, items and the benchmark setting
-- [ ] 8.2 The Alternatives page: the sidebar entry, list, filters, paging, total and empty states (tests)
-- [ ] 8.3 The item page: specification, unit price, alternatives with attributes side by side, origin, agreement notes, search status (tests)
-- [ ] 8.4 Specification editing for managers (tests)
-- [ ] 8.5 The Find cheaper alternatives action on the item page and in the spend-line drawer, with the running state (tests)
-- [ ] 8.6 Review actions: dismiss with reason and note, mark switched, reopen; viewers see no actions (tests)
-- [ ] 8.7 The price benchmark toggle in the organization settings (tests)
+- [x] 8.1 API types and query and mutation options for alternatives, items and the benchmark setting
+- [x] 8.2 The Alternatives page: the sidebar entry, list, filters, paging, total and empty states (tests)
+- [x] 8.3 The item page: specification, unit price, alternatives with attributes side by side, origin, agreement notes, search status (tests)
+- [x] 8.4 Specification editing for managers (tests)
+- [x] 8.5 The Find cheaper alternatives action on the item page and in the spend-line drawer, with the running state (tests)
+- [x] 8.6 Review actions: dismiss with reason and note, mark switched, reopen; viewers see no actions (tests)
+- [x] 8.7 The price benchmark toggle in the organization settings (tests)
 
 ## 9. Verification
 

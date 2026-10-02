@@ -29,6 +29,8 @@ export interface VoucherLinesTabProps {
   sectorSearch?: SectorSearch
   onCreateLine: (invoiceId: string) => Promise<void>
   onDeleteLine: (lineId: string) => Promise<void>
+  /** What to show under a line, beside its editor; omit to show nothing. */
+  renderLineExtra?: (line: InvoiceLineRead) => React.ReactNode
 }
 
 /** Orders lines by their source position, then id. */
@@ -56,6 +58,7 @@ export function VoucherLinesTab({
   sectorSearch,
   onCreateLine,
   onDeleteLine,
+  renderLineExtra,
 }: VoucherLinesTabProps) {
   const [adding, setAdding] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
@@ -226,6 +229,7 @@ export function VoucherLinesTab({
               onDelete={canManage ? onDeleteLine : undefined}
               onDirtyChange={setDirty}
             />
+            {renderLineExtra ? renderLineExtra(current) : null}
           </div>
         </>
       )}

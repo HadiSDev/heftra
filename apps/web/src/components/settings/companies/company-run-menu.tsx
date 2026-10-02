@@ -1,9 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   ChevronDown,
+  FileSignature,
   FileText,
   Leaf,
   Loader2,
+  PiggyBank,
   Play,
   RefreshCw,
   Tags,
@@ -43,6 +45,9 @@ const RUN_KIND_ICONS: Record<PipelineRunKind, LucideIcon> = {
   read_documents: FileText,
   categorize: Tags,
   match_emissions: Leaf,
+  analyse_agreements: FileSignature,
+  find_alternatives: PiggyBank,
+  scan_alternatives: PiggyBank,
 }
 
 export interface CompanyRunMenuProps {

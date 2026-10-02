@@ -5,6 +5,7 @@ import { Card, Skeleton } from '#/components/ui'
 import { DangerZone } from '#/components/settings/organization/danger-zone'
 import { MembersPanel } from '#/components/settings/organization/members-panel'
 import { OrganizationPanel } from '#/components/settings/organization/organization-panel'
+import { PriceBenchmarkCard } from '#/components/settings/organization/price-benchmark-card'
 import { canManageOrganization, useApi, usePrincipal } from '#/lib/auth/auth'
 import {
   organizationQueryOptions,
@@ -64,6 +65,14 @@ function OrganizationSection() {
           canUploadLogo
             ? async (file) => void (await logo.setLogo({ file }))
             : undefined
+        }
+      />
+
+      <PriceBenchmarkCard
+        enabled={organization.data.price_benchmark_enabled}
+        canManage={canManage}
+        onChange={(price_benchmark_enabled) =>
+          update.mutateAsync({ price_benchmark_enabled })
         }
       />
 

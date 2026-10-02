@@ -10,6 +10,7 @@ const ORG: OrganizationRead = {
   name: 'Acme',
   slug: 'acme',
   status: 'active',
+  price_benchmark_enabled: true,
   created_at: '2026-01-15T10:00:00Z',
 }
 
