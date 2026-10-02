@@ -294,6 +294,17 @@ describe('ItemPanel', () => {
     expect(within(card).getByText('2 in the last 12 months')).toBeTruthy()
   })
 
+  it('scrolls to the spend lines from the line count', () => {
+    const scrollIntoView = vi.fn()
+    Element.prototype.scrollIntoView = scrollIntoView
+    renderItem(ITEM)
+    fireEvent.click(screen.getByRole('button', { name: /^\d+ lines?$/ }))
+    expect(scrollIntoView).toHaveBeenCalledTimes(1)
+    expect(scrollIntoView.mock.contexts[0]).toBe(
+      document.getElementById('spend-lines'),
+    )
+  })
+
   it('says when the lines could not be loaded', () => {
     renderItem(ITEM, true, null)
     expect(screen.getByText('The lines could not be loaded.')).toBeTruthy()

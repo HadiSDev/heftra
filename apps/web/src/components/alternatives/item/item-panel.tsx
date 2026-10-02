@@ -77,12 +77,13 @@ function Header({ item }: { item: ItemRead }) {
           </span>
           <span className="text-sm text-muted-foreground">
             {formatMoney(item.spend, item.currency)} over{' '}
-            <a
-              href={`#${ITEM_LINES_ID}`}
+            <button
+              type="button"
+              onClick={showLines}
               className="font-medium text-primary hover:underline"
             >
               {formatCount(item.lines)} {item.lines === 1 ? 'line' : 'lines'}
-            </a>
+            </button>
           </span>
         </div>
         <div className="flex flex-col gap-1 px-5 py-4">
@@ -96,6 +97,12 @@ function Header({ item }: { item: ItemRead }) {
       </Card>
     </div>
   )
+}
+
+function showLines() {
+  document
+    .getElementById(ITEM_LINES_ID)
+    ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
 function bestSaving(item: ItemRead): string {
