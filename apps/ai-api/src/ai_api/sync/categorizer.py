@@ -94,15 +94,17 @@ def _gt_fields(native_account_code: str | None, candidates: list[Category]):
     return match.level(0), match.level(1), match.level(2), code
 
 
-def _worth_narrowing(tree_size: int, top_k: int) -> bool:
-    """Is narrowing worth an embedding call?"""
-    return tree_size >= 2 * top_k
+def _worth_narrowing(tree_size: int, top_k: int, min_tree: int) -> bool:
+    """Is narrowing worth an embedding call? Not for a tree the prompt holds whole."""
+    return tree_size >= max(2 * top_k, min_tree)
 
 
-def _siblings_of(candidate: Category, all_candidates: list[Category]) -> list[Category]:
-    """Every candidate sharing this one's parent path."""
+def _neighbourhood(candidate: Category, all_candidates: list[Category]) -> list[Category]:
+    """Every candidate sharing this one's parent path, and every one below it."""
     parent = candidate.path[:-1]
-    return [c for c in all_candidates if c.path[:-1] == parent]
+    depth = len(candidate.path)
+    return [c for c in all_candidates
+            if c.path[:-1] == parent or c.path[:depth] == candidate.path]
 
 
 def build_candidates_from_retrieval(
@@ -111,13 +113,15 @@ def build_candidates_from_retrieval(
     retrieve,
     *,
     top_k: int = 5,
+    min_tree: int = 0,
 ) -> list[Category]:
-    """Narrow ``all_candidates`` to the neighbourhood of the closest nodes."""
+    """Narrow ``all_candidates`` to the neighbourhood of the closest nodes, when the tree has at
+    least ``min_tree`` nodes."""
     if not all_candidates:
         return []
     if not (query or "").strip():
         return list(all_candidates)
-    if not _worth_narrowing(len(all_candidates), top_k):
+    if not _worth_narrowing(len(all_candidates), top_k, min_tree):
         return list(all_candidates)
 
     try:
@@ -136,6 +140,6 @@ def build_candidates_from_retrieval(
 
     narrowed = {c.node_id: c for c in found}
     for hit in found:
-        for sibling in _siblings_of(hit, all_candidates):
-            narrowed[sibling.node_id] = sibling
+        for neighbour in _neighbourhood(hit, all_candidates):
+            narrowed[neighbour.node_id] = neighbour
     return [c for c in all_candidates if c.node_id in narrowed]

@@ -53,6 +53,26 @@ def test_a_hit_brings_its_siblings():
     assert names == {"Airfare", "Ground Transport", "Lodging"}
 
 
+def test_a_hit_on_a_group_brings_what_is_below_it():
+    group = _leaf("n-travel", "Indirect", "Travel")
+    narrowed = build_candidates_from_retrieval(
+        "Togbillet", [group, *BIG], _finding("n-travel"), top_k=3
+    )
+    names = {c.name for c in narrowed}
+
+    assert {"Travel", "Airfare", "Ground Transport", "Lodging"} <= names
+    assert "Cloud" not in names
+
+
+def test_a_tree_below_the_minimum_is_offered_whole():
+    retrieve = _finding("n-air")
+
+    narrowed = build_candidates_from_retrieval("Togbillet", BIG, retrieve, top_k=3, min_tree=100)
+
+    assert narrowed == BIG
+    assert retrieve.calls == []
+
+
 def test_two_hits_bring_two_neighbourhoods():
     narrowed = build_candidates_from_retrieval(
         "Cloud train", BIG, _finding("n-air", "n-cloud"), top_k=3

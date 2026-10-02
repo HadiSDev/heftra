@@ -164,6 +164,7 @@ def categorize_lines(
                 candidates,
                 retrieve,
                 top_k=ai_config.CATEGORY_RETRIEVAL_TOP_K,
+                min_tree=ai_config.CATEGORY_RETRIEVAL_MIN_NODES,
             )
             narrowed_total += len(candidates) - len(offered)
             lines_seen += 1

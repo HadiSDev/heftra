@@ -158,3 +158,26 @@ def test_a_net_amount_equal_to_the_line_amount_leaves_it_to_the_invoice(session,
     _invoice_totals(session, line, total="484", tax="96.80")
 
     assert _priced(session, books).unit_price == Decimal("387.20")
+
+
+def test_lines_that_add_up_to_neither_total_keep_their_amounts(session, books):
+    line = books.line(books.proshop, "Apple adapter 96W", unit_price="300", unit="stk")
+    _invoice_totals(session, line, total="484", tax="96.80")
+
+    assert _priced(session, books).unit_price == Decimal("300")
+
+
+def test_a_share_no_vat_rate_gives_keeps_the_amounts(session, books):
+    line = books.line(books.proshop, "Apple adapter 96W", unit_price="484", unit="stk")
+    _invoice_totals(session, line, total="484", tax="242")
+
+    assert _priced(session, books).unit_price == Decimal("484")
+
+
+def test_a_printed_net_amount_too_far_below_is_not_trusted(session, books):
+    line = books.line(books.proshop, "Apple adapter 96W", unit_price="484", unit="stk")
+    line.subtotal = Decimal("48.40")
+    session.add(line)
+    session.commit()
+
+    assert _priced(session, books).unit_price == Decimal("484")
