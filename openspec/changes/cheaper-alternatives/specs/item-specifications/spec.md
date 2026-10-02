@@ -6,7 +6,13 @@ Each item a company buys (see `spend-item-index`) SHALL get a **specification** 
 - its **class**: `material` (bought by weight, length, area, volume or as stock to be processed: steel, wood, cable by the metre, cutting inserts) or `finished_good` (bought to be used as it is: toilet paper, laptops, snacks, smartphones);
 - a short **product name** in English;
 - its **identifiers**, each when stated: manufacturer part number, EAN/GTIN, brand, model;
-- its **key attributes**: what a buyer must not get less of. Each attribute has a name, a value, a unit when it has one, and, for a number, whether more is better, less is better or it must be equal. For example: a steel bar's grade, form, diameter and length; a laptop's processor, memory, storage and screen size; a toilet roll's ply and sheets per roll;
+- its **product type**: what kind of product it is, for what use (a business laptop, a hot-rolled round bar, an installation cable);
+- its **key attributes**: what a buyer must not get less of. Each attribute has a name, a value and a kind:
+  - **numeric**, with its unit and whether more is better, less is better or it must be equal;
+  - **tiered**, with its family, tier and generation, for parts sold in ranked lines: a processor (Intel Core, i7, 13th generation), a graphics card, a steel or quality grade;
+  - **other**, for anything else (a material, a coating, a certification).
+
+  For example: a steel bar's grade, form, diameter and length; a laptop's processor, memory, storage and screen size; a toilet roll's ply and sheets per roll;
 - its **pricing unit**: one of `kg`, `m`, `m2`, `m3`, `l`, `piece`, `sheet`, `roll`, `pack`;
 - **units per line unit**: how many pricing units one unit of the line holds, when it can be told. "Pack of 8 rolls" with pricing unit `roll` is 8; "box of 305 m" with pricing unit `m` is 305;
 - a **confidence** from 0 to 1.
@@ -21,7 +27,7 @@ A specification SHALL be extracted only once per item, and again only when the i
 #### Scenario: A laptop
 
 - **WHEN** an item is "Lenovo ThinkPad T14 Gen 5 21ML003XMX, Ultra 7 155U, 16GB, 512GB SSD"
-- **THEN** its class is `finished_good`, its model is ThinkPad T14 Gen 5, its part number is 21ML003XMX, its pricing unit is `piece`, and its key attributes include 16 GB memory and 512 GB storage, more being better
+- **THEN** its class is `finished_good`, its product type is a business laptop, its model is ThinkPad T14 Gen 5, its part number is 21ML003XMX, its pricing unit is `piece`, and its key attributes include the processor as tiered (Intel Core Ultra, tier 7, series 1) and 16 GB memory and 512 GB storage, more being better
 
 #### Scenario: Toilet paper by the pack
 

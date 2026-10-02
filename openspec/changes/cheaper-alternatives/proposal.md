@@ -1,6 +1,6 @@
 ## Why
 
-Finding the same product, or one that does the same job, for less is the core promise of Spendyard, and today the product only shows where money goes. Companies buy two kinds of things: production materials priced by weight, length or volume (steel, cutting inserts, wood, network cable by the metre) and finished goods priced by the piece or pack (toilet paper, laptops, snacks, smartphones). For both, a buyer rarely has time to check whether the same specification is sold cheaper elsewhere. We now have what this needs: every distinct item a company buys is known, with its spend and an embedding (`spend-item-index`), and the worker can search the web and read pages.
+Finding the same product, or one that does the same job, for less is the core promise of Spendyard, and today the product only shows where money goes. Companies buy two kinds of things: production materials priced by weight, length or volume (steel, cutting inserts, wood, network cable by the metre) and finished goods priced by the piece or pack (toilet paper, laptops, snacks, smartphones). For both, a buyer rarely has time to check whether the same specification is sold cheaper elsewhere. We now have what this needs: every distinct item a company buys is known, with its spend and an embedding (`spend-item-index`), and marketplaces and distributors offer product-search APIs with prices.
 
 ## What Changes
 
@@ -8,8 +8,8 @@ Finding the same product, or one that does the same job, for less is the core pr
 - **Alternatives** are found from three sources:
   - **the company's own history:** the same or an equivalent product bought cheaper, from another supplier, by another company of the organization, or earlier;
   - **other customers:** what other organizations on Spendyard pay for the same or an equivalent product, shown only as an anonymous aggregate of at least three organizations;
-  - **the open web:** webshops and supplier sites in the company's market, read for price, unit, pack size and VAT.
-- Every alternative is labelled **exact** (same identifier, or same make and model) or **equivalent** (every key attribute met or bettered), with the attributes compared side by side. A product that is worse on any key attribute is never shown as an alternative.
+  - **marketplaces:** pluggable connectors, each with its own flag, credentials and rate limit. v1 has a shopping-search API covering many shops in the company's market, the RS, Farnell, Mouser and Digi-Key product APIs for parts, cables and tools, and reading web pages as an off-by-default fallback. Amazon Business is left for a later change.
+- Every alternative is labelled **exact** (same identifier, or same make and model) or **equivalent**: the same kind of product, with every key attribute met or bettered and tiered parts (processors, graphics, grades) of the same tier or higher and the same generation or newer, so a Core i7 laptop never gets a Core i5 or i3 suggested. The attributes are compared side by side. A product that is worse on any key attribute is never shown.
 - Prices are compared **per pricing unit, in the company's base currency, excluding VAT**, and each alternative gets an estimated yearly saving from the last 12 months' quantity.
 - Searches run as a **background scan** of each company's largest-spend items, limited per run and repeated after a set number of days, and **on request** from a "Find cheaper alternatives" action on an item.
 - A new **Alternatives** page lists items with savings, largest first; an item shows its specification and its alternatives, and a person can dismiss an alternative (with a reason) or mark that they switched.
@@ -19,7 +19,7 @@ Finding the same product, or one that does the same job, for less is the core pr
 
 ### New Capabilities
 - `item-specifications`: a specification and pricing unit per item, extracted once and correctable, and the price per pricing unit of the item's lines.
-- `product-alternatives`: finding alternatives from history, other customers and the web; exact and equivalent matching with the attributes compared; price normalisation; the estimated saving; the background scan and on-request search; review of alternatives.
+- `product-alternatives`: finding alternatives from history, other customers and marketplace connectors; exact and equivalent matching with the attributes compared; price normalisation; the estimated saving; the background scan and on-request search; review of alternatives.
 - `price-benchmark`: the anonymous pool of what organizations pay per product and specification, its minimum of three organizations, and the organization setting to take part.
 - `frontend-alternatives`: the Alternatives page, the item view with its specification and alternatives, and the "Find cheaper alternatives" action.
 
@@ -30,7 +30,7 @@ Finding the same product, or one that does the same job, for less is the core pr
 ## Impact
 
 - **ai-api:** new `specs/` (extraction, units), `alternatives/` (sources, matching, saving, scan) and `web_offers/` (search, page reading, offer cache) packages; the worker's tick gets the scan; the `procurement_agent` and `redundancy` stubs and their calls in the sync runner go.
-- **web-api:** new tables for stored items with their specifications, products, specification comparisons, web pages and offers, and alternatives with their reviews; a `params` column on pipeline runs and a benchmark setting on organizations; `recommendations` dropped; one migration; routers for alternatives, item specifications and the on-request search; an organization setting for the price benchmark.
+- **web-api:** new tables for stored items with their specifications, products, specification comparisons, marketplace offers, and alternatives with their reviews; a `params` column on pipeline runs and a benchmark setting on organizations; `recommendations` dropped; one migration; routers for alternatives, item specifications and the on-request search; an organization setting for the price benchmark.
 - **web:** the Alternatives page and item view, the action on items, and a sidebar entry.
-- **External:** more web search and page fetches (rate-limited, cached, behind a flag); more LLM calls for specification extraction and matching, bounded per run.
+- **External:** a paid shopping-search API and free developer accounts for the RS, Farnell, Mouser and Digi-Key APIs, each behind its own key and flag; calls rate-limited and cached; more LLM calls for specification extraction and matching, bounded per run.
 - **Data sharing:** prices flow between organizations only as aggregates of at least three organizations, never with the buyer's name; an organization can opt out, and then gets no benchmark either.

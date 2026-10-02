@@ -18,7 +18,7 @@ The product's users are procurement and finance people at small and mid-sized co
 
 **Goals:**
 - An item specification and a price per pricing unit, for production materials and finished goods alike.
-- Exact and equivalent alternatives from the organization's own purchases, other customers' anonymous prices and the open web, never worse on a key attribute.
+- Exact and similar alternatives from the organization's own purchases, other customers' anonymous prices and marketplace connectors: the same kind of product, never worse on a key attribute, and never a lower tier of processor, graphics or grade.
 - A yearly saving per alternative, items ranked by it, and the scan and on-request search.
 - Bounded cost: LLM calls, searches and page reads per run are capped; everything that can be reused is cached.
 - Prices shared between organizations only as anonymous aggregates of three or more.
@@ -27,8 +27,8 @@ The product's users are procurement and finance people at small and mid-sized co
 - Ordering, requests for quotes or negotiating with suppliers.
 - Shipping costs, minimum order quantities, lead times or stock in the price. They are shown when a page states them, but not included.
 - Commodity price indices for materials (steel, copper, timber) and price forecasting. The existing `price-indices` capability can feed them later.
-- Supplier catalogues or price lists uploaded by a person. That is a later source.
-- Logged-in or B2B-only price portals, and marketplaces that need an account.
+- Supplier catalogues or price lists uploaded by a person. That is a later source, and fits the connector interface.
+- Customer-connected marketplaces (Amazon Business, Unite) and punchout. They need the customer's account and come in a later change.
 - Alternatives for services (consulting, rent, licences): they have no comparable unit. Items whose specification can't give a pricing unit are left out and say so.
 
 ## Decisions
@@ -66,16 +66,26 @@ The unit price is Σ `base_amount` ÷ Σ (`quantity` × units per line unit) ove
 
 *Alternatives considered.* Regex extraction of sizes and grades works only for a few patterns. Asking the model for the price per unit directly can't be checked.
 
-### 3. Matching: exact by identifiers, equivalent by attributes, comparisons cached
+### 3. Matching: exact by identifiers, similar by product type, attributes and tiers
 
-The candidate pipeline for an item:
-1. **Exact.** Same product, or the same GTIN, part number or brand and model. This is decided in code, after normalising: upper case, no spaces or hyphens.
-2. **Same class and pricing unit,** or the candidate is dropped.
-3. **Numeric attributes** are compared in code, after converting units with a small table (mm, cm, m; g, kg; GB, TB; W; V; in). The attribute's direction decides better or worse. A missing attribute rejects the candidate.
-4. **Other attributes** are compared by the LLM in one batched prompt per item. For each pair it returns same, better or worse, with a reason. Any worse rejects the candidate.
-5. **Comparisons are cached** in `spec_comparisons`, keyed by the two specification hashes and the version. The same pair is never asked twice, for any company.
+The candidate pipeline for an item, cheapest checks first:
+1. **Exact.** Same product, or the same GTIN, part number or brand and model, decided in code after normalising (upper case, no spaces or hyphens).
+2. **Same class, pricing unit and product type,** or the candidate is dropped. Product types are compared by the LLM, once per pair of types, and cached ("business laptop" against "2-in-1 tablet" is a different kind).
+3. **Numeric attributes**, compared in code, after converting units with a small table (mm, cm, m; g, kg; GB, TB; W; V; in). The attribute's direction decides better or worse; "must be equal" allows `ALTERNATIVES_EQUAL_TOLERANCE_PERCENT`. A missing attribute rejects the candidate.
+4. **Tiered attributes**, compared in code when both parts are in a known family, by a `tiers.py` table:
+   - the table holds each family's ordered tiers (Intel Core i3/i5/i7/i9, Core Ultra 5/7/9, Ryzen 3/5/7/9, Apple M/Pro/Max/Ultra, steel grades S235 < S275 < S355 < S460 within EN 10025);
+   - each part is parsed into family, tier and generation by pattern (i7-1355U is Core, tier 7, generation 13; Core Ultra 7 155U is Core Ultra, tier 7, series 1);
+   - a lower tier is worse, whatever the generation; the same or a higher tier with an older generation is worse;
+   - across families, or for a part the table can't parse, the LLM decides conservatively, with a reason, and "uncertain" counts as worse.
 
-*Alternatives considered.* LLM-only matching sometimes waves through less memory or a thinner ply, and the user asked never to show a worse product. A fully deterministic match can't tell that S355J2 is at least S235JR.
+   This is what keeps an i3 or i5 from ever replacing an i7.
+5. **Other attributes**, compared by the LLM in one batched prompt per item. For each pair it returns same, better or worse, with a reason. Any worse rejects the candidate.
+6. **Cached comparisons.** LLM comparisons are stored in `spec_comparisons`, keyed by the two specification hashes and the version, so the same pair is never asked twice, for any company.
+
+*Alternatives considered.*
+- LLM-only matching sometimes waves through less memory, a thinner ply or a lower processor tier, and the user asked that alternatives be similar, never worse.
+- A fully deterministic match can't tell that S355J2 is at least S235JR, or compare an Intel part with an AMD one.
+- Benchmark scores for processors (PassMark and the like) were considered for tiers. They need a licensed data source and still don't stop a "faster" i5 from replacing an i7, which the user ruled out.
 
 ### 4. Sources
 
@@ -85,22 +95,32 @@ The candidate pipeline for an item:
   - Median and lowest quartile are computed in Python over at most a few hundred per-organization prices, never from line data.
   - The benchmark is shown only from at least `max(3, BENCHMARK_MIN_ORGANIZATIONS)` organizations.
   - v1 benchmarks only identical signatures, not equivalent ones. That keeps the aggregate meaningful.
-- **Web.** See decision 5. Offers are stored in a global `web_offers` table with an expiry.
+- **Marketplaces.** See decision 5.
 
-### 5. Web search and page reading
+### 5. Marketplace connectors
 
-**Searching.** Queries go through `ddgs` with the market's region (`dk-da` for Denmark, from the company's `country_code`). The first query uses the part number or EAN with the market's word for price. If that finds nothing, the product name plus the two most telling attributes is searched. At most `ALTERNATIVES_WEB_QUERIES` (default 2) queries and `ALTERNATIVES_WEB_PAGES` (default 4) pages are used per item. Results on non-shop hosts are skipped by a block list: social, encyclopaedias, company registers, review sites and PDF manuals.
+Marketplaces sit behind one interface:
+- `OfferSource.search(item_spec, market) -> list[Offer]`, with a `name`;
+- an `enabled()` check (flag and credentials);
+- a per-provider rate limiter.
 
-**Reading.** Each page is fetched once through Crawl4AI with the robots.txt check, a timeout and markdown output. The page text is cut to `ALTERNATIVES_PAGE_CHARS`, and the LLM reads its offers into `PageOffers`: seller, product name, identifiers, attributes, price, currency, VAT included or not, pack quantity and unit, and stated shipping. Prices are converted without VAT using a static table of standard rates by seller country (DK 25, SE 25, NO 25, DE 19, NL 21, FI 25.5, GB 20, and so on). The seller's country is taken from the page's host TLD or the market. An offer whose VAT treatment or currency can't be told is dropped.
+An `Offer` holds seller, title, identifiers, attributes, price (with quantity breaks), currency, VAT included, pack quantity and unit, stock, shipping when stated, URL and seen-at. Offers are normalised to the item's specification by the same extraction prompt, run on the offer's title and attributes, so matching treats every source alike.
 
-**Caching and politeness.**
-- Pages and their offers are cached for `ALTERNATIVES_OFFER_TTL_DAYS` in `web_pages` (url, fetched_at, status) and `web_offers`. Both are shared across organizations, since they're public.
-- A failed page is not retried within the TTL.
-- A per-host minimum interval (`ALTERNATIVES_HOST_INTERVAL_S`, default 5) is kept by the worker in memory. There is one worker process today, as `design.md` of the agreement work assumes.
+The v1 connectors:
+- **Shopping search** (`SHOPPING_SEARCH_PROVIDER`): SerpApi's Google Shopping engine first, behind a provider interface so DataForSEO can be added. It searches with the market's country and language (`gl=dk`, `hl=da` for Denmark): the part number or EAN first, then the product name with its two most telling attributes. Listings rarely carry full specifications, so an equivalent match needs the attributes from the listing's title or its product page; the product page is read only for candidates already cheaper than the item.
+- **Distributors**: RS, Farnell (element14), Mouser and Digi-Key, each a small client of its public product-search API (API key, or OAuth client credentials for Digi-Key). They search by manufacturer part number, then by keyword. Their price breaks are read at the item's typical order quantity, the median quantity per line.
+- **Open web** (`ALTERNATIVES_WEB_ENABLED`, default off): DDG search plus page reading with Crawl4AI, honouring robots.txt and a per-host interval. It's kept as a keyless fallback.
+
+**VAT.** A price stated with VAT is converted without it using a static table of standard rates by seller country (DK 25, SE 25, NO 25, DE 19, NL 21, FI 25.5, GB 20, and so on). Distributor APIs state prices without VAT. An offer whose VAT treatment, currency or pack quantity can't be told is dropped.
+
+**Caching.** Each connector's answers are cached in `marketplace_queries` (connector, query, market, fetched_at), with their offers in `marketplace_offers`, for `ALTERNATIVES_OFFER_TTL_DAYS`. Both are shared across organizations, since the data is public. A failing connector is counted in the run's summary and skipped for the rest of the run.
+
+**Credentials.** The connectors use Spendyard's own keys, from the environment (`SERPAPI_API_KEY`, `RS_API_KEY`, `FARNELL_API_KEY`, `MOUSER_API_KEY`, `DIGIKEY_CLIENT_ID`/`DIGIKEY_CLIENT_SECRET`), not the customer's. Customer-connected marketplaces (Amazon Business, Unite) need the customer's account through OAuth and are left for a later change. The interface allows a per-organization credential then.
 
 *Alternatives considered.*
-- Paid search or shopping APIs (Google Shopping, PriceRunner) give cleaner prices, but need keys and contracts; DDG is already in use. The search is behind one module, so a paid provider can replace it later.
-- Plain HTTP fetching without robots.txt was rejected for politeness.
+- DDG with page reading only is free, but slow, gets throttled and misreads prices; it stays a fallback.
+- Scraping marketplaces directly breaks their terms and fails whenever a page changes.
+- Affiliate APIs (Amazon PA-API, price comparison sites) depend on generating sales and restrict how their data may be used.
 
 ### 6. Runs, scan and on-request search
 
@@ -150,9 +170,11 @@ The `procurement_agent` and `redundancy` packages and their `_call_stub` calls i
 ## Risks / Trade-offs
 
 - **Specifications read wrong** (a pack size or grade misread). → Confidence is shown; a manager can correct the specification and the correction sticks; low-confidence specifications (< 0.5) get no web search until confirmed.
-- **Wrong web prices** (a pack price read as a unit price, or a member-only price). → The pack quantity must be stated, otherwise the offer is dropped. Every web alternative links to its page with the date it was seen, and "price wrong" dismissals are counted per host, so a host with repeated wrong prices can be blocked.
-- **DDG blocks or throttles the worker.** → Searches are cached per query for the TTL, there is a host interval, the number of queries per run is low, and the web source sits behind `ALTERNATIVES_WEB_ENABLED` (default off). History and the benchmark work without it.
-- **Website terms and scraping.** → robots.txt is honoured, volumes are low and cached, and only publicly listed prices are read. Turning the web source on for production needs a deliberate decision (open question).
+- **Wrong marketplace prices** (a pack price read as a unit price, or a member-only price). → The pack quantity must be stated, otherwise the offer is dropped. Every marketplace alternative links to its offer with the date it was seen, and "price wrong" dismissals are counted per seller, so a seller with repeated wrong prices can be blocked.
+- **Shopping listings without specifications.** → Equivalence needs the attributes, so the product page is read for cheaper candidates; without the attributes the candidate is only kept when it is an exact match.
+- **Tier tables go out of date** (new processor generations, new families). → An unknown part falls back to the conservative LLM decision, which counts "uncertain" as worse, so a new part is missed rather than wrongly accepted; the table is data, extended in one place.
+- **API costs and quotas** (the shopping search is paid per query; the distributor APIs have daily limits). → Answers are cached for 14 days and shared, queries per item are capped, the scan is capped per run, and each connector has its own flag.
+- **Website terms for the open-web fallback.** → It is off by default; robots.txt is honoured, volumes are low and cached.
 - **Benchmark re-identification** (with three organizations, one may guess the others). → At least three others besides the viewer, only the median and lowest quartile, no supplier or buyer. Organizations can opt out.
 - **GPU load** from extraction, comparison and page reading. → Everything is batched and cached. The scan is capped per run, off by default, and queued behind interactive work.
 - **Quantity missing on many ERP lines.** → Those items have no unit price and say why. History and the benchmark still show identifiers and prices, but no saving.
@@ -161,16 +183,16 @@ The `procurement_agent` and `redundancy` packages and their `_call_stub` calls i
 ## Migration Plan
 
 1. Migration `0023_cheaper_alternatives`:
-   - **new tables:** `company_items`, `products`, `spec_comparisons`, `web_pages`, `web_offers`, `item_alternatives`;
+   - **new tables:** `company_items`, `products`, `spec_comparisons`, `marketplace_queries`, `marketplace_offers`, `item_alternatives`;
    - **new columns:** `pipeline_runs.params` and `organizations.price_benchmark_enabled` (default true);
    - **dropped:** `recommendations`.
 2. Deploy web-api and the worker; the flags default to history and benchmark on request only.
-3. Run `find_alternatives` on a few items of the test company; then turn on `ALTERNATIVES_SCAN_ENABLED`, and `ALTERNATIVES_WEB_ENABLED` once the web terms question is settled.
+3. Create the API accounts (SerpApi, RS, Farnell, Mouser, Digi-Key) and set their keys. Run `find_alternatives` on a few items of the test company, then turn on `ALTERNATIVES_SCAN_ENABLED`.
 4. Rollback: the downgrade drops the new tables and columns. `recommendations` is recreated empty.
 
 ## Open Questions
 
 - **Benchmark default:** should taking part be on by default, as proposed, or should organizations opt in? This is a legal and terms-of-service question for Spendyard, not a technical one.
-- **Marketplaces:** are Amazon and similar valid sellers for alternatives, or only shops and supplier sites?
 - **No country:** for a company without a `country_code`, should the market come from its base currency, or should the web search be skipped (as proposed)?
-- **Paid shopping API:** is a paid search or shopping API worth its cost for better coverage of finished goods?
+- **Shopping-search provider:** SerpApi or DataForSEO, on price per query and Danish coverage. The design starts with SerpApi behind a provider interface.
+- **Tier table scope:** beyond processors, graphics and steel grades, which tiered families matter most to customers (paper quality classes, screw strength classes, cable categories)?

@@ -9,22 +9,46 @@ Items SHALL be linked to a **product** when they are the same thing: the same ma
 - **WHEN** one company buys "Magic Keyboard Touch Id Num Key (MXK73DK/A)" from CS-Online and another buys "Apple Magic Keyboard med Touch ID og numerisk tastatur MXK73DK/A" from Proshop
 - **THEN** both items are linked to the product with part number MXK73DK/A
 
-### Requirement: An alternative SHALL be exact or equivalent, and never worse
+### Requirement: An alternative SHALL be exact or a similar product, and never worse
 
 A candidate SHALL be an alternative to an item only when its class and pricing unit are the item's, and it is either:
 - **exact**: the item's product, or the same part number, EAN or brand and model;
-- **equivalent**: every key attribute of the item is met or bettered. A number SHALL be compared in the attribute's unit by its direction (more is better, less is better, or equal). Any other attribute (a steel grade, a cable category, a material) SHALL be judged by the LLM as the same, better for the buyer's purpose, or worse, with a one-sentence reason.
+- **equivalent**: a similar product, judged by all of the following:
+  - it is the **same kind of product** for the same use: a business laptop for a business laptop (not a gaming laptop or a tablet), a round bar for a round bar, the same cable category and construction;
+  - every **numeric** key attribute is met or bettered, compared in the attribute's unit by its direction (more is better, less is better). An attribute that must be equal, such as a dimension a part is cut to, a thread or a screen size, SHALL be equal within `ALTERNATIVES_EQUAL_TOLERANCE_PERCENT` (default 2);
+  - every **tiered** attribute, such as a processor, a graphics card or a steel or quality grade, SHALL be the same tier or higher **and** the same generation or newer. A lower tier SHALL be worse whatever its generation: an Intel Core i3 or i5 is never an alternative to a Core i7, and a newer i5 is not either. Tiers SHALL be ordered within a family (Intel Core i3 < i5 < i7 < i9, Core Ultra 5 < 7 < 9, AMD Ryzen 3 < 5 < 7 < 9, Apple M < M Pro < M Max < M Ultra). Across families the LLM SHALL decide, conservatively: only a part of the same class of performance and age counts as the same tier, and anything uncertain counts as worse;
+  - any other attribute (a material, a coating, a jacket, a certification) SHALL be judged by the LLM as the same, better for the buyer's purpose, or worse, with a one-sentence reason.
 
-A candidate that is worse on any key attribute, or does not state one, SHALL NOT be an alternative. Each alternative SHALL carry the item's and the candidate's attributes side by side, each marked as same, better or worse.
+A candidate that is worse on any key attribute, does not state one, or is a different kind of product SHALL NOT be an alternative. Each alternative SHALL carry the item's and the candidate's attributes side by side, each marked as same, better or worse.
 
 #### Scenario: A better steel grade is equivalent
 
 - **WHEN** the item is a 20 mm round bar in S235JR and a candidate is the same bar in S355J2
 - **THEN** the candidate is equivalent, with the grade marked better
 
+#### Scenario: A lower processor tier is never an alternative
+
+- **WHEN** the item is a laptop with an Intel Core i7-1355U and cheaper candidates have an i3-1315U and an i5-1435U
+- **THEN** neither is an alternative
+
+#### Scenario: An older generation of the same tier is not an alternative
+
+- **WHEN** the item has a 13th-generation Core i7 and a candidate has an 11th-generation Core i7
+- **THEN** the candidate is not an alternative
+
+#### Scenario: Another family of the same tier and age
+
+- **WHEN** the item has an Intel Core i7-1355U and a candidate an AMD Ryzen 7 7730U, otherwise the same or better
+- **THEN** the candidate is equivalent only if the LLM judges the processors the same tier and age, and the reason is shown beside them
+
 #### Scenario: Less memory is not an alternative
 
 - **WHEN** the item is a laptop with 16 GB memory and a cheaper candidate has 8 GB
+- **THEN** the candidate is not an alternative
+
+#### Scenario: A different kind of product
+
+- **WHEN** the item is a 14" business laptop and a cheaper candidate with the same processor and memory is a tablet with a keyboard cover
 - **THEN** the candidate is not an alternative
 
 #### Scenario: A missing attribute is not assumed
@@ -75,25 +99,38 @@ An item's alternatives SHALL include the price benchmark of its product or of eq
 - **WHEN** five other organizations paid a median of DKK 9.10 per kg for 20 mm S235JR round bar and the company pays DKK 10.40
 - **THEN** the item has an alternative "other customers pay a median of DKK 9.10 per kg (5 organizations)"
 
-### Requirement: Alternatives SHALL come from the open web
+### Requirement: Alternatives SHALL come from marketplace connectors
 
-When `ALTERNATIVES_WEB_ENABLED` is set, an item's alternatives SHALL include **offers** found on the web in the company's market:
-- the search SHALL use the item's identifiers first, and its product name with its key attributes otherwise, in the market's language;
-- at most `ALTERNATIVES_WEB_PAGES` pages per item SHALL be read, and from each the LLM SHALL read the offers it states: seller, product, identifiers, attributes, price, currency, whether VAT is included, pack size and URL;
-- an offer SHALL be kept for `ALTERNATIVES_OFFER_TTL_DAYS` (default 14) and reused by every search that finds its page in that time, for any organization, since it is public;
-- requests SHALL be rate-limited per host, and a page that refuses crawling SHALL NOT be read.
+An item's alternatives SHALL include **offers** from marketplace connectors. Every connector SHALL take an item's identifiers and specification and the company's market, and return offers: seller, product, identifiers, attributes, price, currency, whether VAT is included, pack size, stock when stated, and a link. A connector SHALL be used only when it is enabled and its credentials are configured, and SHALL be rate-limited to its provider's limits.
 
-A web alternative SHALL link to the page and say when it was seen.
+The v1 connectors SHALL be:
+- **shopping search**: product listings from many shops in the company's market, through a shopping-search API, searched by identifiers first and by product name with key attributes otherwise;
+- **distributors**: the product-search APIs of RS, Farnell, Mouser and Digi-Key, searched by manufacturer part number first and by keyword otherwise; quantity price breaks SHALL be read at the item's typical order quantity;
+- **open web** (off by default): web search and reading the found pages with the LLM, honouring robots.txt and a per-host interval.
 
-#### Scenario: A cheaper laptop on a webshop
+An offer SHALL be kept for `ALTERNATIVES_OFFER_TTL_DAYS` (default 14) and reused by every search that asks the same connector the same question in that time, for any organization, since it is public. A marketplace alternative SHALL name its connector and seller, link to the offer and say when it was seen.
 
-- **WHEN** a company pays DKK 9,200 for ThinkPad T14 Gen 5 21ML003XMX and a Danish webshop lists that part number for DKK 10,500 including VAT
-- **THEN** the item has an exact web alternative at DKK 8,400 without VAT, with the page's link and the date it was seen
+A connector that fails SHALL be logged and counted in the run's summary, and the other sources SHALL still be searched.
+
+#### Scenario: A cheaper laptop in a Danish shop
+
+- **WHEN** a company pays DKK 9,200 for ThinkPad T14 Gen 5 21ML003XMX and the shopping search finds a Danish shop listing that part number for DKK 10,500 including VAT
+- **THEN** the item has an exact alternative at DKK 8,400 without VAT, naming the shop, with the link and the date it was seen
+
+#### Scenario: A cable from a distributor at the order quantity
+
+- **WHEN** a company buys Cat6 cable in 305 m boxes, 4 boxes at a time, and a distributor offers the same part at a lower price from 3 boxes
+- **THEN** the alternative uses the price for 4 boxes, per metre
 
 #### Scenario: An offer is reused
 
-- **WHEN** two companies' searches find the same product page within 14 days
-- **THEN** the page is read once
+- **WHEN** two companies' searches ask the shopping search for the same part number within 14 days
+- **THEN** the provider is called once
+
+#### Scenario: A connector is down
+
+- **WHEN** the distributor API fails during a search
+- **THEN** the run records the failure, and history, the benchmark and the shopping search still give their alternatives
 
 ### Requirement: Alternatives SHALL be found by a background scan and on request
 
@@ -117,11 +154,11 @@ A new search of an item SHALL replace its open alternatives from the sources it 
 
 An alternative's review status SHALL be `open`, `dismissed` or `switched`. A person SHALL be able to dismiss an alternative with a reason (`not_equivalent`, `supplier_not_approved`, `price_wrong` or `other`) and a note, mark it as switched, or reopen it. Reviews SHALL be audited.
 
-A dismissed alternative SHALL NOT be raised again for the same item from the same product or offer page. A `not_equivalent` dismissal SHALL also stop that product being proposed as equivalent to the item.
+A dismissed alternative SHALL NOT be raised again for the same item from the same product or offer. A `not_equivalent` dismissal SHALL also stop that product being proposed as equivalent to the item.
 
 #### Scenario: A dismissed alternative stays dismissed
 
-- **WHEN** a manager dismisses a web offer as `supplier_not_approved` and the item is searched again
+- **WHEN** a manager dismisses a marketplace offer as `supplier_not_approved` and the item is searched again
 - **THEN** that offer is not raised again for the item
 
 ### Requirement: An alternative SHALL say when it would break an agreement
@@ -130,5 +167,5 @@ When the item falls under a confirmed term of an active agreement (see `agreemen
 
 #### Scenario: A cheaper laptop elsewhere under a preferred-supplier term
 
-- **WHEN** an item is in scope of a preferred-supplier term for CS-Online and its alternative is a web offer from another shop
+- **WHEN** an item is in scope of a preferred-supplier term for CS-Online and its alternative is a marketplace offer from another shop
 - **THEN** the alternative says that buying it there would be off contract under that agreement
