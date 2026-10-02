@@ -180,6 +180,29 @@ Peak RSS includes loading the embedding model (about 1.5 GB on its own).
 
 Every run re-embeds every line and queries per candidate line, so the cost of a run after a small sync stays that of a full run. Both grow linearly with lines. At 1,000,000 lines that projects to about 13 minutes and over 10 GB per run, before any real model calls. So the baseline wasn't run at 1M.
 
+### After this change
+
+Measured on 2026-10-02 with the same benchmark. All runs use the counting stub judge; "prompts" counts its calls, since several items go into one prompt. Peak RSS is dominated by the embedding model (about 1.5 GB).
+
+| Run | Wall time | Texts embedded | Prompts | DB queries | Peak RSS |
+|---|---|---|---|---|---|
+| 100k, first run (full) | 75 s | 16,997 | 602 | 208 | 1.7 GB |
+| 100k, full again (answers stored) | 13 s | 0 | 0 | 157 | 1.7 GB |
+| 100k, after a 5,000-line sync | 23 s | 3,215 | 134 | 421 | 1.7 GB |
+| 1M, first run (full) | 22 min | 19,724 | 710 | 1,171 | 1.7 GB |
+| 1M, after a 5,000-line sync | 24 s | 4 | 0 | 123 | 1.6 GB |
+
+Notes on the measurements:
+- **The 100k sync run is inflated.** Its sync reused existing lines on invoices of mixed suppliers, which created about 3,000 new supplier and item pairs. The benchmark's `grow` now keeps each line's supplier.
+- **The 1M first run had two slow parts.** About 10 minutes went to keying 1,000,000 lines with per-row updates, which is now one `UPDATE … CASE` per page: 1,005,000 lines keyed in 122 s. About 10 minutes went to embedding, slowed by a concurrent real-model test (the 100k run embedded 17,000 items in 9 s). A first 1M run should therefore take roughly 5 minutes without contention.
+- **Memory doesn't grow with lines.** Model work grows with distinct items (about 20,000 here), not lines, and a run after a sync costs seconds and no model calls when it brings no new items.
+
+**Report and dashboard queries at 1M lines** (`EXPLAIN ANALYZE`):
+- No plan scans `invoice_lines`.
+- The report's spend and commitments read `agreement_term_spend` in under 0.2 ms.
+- The slowest query is the findings page, at 59 ms: a sequential scan of the 9,600 findings, which the planner prefers at that size.
+- No index was added.
+
 ## Risks / Trade-offs
 
 - **[Batched prompts lower the small model's accuracy]** → Batch size is configurable and defaults to 8. The benchmark includes a real-model sample of 200 items, scored batched against single and compared against the stub's ground truth. Batching is set to 1 if accuracy drops by more than 2 points.

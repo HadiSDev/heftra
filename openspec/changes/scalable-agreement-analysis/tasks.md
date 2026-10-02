@@ -82,7 +82,7 @@
 - [x] 6.1 `POST /companies/{id}/agreements/analyse?full=true` sets `full_analysis` on the company's active agreements; the sync's replace path does too (tests)
 - [x] 6.2 The report's spend in scope, supplier share and commitment progress come from `agreement_term_spend` (tests; the existing report tests keep passing)
 - [x] 6.3 The report carries `capped_terms` and `similarity_available` from the agreement's last summary
-- [ ] 6.4 Check the report and dashboard queries with `EXPLAIN` on the benchmark database, adding indexes where they scan lines
+- [x] 6.4 Check the report and dashboard queries with `EXPLAIN` on the benchmark database, adding indexes where they scan lines
 
 ## 7. Web
 
@@ -92,7 +92,7 @@
 
 ## 8. Verification
 
-- [ ] 8.1 Run the web-api, ai-api and web suites
-- [ ] 8.2 Rerun the benchmark at 1,000,000 lines (full and incremental) and record peak RSS, wall time and items judged against the baseline in `design.md`
+- [x] 8.1 Run the web-api, ai-api and web suites
+- [x] 8.2 Rerun the benchmark at 1,000,000 lines (full and incremental) and record peak RSS, wall time and items judged against the baseline in `design.md`
 - [ ] 8.3 A real-model sample: 200 items, batched against single. Keep `AGREEMENT_JUDGE_BATCH` only if accuracy is within 2 points
 - [ ] 8.4 With the user's go-ahead: run migration 0022 on dev, analyse the test agreement in full, and check that the report matches what it showed before (except the removed compliant rows)
