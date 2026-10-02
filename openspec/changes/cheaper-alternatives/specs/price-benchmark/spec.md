@@ -9,7 +9,7 @@ A benchmark SHALL give the median and the lowest quartile of those prices, and h
 #### Scenario: A product's benchmark
 
 - **WHEN** six organizations bought part number MXK73DK/A in the last year at DKK 980, 999, 1,010, 1,050, 1,136 and 1,190 each
-- **THEN** its benchmark has 6 organizations, a median of DKK 1,030 and a lowest quartile of DKK 1,000
+- **THEN** its benchmark has 6 organizations, a median of DKK 1,030 and a lowest quartile of DKK 1,001.75
 
 ### Requirement: A benchmark SHALL be shown only from at least three organizations, and anonymously
 

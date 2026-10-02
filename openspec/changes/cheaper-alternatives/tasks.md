@@ -32,8 +32,8 @@
 
 ## 5. Sources (ai-api)
 
-- [ ] 5.1 History: same product and similar specifications within the organization, cheaper, with supplier, company and last date (tests)
-- [ ] 5.2 Benchmark: per-organization prices by product and by specification signature, taking-part organizations only, at least three besides the viewer, median and lowest quartile in the viewer's currency, nothing that names anyone (tests: too few, opted out)
+- [x] 5.1 History: same product and similar specifications within the organization, cheaper, with supplier, company and last date (tests)
+- [x] 5.2 Benchmark: per-organization prices by product and by specification signature, taking-part organizations only, at least three besides the viewer, median and lowest quartile in the viewer's currency, nothing that names anyone (tests: too few, opted out)
 - [ ] 5.3 The `OfferSource` interface, `Offer` with price breaks, the per-provider rate limiter, the shared query and offer cache with expiry, and offers normalised to specifications by the extraction prompt (tests)
 - [ ] 5.4 Product page reading: Crawl4AI fetch with the robots check, per-host interval and timeout; schema.org Product/Offer from JSON-LD and microdata first; the LLM only for missing attributes or pages without structured data (tests with saved pages)
 - [ ] 5.5 Shop-search connector: `shops.yaml` per market with search URL templates and product hosts, results page crawled for product links, identifier query then attribute query (tests with saved pages)
