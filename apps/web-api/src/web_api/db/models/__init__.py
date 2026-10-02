@@ -12,8 +12,18 @@ from .agreement_finding import AgreementFinding
 from .agreement_scope_judgement import AgreementScopeJudgement
 from .agreement_term import AgreementTerm
 from .agreement_term_spend import AgreementTermSpend
+from .alternative_enums import (
+    AlternativeMatch,
+    AlternativeReviewStatus,
+    AlternativeSource,
+    DismissReason,
+    ItemClass,
+    PricingUnit,
+    SpecSource,
+)
 from .audit_log import AuditLog
 from .company import Company
+from .company_item import CompanyItem
 from .emission_country_region import EmissionCountryRegion
 from .emission_factor import EmissionFactor
 from .emission_factor_set import EmissionFactorSet
@@ -34,6 +44,9 @@ from .file import File
 from .fx_rate import FxRate
 from .invoice import Invoice
 from .invoice_line import InvoiceLine
+from .item_alternative import ItemAlternative
+from .marketplace_offer import MarketplaceOffer
+from .marketplace_query import MarketplaceQuery
 from .organization import Organization
 from .pipeline_run import (
     SYSTEM_REQUESTER,
@@ -42,12 +55,13 @@ from .pipeline_run import (
     PipelineRunStatus,
 )
 from .price_index_value import PriceIndexValue
-from .recommendation import Recommendation
+from .product import Product
 from .reference_data_import import (
     ReferenceDataImport,
     ReferenceImportKind,
     ReferenceImportStatus,
 )
+from .spec_comparison import SpecComparison
 from .spend_category import SpendCategory
 from .spend_category_suggestion import (
     SpendCategorySuggestion,
@@ -73,7 +87,20 @@ __all__ = [
     "FindingKind",
     "FindingReviewStatus",
     "FindingSeverity",
+    "AlternativeMatch",
+    "AlternativeReviewStatus",
+    "AlternativeSource",
     "AuditLog",
+    "CompanyItem",
+    "DismissReason",
+    "ItemAlternative",
+    "ItemClass",
+    "MarketplaceOffer",
+    "MarketplaceQuery",
+    "PricingUnit",
+    "Product",
+    "SpecComparison",
+    "SpecSource",
     "Company",
     "DocStatus",
     "EmissionCountryRegion",
@@ -98,7 +125,6 @@ __all__ = [
     "PipelineRunStatus",
     "SYSTEM_REQUESTER",
     "PriceIndexValue",
-    "Recommendation",
     "ReferenceDataImport",
     "ReferenceImportKind",
     "ReferenceImportStatus",

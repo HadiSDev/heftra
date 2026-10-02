@@ -1,11 +1,11 @@
 ## 1. Data model and migration
 
-- [ ] 1.1 Models: `CompanyItem`, `Product`, `SpecComparison`, `MarketplaceQuery`, `MarketplaceOffer`, `ItemAlternative` (with review fields and `ref_key`), each in its own file; `PipelineRun.params`; `Organization.price_benchmark_enabled`
-- [ ] 1.2 Remove the `Recommendation` model, `Company.recommendations` and its deletion in `company_deletion.py`
-- [ ] 1.3 Migration `0023_cheaper_alternatives` creating the tables and columns, dropping `recommendations`, with a downgrade; the indexes the list and the searches need
-- [ ] 1.4 New run kinds `find_alternatives` and `scan_alternatives` in `PipelineRunKind`, the web types and the run labels
-- [ ] 1.5 Config: the `ALTERNATIVES_*`, `BENCHMARK_MIN_ORGANIZATIONS`, `SEARXNG_URL`, `ALTERNATIVES_PAGES_PER_ITEM`, `ALTERNATIVES_HOST_INTERVAL_S` and distributor key settings with defaults, documented in `.env.example`
-- [ ] 1.6 A `searxng` service in `docker-compose.yml` on port 8888 with a mounted `settings.yml` (JSON format on, limiter off), and `SEARXNG_URL` in `.env.example`
+- [x] 1.1 Models: `CompanyItem`, `Product`, `SpecComparison`, `MarketplaceQuery`, `MarketplaceOffer`, `ItemAlternative` (with review fields and `ref_key`), each in its own file; `PipelineRun.params`; `Organization.price_benchmark_enabled`
+- [x] 1.2 Remove the `Recommendation` model, `Company.recommendations` and its deletion in `company_deletion.py`
+- [x] 1.3 Migration `0023_cheaper_alternatives` creating the tables and columns, dropping `recommendations`, with a downgrade; the indexes the list and the searches need
+- [x] 1.4 New run kinds `find_alternatives` and `scan_alternatives` in `PipelineRunKind`, the web types and the run labels
+- [x] 1.5 Config: the `ALTERNATIVES_*`, `BENCHMARK_MIN_ORGANIZATIONS`, `SEARXNG_URL`, `ALTERNATIVES_PAGES_PER_ITEM`, `ALTERNATIVES_HOST_INTERVAL_S` and distributor key settings with defaults, documented in `.env.example`
+- [x] 1.6 A `searxng` service in `docker-compose.yml` on port 8888 with a mounted `settings.yml` (JSON format on, limiter off), and `SEARXNG_URL` in `.env.example`
 
 ## 2. Stored items and unit prices (ai-api)
 
@@ -59,7 +59,7 @@
 - [ ] 7.5 `POST /items/{id}/find-alternatives` for managers, reusing a queued run (tests)
 - [ ] 7.6 `PATCH /alternatives/{id}` to dismiss with a reason and note, mark switched or reopen, audited (tests)
 - [ ] 7.7 The line read gets its `item_id`; the organization endpoint gets `price_benchmark_enabled`, settable by org admins and audited (tests)
-- [ ] 7.8 Delete a company's items and alternatives in `company_deletion.py`
+- [x] 7.8 Delete a company's items and alternatives in `company_deletion.py`
 
 ## 8. Web
 

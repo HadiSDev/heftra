@@ -282,7 +282,13 @@ export interface RecategorizeResult {
 
 /** A pipeline stage a system admin can run for one company. */
 export type PipelineRunKind =
-  'sync' | 'read_documents' | 'categorize' | 'match_emissions'
+  | 'sync'
+  | 'read_documents'
+  | 'categorize'
+  | 'match_emissions'
+  | 'analyse_agreements'
+  | 'find_alternatives'
+  | 'scan_alternatives'
 
 /** Where a pipeline run is in its life: `queued → running → succeeded | failed`. */
 export type PipelineRunStatus = 'queued' | 'running' | 'succeeded' | 'failed'

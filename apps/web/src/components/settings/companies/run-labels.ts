@@ -13,6 +13,7 @@ export const RUN_KINDS: ReadonlyArray<PipelineRunKind> = [
   'read_documents',
   'categorize',
   'match_emissions',
+  'scan_alternatives',
 ]
 
 /** What each run kind is called in the UI. */
@@ -21,6 +22,9 @@ export const RUN_KIND_LABELS: Record<PipelineRunKind, string> = {
   read_documents: 'Read documents',
   categorize: 'Categorize lines',
   match_emissions: 'Match emission sectors',
+  analyse_agreements: 'Check agreements',
+  find_alternatives: 'Find alternatives for an item',
+  scan_alternatives: 'Find cheaper alternatives',
 }
 
 /** What each run status is called in the UI. */

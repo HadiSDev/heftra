@@ -1,0 +1,24 @@
+# SearXNG for the worker's product searches: JSON answers, no limiter (only the
+# worker calls it), and the general engines it spreads queries over.
+use_default_settings: true
+
+server:
+  secret_key: "spendyard-local-searxng"
+  limiter: false
+  image_proxy: false
+
+search:
+  safe_search: 0
+  formats:
+    - html
+    - json
+
+engines:
+  - name: google
+    disabled: false
+  - name: bing
+    disabled: false
+  - name: brave
+    disabled: false
+  - name: duckduckgo
+    disabled: false

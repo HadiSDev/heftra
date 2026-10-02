@@ -11,6 +11,7 @@ from .agreements.deletion import delete_company_agreements
 from .db.models import (
     AuditLog,
     Company,
+    CompanyItem,
     ErpAccount,
     ErpCredential,
     ErpEntry,
@@ -18,8 +19,8 @@ from .db.models import (
     File,
     Invoice,
     InvoiceLine,
+    ItemAlternative,
     PipelineRun,
-    Recommendation,
     SpendCategorySuggestion,
     SyncState,
 )
@@ -118,7 +119,8 @@ def delete_company(session: Session, company: Company) -> CompanyDeletion:
     session.exec(delete(InvoiceLine).where(InvoiceLine.company_id == company.id))
     session.exec(delete(Invoice).where(Invoice.company_id == company.id))
     session.exec(delete(File).where(File.company_id == company.id))
-    session.exec(delete(Recommendation).where(Recommendation.company_id == company.id))
+    session.exec(delete(ItemAlternative).where(ItemAlternative.company_id == company.id))
+    session.exec(delete(CompanyItem).where(CompanyItem.company_id == company.id))
     session.exec(delete(PipelineRun).where(PipelineRun.company_id == company.id))
     session.exec(
         delete(SpendCategorySuggestion).where(

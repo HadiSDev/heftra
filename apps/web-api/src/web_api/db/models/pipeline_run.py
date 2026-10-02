@@ -21,6 +21,8 @@ class PipelineRunKind(str, Enum):
     CATEGORIZE = "categorize"
     MATCH_EMISSIONS = "match_emissions"
     ANALYSE_AGREEMENTS = "analyse_agreements"
+    FIND_ALTERNATIVES = "find_alternatives"
+    SCAN_ALTERNATIVES = "scan_alternatives"
 
 
 class PipelineRunStatus(str, Enum):
@@ -49,5 +51,6 @@ class PipelineRun(SQLModel, table=True):
     requested_at: datetime = Field(sa_column=_ts())
     started_at: Optional[datetime] = Field(sa_type=DateTime(timezone=True), nullable=True)
     finished_at: Optional[datetime] = Field(sa_type=DateTime(timezone=True), nullable=True)
+    params: Optional[dict] = Field(sa_type=JSON, nullable=True, default=None)
     summary: Optional[dict] = Field(sa_type=JSON, nullable=True)
     error: Optional[str] = Field(sa_type=String, nullable=True)

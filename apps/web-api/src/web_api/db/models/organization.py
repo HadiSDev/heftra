@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import DateTime, String
+from sqlalchemy import Boolean, DateTime, String
 from sqlmodel import Field, Relationship, SQLModel
 
 from ._base import _ts, _uuid
@@ -16,6 +16,7 @@ class Organization(SQLModel, table=True):
     status: str = Field(sa_type=String, nullable=False, default="active")
     suspended_at: Optional[datetime] = Field(sa_type=DateTime(timezone=True), nullable=True, default=None)
     clerk_org_id: Optional[str] = Field(sa_type=String, nullable=True, unique=True, default=None)
+    price_benchmark_enabled: bool = Field(sa_type=Boolean, nullable=False, default=True)
     created_at: datetime = Field(sa_column=_ts())
 
     users: list["User"] = Relationship(back_populates="organization")

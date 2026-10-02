@@ -35,4 +35,3 @@ class Company(SQLModel, table=True):
     erp_integrations: list["ErpIntegration"] = Relationship(back_populates="company")
     invoices: list["Invoice"] = Relationship(back_populates="company")
     erp_entries: list["ErpEntry"] = Relationship(back_populates="company")
-    recommendations: list["Recommendation"] = Relationship(back_populates="company")

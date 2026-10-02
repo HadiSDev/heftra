@@ -1,7 +1,7 @@
 """Destroying a company, and the things a deletion must leave alone."""
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime, timezone
 from decimal import Decimal
 
 from sqlmodel import Session, select
@@ -9,6 +9,7 @@ from sqlmodel import Session, select
 from web_api.db.models import (
     AuditLog,
     Company,
+    CompanyItem,
     EmissionFactor,
     EmissionFactorSet,
     EmissionSector,
@@ -20,9 +21,9 @@ from web_api.db.models import (
     File,
     Invoice,
     InvoiceLine,
+    ItemAlternative,
     PipelineRun,
     PriceIndexValue,
-    Recommendation,
     SpendCategory,
     SpendCategorySuggestion,
     SpendTree,
@@ -123,6 +124,16 @@ def test_an_empty_company_needs_no_confirmation(client, seed, engine):
 
 def test_every_company_scoped_table_is_emptied(client, voucher_seed, engine):
     company_id = voucher_seed["comp_a"]
+    with Session(engine) as s:
+        item = CompanyItem(company_id=company_id, item_key="k1", item_name="Cat6 cable")
+        s.add(item)
+        s.flush()
+        s.add(ItemAlternative(company_id=company_id, item_id=item.id, source="history",
+                              match="exact", ref_key="item:k2", name="Cat6 cable",
+                              unit_price=Decimal("2.40"), currency="DKK",
+                              saving_percent=Decimal("20"),
+                              found_at=datetime.now(timezone.utc)))
+        s.commit()
 
     assert _delete(client, company_id, confirm=True).status_code == 200
 
@@ -130,7 +141,8 @@ def test_every_company_scoped_table_is_emptied(client, voucher_seed, engine):
     assert _count(engine, InvoiceLine, company_id=company_id) == 0
     assert _count(engine, ErpEntry, company_id=company_id) == 0
     assert _count(engine, File, company_id=company_id) == 0
-    assert _count(engine, Recommendation, company_id=company_id) == 0
+    assert _count(engine, CompanyItem, company_id=company_id) == 0
+    assert _count(engine, ItemAlternative, company_id=company_id) == 0
     assert _count(engine, SpendCategorySuggestion, company_id=company_id) == 0
     assert _count(engine, ErpIntegration, company_id=company_id) == 0
     with Session(engine) as s:

@@ -46,6 +46,11 @@ def request_run(
 ) -> PipelineRun:
     """Queue a run for the worker, or return the one of this kind already waiting."""
     company = get_managed_company(session, scope, company_id)
+    if body.kind == PipelineRunKind.FIND_ALTERNATIVES:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="Alternatives are found for one item; ask for them from the item.",
+        )
 
     existing = _run_in_flight(session, company.id, body.kind)
     if existing is not None:
