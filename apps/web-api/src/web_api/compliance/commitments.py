@@ -9,9 +9,9 @@ from sqlmodel import Session, select
 
 from ..db.models import (
     Agreement,
-    AgreementFinding,
     AgreementTerm,
     AgreementTermKind,
+    AgreementTermSpend,
     AgreementTermStatus,
 )
 from ..fx.service import FxService
@@ -64,12 +64,13 @@ def commitment_progress(session: Session, agreement: Agreement, base_currency: s
 
 
 def _spent(session: Session, term_id: str, start: date, end: date) -> Decimal:
+    """The term's spend with the supplier in the months the period touches."""
     total = session.exec(
-        select(func.sum(AgreementFinding.line_amount)).where(
-            AgreementFinding.term_id == term_id,
-            AgreementFinding.from_supplier == True,  # noqa: E712
-            AgreementFinding.spent_on >= start,
-            AgreementFinding.spent_on <= end,
+        select(func.sum(AgreementTermSpend.amount)).where(
+            AgreementTermSpend.term_id == term_id,
+            AgreementTermSpend.from_supplier == True,  # noqa: E712
+            AgreementTermSpend.month >= start.replace(day=1),
+            AgreementTermSpend.month <= end,
         )
     ).one()
     return Decimal(total or 0).quantize(MONEY)

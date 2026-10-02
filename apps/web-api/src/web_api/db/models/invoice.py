@@ -5,7 +5,7 @@ from typing import Optional
 from sqlalchemy import Date, DateTime, Integer, JSON, Numeric, String
 from sqlmodel import Field, Relationship, SQLModel
 
-from ._base import _ts, _uuid
+from ._base import _changed_ts, _ts, _uuid
 from .enums import DocStatus, InvoiceStatus
 
 
@@ -63,6 +63,7 @@ class Invoice(SQLModel, table=True):
 
     raw_json: Optional[dict] = Field(sa_type=JSON, nullable=True)
     created_at: datetime = Field(sa_column=_ts())
+    changed_at: datetime = Field(sa_column=_changed_ts())
 
     company: Optional["Company"] = Relationship(back_populates="invoices")
     vendor: Optional["Vendor"] = Relationship()

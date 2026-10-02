@@ -6,7 +6,7 @@ from decimal import Decimal
 
 from sqlmodel import Session, select
 
-from agreement_records import agreement, finding, supplier, term
+from agreement_records import agreement, finding, supplier, term, term_spend
 from web_api.db.models import (
     AgreementFinding,
     AgreementScopeJudgement,
@@ -131,11 +131,16 @@ def test_the_report_leads_with_rule_breaks(client, engine, seed):
         vendor = supplier(s)
         record = agreement(s, seed["comp_a"], vendor=vendor)
         rule = term(s, record.id)
-        finding(s, agreement=record, term=rule, line_id=seed["line_a1"], invoice_id=seed["inv_a"],
-                kind=FindingKind.COMPLIANT, amount="0", line_amount="4000.00", from_supplier=True,
-                vendor_id=vendor.id)
+        price = term(s, record.id, kind=AgreementTermKind.AGREED_PRICE, scope="ThinkPad",
+                     item="ThinkPad", unit_price=Decimal("8000"))
+        finding(s, agreement=record, term=price, line_id=seed["line_a1"],
+                invoice_id=seed["inv_a"], kind=FindingKind.COMPLIANT, amount="0",
+                line_amount="4000.00", from_supplier=True, vendor_id=vendor.id)
         finding(s, agreement=record, term=rule, line_id=seed["line_a2"], invoice_id=seed["inv_a"],
                 amount="1000.00")
+        term_spend(s, rule, date(2026, 3, 1), "4000.00", from_supplier=True)
+        term_spend(s, rule, date(2026, 3, 1), "1000.00", from_supplier=False)
+        term_spend(s, price, date(2026, 3, 1), "4000.00", from_supplier=True)
         agreement_id = record.id
 
     report = client.get(f"/api/v1/agreements/{agreement_id}/report", headers=auth("tokA")).json()
@@ -156,10 +161,8 @@ def test_commitment_progress_is_reported(client, engine, seed):
                           currency="DKK",
                           tiers=[{"threshold": "100000", "rebate_percent": "1"},
                                  {"threshold": "400000", "rebate_percent": "2"}])
-        finding(s, agreement=record, term=commitment, line_id=seed["line_a1"],
-                invoice_id=seed["inv_a"], kind=FindingKind.COMPLIANT, amount="0",
-                line_amount="150000.00", from_supplier=True, vendor_id=vendor.id,
-                spent_on=date(2025, 3, 1))
+        term_spend(s, commitment, date(2025, 3, 1), "150000.00", from_supplier=True)
+        term_spend(s, commitment, date(2025, 3, 1), "90000.00", from_supplier=False)
         agreement_id = record.id
 
     (progress,) = client.get(f"/api/v1/agreements/{agreement_id}/report",

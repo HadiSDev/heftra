@@ -15,7 +15,7 @@ This is fine for the 80-line dev company and doesn't scale; see the proposal. Th
 - **Tests run on in-memory SQLite.** Production runs on Postgres 16 without extensions.
 - **Qdrant is already deployed** (the categorization tree index).
 - **The local model is gemma-4-E4B on vLLM.** Replies must be prompted as JSON and parsed, not produced by guided decoding (see the project memory on vLLM guided decoding).
-- **Invoice lines and invoices have no `updated_at`.** Lines are written by:
+- **Invoice lines and invoices record no change time.** Lines are written by:
   - the sync runner;
   - the document reader;
   - categorization;
@@ -43,7 +43,7 @@ This is fine for the 80-line dev company and doesn't scale; see the proposal. Th
 
 `invoice_lines.item_key` is a SHA-256 of the normalised item name, description, unit, `spend_category_id` and the invoice's `vendor_id`. Normalised means lower case with collapsed spaces.
 
-- **Computing it:** the key is computed in Python, page by page, for lines whose key is null or that changed since the agreement's watermark. Changed means the line's or its invoice's `updated_at` is later. This step runs at the start of each analysis. The first run backfills.
+- **Computing it:** the key is computed in Python, page by page, for lines whose key is null or that changed since the agreement's watermark. Changed means the line's or its invoice's `changed_at` is later. This step runs at the start of each analysis. The first run backfills.
 - **Grouping:** items are then a `GROUP BY item_key` in SQL, with count, spend sum and min/max date, using an index on `(company_id, item_key)`.
 
 *Alternatives considered:*
@@ -53,12 +53,21 @@ This is fine for the 80-line dev company and doesn't scale; see the proposal. Th
 
 Refreshing inside analysis keeps one owner for the key. Its freshness then rides on the same change detection as incremental runs.
 
-### 2. Change detection: `updated_at` on lines and invoices
+### 2. Change detection: `changed_at` on lines and invoices
 
-- **The columns:** `updated_at` with `server_default=now()` and `onupdate=func.now()` on both models. It's backfilled from `created_at`.
-- **What it covers:** SQLAlchemy applies column `onupdate` to ORM flushes and to Core `update()` statements that don't set the column. That covers the sync, reader, categorization, corrections and tree reassignment.
-- **What it misses:** raw `text()` updates don't fire it. A task audits the codebase for them and converts any it finds.
-- **Indexes:** `(company_id, updated_at)` on both tables.
+**The column.** `changed_at` on both tables, `server_default=now()`, backfilled from `created_at`.
+
+**Change tracking.** A `before_update` mapper event (`db/models/change_tracking.py`) stamps it only when one of the fields an agreement check reads has a real change in its attribute history:
+- for a line: the invoice, item, description, unit, quantity, unit price, amount, discount, base amount and currency, and category;
+- for an invoice: the vendor, date, currency and base currency.
+
+Writes that don't touch those fields leave it alone. Examples are emission sectors, statuses, rationales and verification marks.
+
+*Alternative considered:* a blanket `updated_at` with `onupdate`. Emission matching and status writes would then mark every line changed, and an incremental run after them would be a full run.
+
+**Coverage.** The audit found no raw SQL updates of lines or invoices. The only Core `update()` (emission sectors) doesn't touch the tracked fields. Category writers, including tree reassignment, go through the ORM. A future Core update of a tracked field must set `changed_at` itself.
+
+**Indexes.** `(company_id, changed_at)` on both tables.
 
 ### 3. Watermark and full runs on the agreement
 
@@ -71,7 +80,7 @@ Starting the watermark at the run's start, not its end, means lines changed duri
 A run is full when any of these hold:
 - `analysed_from` is null;
 - `full_analysis` is set;
-- the validity, supplier or currency changed since the watermark (tracked by `agreements.updated_at`);
+- the validity, supplier or currency was edited, in which case the header edit sets `full_analysis` itself (an `updated_at` on the agreement would also move with every run's own writes);
 - a sync replaced data, in which case the replace path sets `full_analysis`.
 
 Per term, the lines to redo are:
@@ -123,6 +132,14 @@ Per page:
 
 The `compliant` per-line rows of preferred-supplier and commitment terms disappear. The first full run deletes them as "no longer produced".
 
+**Reading the totals.**
+- Commitment progress sums the supplier rows of the months a commitment period touches. A period that starts mid-month counts that whole month; the validity already excludes days before the agreement starts.
+- The report's spend in scope and supplier share come from the agreement's broadest term, the one with the most spend in scope. Per-term totals can't count a line once across several terms, and the broadest term covers what narrower terms cover.
+
+**Removing a line.** `agreement_findings.invoice_line_id` has no `ON DELETE`, so deleting a line with a finding failed on Postgres. That was an existing bug in manual deletes, document replacement and re-syncs. `web_api.agreements.line_removal.remove_line` deletes the line's findings and stamps its invoice's `changed_at`, so the next run recalculates that month. An invoice whose last line is deleted leaves that month's totals stale until a full run.
+
+**The watermark margin.** New rows get `changed_at` from the app clock, and so does the watermark. Lines are compared with the watermark less `AGREEMENT_WATERMARK_MARGIN_MINUTES` (default 10), so a sync that stamped its lines before a run started but committed after it isn't missed. Lines near the boundary are simply redone. Term confirmations and edits compare with the real start of the last run.
+
 ### 7. The run summary and batching the worker
 
 The summary reports, per run:
@@ -145,10 +162,28 @@ A run commits after every page, so a long first run is interruptible and the wor
 - runs a second, incremental pass after adding 5,000 lines;
 - runs against a Postgres database the user names. It never touches the dev database unless told to.
 
+### Baseline (before this change)
+
+Measured on 2026-10-02 with `agreement_benchmark`:
+- a synthetic company of 100,000 lines and about 20,000 items;
+- one agreement with four confirmed terms;
+- a counting stub judge;
+- the real MiniLM embedder;
+- local Postgres 16.
+
+Peak RSS includes loading the embedding model (about 1.5 GB on its own).
+
+| Run | Wall time | Embedding | Texts embedded | Model questions | DB queries | Peak RSS |
+|---|---|---|---|---|---|---|
+| First run | 77 s | 37 s | 100,004 | 3,988 | 28,919 | 3.5 GB |
+| After a 5,000-line sync | 73 s | 35 s | 105,004 | 664 | 26,640 | 3.6 GB |
+
+Every run re-embeds every line and queries per candidate line, so the cost of a run after a small sync stays that of a full run. Both grow linearly with lines. At 1,000,000 lines that projects to about 13 minutes and over 10 GB per run, before any real model calls. So the baseline wasn't run at 1M.
+
 ## Risks / Trade-offs
 
 - **[Batched prompts lower the small model's accuracy]** → Batch size is configurable and defaults to 8. The benchmark includes a real-model sample of 200 items, scored batched against single and compared against the stub's ground truth. Batching is set to 1 if accuracy drops by more than 2 points.
-- **[A raw SQL update elsewhere skips `updated_at`, so a changed line is never rechecked]** → A task audits `text(` updates. A full run is offered in the UI and runs on agreement changes and replaces. A nightly full run is left as an open question.
+- **[A future bulk update of a tracked field skips `changed_at`, so a changed line is never rechecked]** → A task audits `text(` updates. A full run is offered in the UI and runs on agreement changes and replaces. A nightly full run is left as an open question.
 - **[Qdrant and Postgres drift (a dropped collection)]** → Items missing from the collection are re-embedded on the next run. A collection that disappears is rebuilt from the items in Postgres.
 - **[The cap hides real rule breaks in a very broad term]** → The cap is high by default and ordered by spend, and a capped term is reported in the summary and on the report ("only the 5,000 largest items were checked"), so it's visible.
 - **[The first run on a big company takes long]** → It's batched, resumable and reports progress in its summary. Model calls are bounded by distinct items, which is the real cost.
@@ -157,17 +192,16 @@ A run commits after every page, so a long first run is interruptible and the wor
 ## Migration Plan
 
 1. **Migration `0022_scalable_agreement_analysis`:**
-   - `updated_at` on `invoice_lines` and `invoices`, backfilled from `created_at`;
+   - `changed_at` on `invoice_lines` and `invoices`, backfilled from `created_at`;
    - `item_key` on `invoice_lines`;
-   - indexes `(company_id, item_key)`, `(company_id, updated_at)` and `invoices (company_id, updated_at)`;
+   - indexes `(company_id, item_key)`, `(company_id, changed_at)` and `invoices (company_id, changed_at)`;
    - `agreements.analysed_from` and `full_analysis`, with `full_analysis` set true for existing agreements;
-   - `agreements.updated_at` if it's missing;
    - the `agreement_term_spend` table.
 2. **Deploy the API and worker.** The first run per agreement is full: it backfills item keys, builds the index, re-judges with v3 keys and replaces compliant rows with totals.
 3. **Rollback:** the downgrade drops the new columns and table. The previous code ignores them. Stale v3 judgements are harmless, because they have different keys.
 
 ## Open Questions
 
-- **A scheduled weekly full run as a safety net** against missed `updated_at`s, or only on demand? Default: on demand plus the automatic triggers.
+- **A scheduled weekly full run as a safety net** against missed `changed_at`s, or only on demand? Default: on demand plus the automatic triggers.
 - **Default `AGREEMENT_CANDIDATES_MAX` (5,000) and `AGREEMENT_JUDGE_BATCH` (8):** the benchmark settles them.
 - **Should the item key ignore the supplier for the scope judge** (one answer per product across suppliers)? It would cut calls further, but the judge sees the supplier today. Left out for now.

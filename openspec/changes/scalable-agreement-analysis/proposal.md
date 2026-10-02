@@ -13,7 +13,7 @@ At a million lines that means several GB of memory, minutes of embedding on ever
 
 - **Judge distinct items, not lines.** Lines are grouped in the database by what they bought: item, description, unit, category and supplier. The scope judge is asked once per item and term, and the answer applies to every line of the item. Model work then grows with the variety of what a company buys, not its volume. Several items can be asked in one prompt, and prompts run concurrently.
 - **Incremental runs.**
-  - Invoice lines and invoices gain an `updated_at`, kept by the ORM.
+  - Invoice lines and invoices gain a `changed_at`, stamped by the ORM when something an agreement check reads changes (the item, amounts, category; the invoice's supplier, date, currency), and not for unrelated writes such as emission sectors.
   - A run checks only the lines added or changed since the agreement's last completed run, plus every line of a term that was confirmed or edited since then.
   - A full run happens the first time, and on request.
 - **A persistent index of what was bought.** Each distinct item is embedded once and stored in Qdrant per company, with its category and supplier. The similarity route of candidate selection becomes a filtered vector search; nothing is embedded or scored in Python per run.
@@ -44,7 +44,7 @@ At a million lines that means several GB of memory, minutes of embedding on ever
 ## Impact
 
 - **Migrations:**
-  - `updated_at` on `invoice_lines` and `invoices`, backfilled from `created_at`;
+  - `changed_at` on `invoice_lines` and `invoices`, backfilled from `created_at`;
   - `item_key` on `invoice_lines`, with indexes for grouping and change scans;
   - an analysis watermark and a full-run flag on `agreements`;
   - an `agreement_term_spend` totals table.

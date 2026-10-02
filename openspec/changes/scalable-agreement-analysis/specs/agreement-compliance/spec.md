@@ -109,7 +109,7 @@ For each confirmed volume commitment, the report SHALL give:
 Findings SHALL be stored per term, line and kind, and spend totals per term, month and whether from the supplier.
 
 Each agreement SHALL keep a watermark: when its last complete run started. An **incremental** run SHALL:
-- recalculate the lines added or changed since the watermark: a line or its invoice has a later `updated_at`;
+- recalculate the lines added or changed since the watermark: a line or its invoice has a later `changed_at`, which moves when its item, amounts or category, or its invoice's supplier, date or currency change;
 - recalculate every line of a term confirmed or edited since the watermark;
 - delete the findings and totals of terms that are no longer confirmed;
 - for those lines, update the findings it produces again, add new ones, and delete the ones it no longer produces;
@@ -181,7 +181,7 @@ A request SHALL return the queued run of that kind rather than add another; a re
 
 `GET /api/v1/agreements/{id}/report` SHALL return:
 - the totals by kind and severity of the open findings: count and amount;
-- the in-scope spend and the share of it with the supplier, summed from the terms' spend totals within the validity;
+- the in-scope spend and the share of it with the supplier, from the spend totals of the agreement's broadest confirmed term (the one with the most spend in scope);
 - commitment progress;
 - the findings, filterable by kind and review status, rule breaks first. Each finding SHALL have its line's date, supplier, item and voucher.
 

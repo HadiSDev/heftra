@@ -11,6 +11,7 @@ from .agreement_enums import (
 from .agreement_finding import AgreementFinding
 from .agreement_scope_judgement import AgreementScopeJudgement
 from .agreement_term import AgreementTerm
+from .agreement_term_spend import AgreementTermSpend
 from .audit_log import AuditLog
 from .company import Company
 from .emission_country_region import EmissionCountryRegion
@@ -57,6 +58,7 @@ from .sync_state import SyncState
 from .user import User
 from .vendor import Vendor
 from .webhook_event import WebhookEvent
+from . import change_tracking
 
 __all__ = [
     "Agreement",
@@ -64,6 +66,7 @@ __all__ = [
     "AgreementScopeJudgement",
     "AgreementStatus",
     "AgreementTerm",
+    "AgreementTermSpend",
     "AgreementTermKind",
     "AgreementTermSource",
     "AgreementTermStatus",

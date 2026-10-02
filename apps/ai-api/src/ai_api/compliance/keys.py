@@ -6,7 +6,7 @@ import json
 
 from web_api.db.models import AgreementTerm
 
-JUDGE_VERSION = 2
+JUDGE_VERSION = 3
 
 
 def term_key(term: AgreementTerm, buyer: str = "") -> str:

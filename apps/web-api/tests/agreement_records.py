@@ -11,6 +11,7 @@ from web_api.db.models import (
     AgreementFinding,
     AgreementStatus,
     AgreementTerm,
+    AgreementTermSpend,
     AgreementTermKind,
     AgreementTermStatus,
     File,
@@ -85,3 +86,12 @@ def finding(session: Session, *, agreement: Agreement, term: AgreementTerm, line
     session.commit()
     session.refresh(record)
     return record
+
+
+def term_spend(session: Session, term: AgreementTerm, month: date, amount: str, *,
+               from_supplier: bool, lines: int = 1) -> AgreementTermSpend:
+    row = AgreementTermSpend(term_id=term.id, month=month, from_supplier=from_supplier,
+                             amount=Decimal(amount), lines=lines)
+    session.add(row)
+    session.commit()
+    return row

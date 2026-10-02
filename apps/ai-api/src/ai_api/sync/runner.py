@@ -11,6 +11,7 @@ from typing import Optional
 from sqlalchemy import or_
 from sqlmodel import Session, SQLModel, select
 
+from web_api.agreements.line_removal import remove_line
 from web_api.audit import (
     LINE_AUDIT_FIELDS,
     LINE_VALUE_AUDIT_FIELDS,
@@ -411,7 +412,7 @@ def _withdraw_lines(session: Session, invoice_id: str, doomed: list[InvoiceLine]
                 for field in _WITHDRAWN_FIELDS
             ],
         )
-        session.delete(line)
+        remove_line(session, line)
 
     session.flush()
     recompute_invoice_status(session, invoice_id)

@@ -17,7 +17,7 @@ from sqlmodel import Session
 
 from .. import config
 from ..agreements.access import get_agreement
-from ..agreements.analysis import request_analysis
+from ..agreements.analysis import request_analysis, request_full_analysis
 from ..agreements.constants import AUDIT_AGREEMENT, PDF_MEDIA_TYPE
 from ..agreements.deletion import delete_agreements
 from ..agreements.header import patch_header
@@ -186,12 +186,16 @@ def read_agreement_again(
              status_code=status.HTTP_202_ACCEPTED)
 def analyse_company_agreements(
     company_id: str,
+    full: bool = Query(default=False),
     scope: TenantScope = Depends(require_management),
     session: Session = Depends(get_session),
 ) -> PipelineRun:
-    """Check the company's spend against its agreements again."""
+    """Check the company's spend against its agreements again; `full` rechecks every line."""
     company = get_managed_company(session, scope, company_id)
-    run = request_analysis(session, company.id, scope.user_id)
+    if full:
+        run = request_full_analysis(session, company.id, scope.user_id)
+    else:
+        run = request_analysis(session, company.id, scope.user_id)
     session.commit()
     session.refresh(run)
     return run

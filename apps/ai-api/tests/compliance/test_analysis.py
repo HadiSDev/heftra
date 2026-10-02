@@ -7,11 +7,12 @@ from decimal import Decimal
 import pytest
 from sqlmodel import Session, select
 
-from agreement_books import Books, Judge, embed
+from agreement_books import Books, Judge, embed, item_index
 from ai_api import config
 from ai_api.compliance.run import analyse_company
 from web_api.db.models import (
     AgreementFinding,
+    AgreementTermSpend,
     AgreementTermKind,
     AgreementTermStatus,
     FindingReviewStatus,
@@ -30,13 +31,19 @@ def books(session) -> Books:
     return Books(session)
 
 
-def _analyse(session, books, judge):
-    return analyse_company(session, books.company.id, ask=judge, embed_fn=embed)
+def _analyse(session, books, judge, *, index=None):
+    return analyse_company(session, books.company.id, ask=judge, embed_fn=embed,
+                           index=index or item_index())
 
 
 def _findings(session) -> dict[tuple[str, str], AgreementFinding]:
     rows = session.exec(select(AgreementFinding)).all()
     return {(row.kind, row.invoice_line_id): row for row in rows}
+
+
+def _totals(session) -> dict[tuple[date, bool], tuple[Decimal, int]]:
+    return {(row.month, row.from_supplier): (row.amount, row.lines)
+            for row in session.exec(select(AgreementTermSpend)).all()}
 
 
 def test_a_laptop_from_a_webshop_is_an_off_contract_rule_break(session, books):
@@ -54,8 +61,10 @@ def test_a_laptop_from_a_webshop_is_an_off_contract_rule_break(session, books):
     assert (off.severity, off.amount, off.from_supplier) == ("rule_break", Decimal("9200.00"),
                                                             False)
     assert "when available from stock" in off.reason and "Proshop A/S" in off.reason
-    assert found[("compliant", ours.id)].from_supplier is True
-    assert summary["findings"] == {"off_contract": 1, "compliant": 1}
+    assert not any(line_id == ours.id for _, line_id in found)
+    assert summary["findings"] == {"off_contract": 1}
+    assert _totals(session) == {(date(2026, 3, 1), True): (Decimal("8000.00"), 1),
+                                (date(2026, 3, 1), False): (Decimal("9200.00"), 1)}
 
 
 def test_a_term_without_categories_checks_the_categories_closest_to_its_scope(session, books,
@@ -152,18 +161,20 @@ def test_a_discount_line_on_the_invoice_counts(session, books):
     assert ("compliant", dock.id) in _findings(session)
 
 
-def test_commitment_spend_is_recorded_as_compliant(session, books):
+def test_commitment_spend_is_counted_in_the_term_s_totals(session, books):
     agreement = books.agreement()
     books.term(agreement, AgreementTermKind.VOLUME_COMMITMENT, "Laptops",
                commitment_amount=Decimal("500000"), commitment_period="year")
-    ours = books.line(books.atea, "ThinkPad laptop", unit_price="8000")
+    books.line(books.atea, "ThinkPad laptop", unit_price="8000")
+    books.line(books.atea, "Dell laptop", unit_price="9000", on=date(2026, 4, 2))
     books.line(books.proshop, "Dell laptop", unit_price="9000")
 
     _analyse(session, books, Judge(("laptop",)))
 
-    found = _findings(session)
-    assert list(found) == [("compliant", ours.id)]
-    assert found[("compliant", ours.id)].line_amount == Decimal("8000")
+    assert _findings(session) == {}
+    assert _totals(session) == {(date(2026, 3, 1), True): (Decimal("8000.00"), 1),
+                                (date(2026, 4, 1), True): (Decimal("9000.00"), 1),
+                                (date(2026, 3, 1), False): (Decimal("9000.00"), 1)}
 
 
 def test_lines_before_the_agreement_are_not_checked(session, books):

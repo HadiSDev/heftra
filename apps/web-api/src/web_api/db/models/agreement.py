@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from typing import Optional
 
-from sqlalchemy import Date, DateTime, Integer, String
+from sqlalchemy import Boolean, Date, DateTime, Integer, String
 from sqlmodel import Field, SQLModel
 
 from ._base import _ts, _uuid
@@ -37,5 +37,8 @@ class Agreement(SQLModel, table=True):
                                         default=None)
     analysed_at: Optional[datetime] = Field(sa_type=DateTime(timezone=True), nullable=True,
                                             default=None)
+    analysed_from: Optional[datetime] = Field(sa_type=DateTime(timezone=True), nullable=True,
+                                              default=None)
+    full_analysis: bool = Field(sa_type=Boolean, nullable=False, default=False)
     uploaded_by: str = Field(sa_type=String, nullable=False)
     created_at: datetime = Field(sa_column=_ts())

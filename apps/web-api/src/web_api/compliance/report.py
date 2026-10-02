@@ -10,6 +10,9 @@ from sqlmodel import Session, select
 from ..db.models import (
     Agreement,
     AgreementFinding,
+    AgreementTerm,
+    AgreementTermSpend,
+    AgreementTermStatus,
     Company,
     FindingReviewStatus,
 )
@@ -22,7 +25,7 @@ def agreement_report(session: Session, agreement: Agreement, today: date, *,
                      kinds: list[str] | None, review_statuses: list[str] | None, page: int,
                      page_size: int) -> AgreementReport:
     base_currency = session.get(Company, agreement.company_id).base_currency
-    in_scope, supplier = _spend_in_scope(session, agreement.id)
+    in_scope, supplier = _spend_in_scope(session, agreement)
     return AgreementReport(
         agreement_id=agreement.id,
         analysed_at=agreement.analysed_at,
@@ -48,18 +51,24 @@ def _open_totals(session: Session, agreement_id: str) -> list[FindingTotal]:
             for kind, severity, count, amount in rows]
 
 
-def _spend_in_scope(session: Session, agreement_id: str) -> tuple[Decimal, Decimal]:
-    """Each in-scope line counted once: all of them, and those with the agreement's supplier."""
-    lines = session.exec(
-        select(AgreementFinding.invoice_line_id, AgreementFinding.line_amount,
-               AgreementFinding.from_supplier)
-        .where(AgreementFinding.agreement_id == agreement_id,
-               AgreementFinding.review_status != FindingReviewStatus.NOT_IN_SCOPE.value)
-        .distinct()
+def _spend_in_scope(session: Session, agreement: Agreement) -> tuple[Decimal, Decimal]:
+    """The spend in scope of the agreement's broadest confirmed term, and its share with the
+    supplier, from the terms' monthly totals."""
+    rows = session.exec(
+        select(AgreementTermSpend.term_id, AgreementTermSpend.from_supplier,
+               func.sum(AgreementTermSpend.amount))
+        .join(AgreementTerm, AgreementTerm.id == AgreementTermSpend.term_id)
+        .where(AgreementTerm.agreement_id == agreement.id,
+               AgreementTerm.status == AgreementTermStatus.CONFIRMED.value)
+        .group_by(AgreementTermSpend.term_id, AgreementTermSpend.from_supplier)
     ).all()
-    seen: dict[str, tuple[Decimal, bool]] = {}
-    for line_id, amount, from_supplier in lines:
-        seen[line_id] = (Decimal(amount), from_supplier)
-    total = sum((amount for amount, _ in seen.values()), Decimal(0))
-    supplier = sum((amount for amount, own in seen.values() if own), Decimal(0))
+    per_term: dict[str, list[Decimal]] = {}
+    for term_id, from_supplier, amount in rows:
+        totals = per_term.setdefault(term_id, [Decimal(0), Decimal(0)])
+        totals[0] += Decimal(amount or 0)
+        if from_supplier:
+            totals[1] += Decimal(amount or 0)
+    if not per_term:
+        return Decimal(0), Decimal(0)
+    total, supplier = max(per_term.values(), key=lambda totals: totals[0])
     return total, supplier

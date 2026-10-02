@@ -215,6 +215,33 @@ def test_an_agreement_shows_its_company_s_analysis(client, engine, seed):
         "failed", "the worker stopped before the run finished")
 
 
+def test_a_manager_can_ask_for_every_line_to_be_checked_again(client, engine, seed):
+    with Session(engine) as s:
+        agreement_id = agreement(s, seed["comp_a"]).id
+
+    response = client.post(f"/api/v1/companies/{seed['comp_a']}/agreements/analyse?full=true",
+                           headers=auth("tokA"))
+
+    assert response.status_code == 202
+    with Session(engine) as s:
+        assert s.get(Agreement, agreement_id).full_analysis is True
+
+
+def test_new_dates_on_an_agreement_check_every_line_again(client, engine, seed):
+    with Session(engine) as s:
+        agreement_id = agreement(s, seed["comp_a"]).id
+
+    client.patch(f"/api/v1/agreements/{agreement_id}", json={"title": "Atea 2026"},
+                 headers=auth("tokA"))
+    with Session(engine) as s:
+        assert s.get(Agreement, agreement_id).full_analysis is False
+    client.patch(f"/api/v1/agreements/{agreement_id}", json={"starts_on": "2025-06-01"},
+                 headers=auth("tokA"))
+
+    with Session(engine) as s:
+        assert s.get(Agreement, agreement_id).full_analysis is True
+
+
 def test_a_change_during_a_running_analysis_queues_another(client, engine, seed):
     running = client.post(f"/api/v1/companies/{seed['comp_a']}/agreements/analyse",
                           headers=auth("tokA")).json()["id"]

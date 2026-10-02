@@ -3,10 +3,14 @@ from __future__ import annotations
 
 import json
 import math
+import re
 from datetime import date
 from decimal import Decimal
 
+from qdrant_client import QdrantClient
 from sqlmodel import Session
+
+from ai_api.items.index import ItemIndex
 
 from web_api.db.models import (
     Agreement,
@@ -23,6 +27,8 @@ from web_api.db.models import (
     SpendTree,
     Vendor,
 )
+
+_PURCHASES = re.compile(r"^Purchase (\d+):\n(.*?)(?=\n\n)", re.M | re.S)
 
 WORDS = ["laptop", "thinkpad", "dell", "monitor", "dock", "coffee", "sleeve", "cable",
          "equipment", "office"]
@@ -115,7 +121,8 @@ class Books:
 
 
 class Judge:
-    """In scope when the line names one of the words; the priced item when it names `item`."""
+    """In scope when a purchase names one of the words; the priced item when it names `item`.
+    Answers a numbered batch by number, and counts every prompt it is asked."""
 
     def __init__(self, scope_words: tuple[str, ...], item: str | None = None,
                  per_box: bool = False) -> None:
@@ -126,9 +133,20 @@ class Judge:
 
     def __call__(self, prompt: str) -> str:
         self.questions += 1
-        line = prompt.split("Invoice line:")[1].lower()
-        in_scope = any(word in line for word in self.scope_words)
-        same = bool(self.item and self.item.lower() in line)
-        return json.dumps({"in_scope": in_scope, "same_item": same,
-                           "units_comparable": not self.per_box, "confidence": 0.9,
-                           "reason": "Judged by the stub."})
+        numbered = _PURCHASES.findall(prompt)
+        if numbered:
+            return json.dumps({"answers": [{"n": int(number), **self._answer(text)}
+                                           for number, text in numbered]})
+        return json.dumps(self._answer(prompt.split("Purchase:", 1)[1]))
+
+    def _answer(self, purchase: str) -> dict:
+        text = purchase.split("\n\n", 1)[0].lower()
+        return {"in_scope": any(word in text for word in self.scope_words),
+                "same_item": bool(self.item and self.item.lower() in text),
+                "units_comparable": not self.per_box, "confidence": 0.9,
+                "reason": "Judged by the stub."}
+
+
+def item_index() -> ItemIndex:
+    """An in-memory item index over the bag-of-words embedder."""
+    return ItemIndex(QdrantClient(location=":memory:"), embed)

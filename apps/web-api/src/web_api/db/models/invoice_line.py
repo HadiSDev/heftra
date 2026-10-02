@@ -5,7 +5,7 @@ from typing import Optional
 from sqlalchemy import JSON, Date, Integer, Numeric, String
 from sqlmodel import Field, Relationship, SQLModel
 
-from ._base import _ts, _uuid
+from ._base import _changed_ts, _ts, _uuid
 from .enums import EmissionSectorSource, LineOrigin, LineStatus
 
 
@@ -66,7 +66,9 @@ class InvoiceLine(SQLModel, table=True):
     emission_sector_rationale: Optional[str] = Field(sa_type=String, nullable=True)
 
     raw_json: Optional[dict] = Field(sa_type=JSON, nullable=True)
+    item_key: Optional[str] = Field(sa_type=String, nullable=True, default=None)
     created_at: datetime = Field(sa_column=_ts())
+    changed_at: datetime = Field(sa_column=_changed_ts())
 
     company: Optional["Company"] = Relationship(sa_relationship_kwargs={"viewonly": True})
     invoice: Optional["Invoice"] = Relationship(back_populates="lines")

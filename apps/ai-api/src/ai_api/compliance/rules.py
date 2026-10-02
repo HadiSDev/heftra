@@ -30,25 +30,20 @@ class TermContext:
 def evaluate(context: TermContext, line: AnalysedLine, judgement: AgreementScopeJudgement,
              from_supplier: bool, *, convert: ConvertPrice,
              invoice_discount: Decimal | None) -> list[FindingDraft]:
-    """The findings one in-scope line gives against one term."""
+    """The findings one in-scope line gives against one term; spend with the supplier under a
+    preferred-supplier or commitment term is counted in the term's totals instead."""
     kind = context.term.kind
     if kind == AgreementTermKind.PREFERRED_SUPPLIER.value:
-        return [_preferred(context, line, judgement, from_supplier)]
+        return [] if from_supplier else [_off_contract(context, line, judgement)]
     if kind == AgreementTermKind.AGREED_PRICE.value:
         return _agreed_price(context, line, judgement, from_supplier, convert)
     if kind == AgreementTermKind.DISCOUNT.value:
         return [_discount(context, line, judgement, from_supplier, invoice_discount)]
-    if kind == AgreementTermKind.VOLUME_COMMITMENT.value and from_supplier:
-        return [_draft(context, line, judgement, FindingKind.COMPLIANT, Decimal(0), True,
-                       "Counts towards the commitment.")]
     return []
 
 
-def _preferred(context: TermContext, line: AnalysedLine, judgement: AgreementScopeJudgement,
-               from_supplier: bool) -> FindingDraft:
-    if from_supplier:
-        return _draft(context, line, judgement, FindingKind.COMPLIANT, Decimal(0), True,
-                      f"Bought from {context.supplier_name}.")
+def _off_contract(context: TermContext, line: AnalysedLine,
+                  judgement: AgreementScopeJudgement) -> FindingDraft:
     condition = f" ({context.term.conditions})" if context.term.conditions else ""
     reason = (f"{context.term.scope} should be bought from {context.supplier_name}{condition}, "
               f"but was bought from {line.vendor_name or 'another supplier'}. {judgement.reason}")

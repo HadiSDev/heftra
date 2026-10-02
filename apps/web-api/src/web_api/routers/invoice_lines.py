@@ -18,6 +18,7 @@ from web_api.db.models import (
     SpendCategory,
 )
 from .. import config
+from ..agreements.line_removal import remove_line
 from ..audit import (
     LINE_AUDIT_FIELDS,
     LINE_BASE_FX_FIELDS,
@@ -345,7 +346,7 @@ def delete_invoice_line(
         entry.source_invoice_line_id = None
         session.add(entry)
 
-    session.delete(line)
+    remove_line(session, line)
     recompute_invoice_status(session, invoice_id)
     session.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)

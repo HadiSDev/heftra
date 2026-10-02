@@ -7,6 +7,7 @@ from decimal import Decimal
 
 from sqlmodel import Session, select
 
+from web_api.agreements.line_removal import remove_line
 from web_api.audit import (
     LINE_AUDIT_FIELDS,
     LINE_VALUE_AUDIT_FIELDS,
@@ -108,7 +109,7 @@ def replace_invoice_lines(
                 for field in _REMOVED_FIELDS
             ],
         )
-        session.delete(line)
+        remove_line(session, line)
 
     for seq, item in enumerate(lines):
         name, description = _name_and_description(item)

@@ -12,6 +12,7 @@ from .constants import AUDIT_AGREEMENT
 from .status import settle_status
 
 HEADER_FIELDS = ("vendor_id", "title", "reference", "starts_on", "ends_on", "currency")
+ANALYSED_FIELDS = {"vendor_id", "starts_on", "ends_on", "currency"}
 
 
 def patch_header(session: Session, agreement: Agreement, body: AgreementPatch,
@@ -37,6 +38,9 @@ def patch_header(session: Session, agreement: Agreement, body: AgreementPatch,
         return agreement
     record_audit(session, entity_type=AUDIT_AGREEMENT, entity_id=agreement.id, action="update",
                  actor=actor, changes=changes)
+    if any(change["field"] in ANALYSED_FIELDS for change in changes):
+        agreement.full_analysis = True
+        session.add(agreement)
     settle_status(session, agreement)
     if agreement.status == AgreementStatus.ACTIVE.value:
         request_analysis(session, agreement.company_id, actor)

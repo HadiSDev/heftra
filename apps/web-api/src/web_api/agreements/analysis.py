@@ -3,7 +3,13 @@ from __future__ import annotations
 
 from sqlmodel import Session, col, select
 
-from ..db.models import PipelineRun, PipelineRunKind, PipelineRunStatus
+from ..db.models import (
+    Agreement,
+    AgreementStatus,
+    PipelineRun,
+    PipelineRunKind,
+    PipelineRunStatus,
+)
 
 
 def request_analysis(session: Session, company_id: str, requested_by: str) -> PipelineRun:
@@ -22,6 +28,17 @@ def request_analysis(session: Session, company_id: str, requested_by: str) -> Pi
     session.add(run)
     session.flush()
     return run
+
+
+def request_full_analysis(session: Session, company_id: str, requested_by: str) -> PipelineRun:
+    """Mark the company's active agreements for a full run and request one; the caller commits."""
+    for agreement in session.exec(
+        select(Agreement).where(Agreement.company_id == company_id,
+                                Agreement.status == AgreementStatus.ACTIVE.value)
+    ).all():
+        agreement.full_analysis = True
+        session.add(agreement)
+    return request_analysis(session, company_id, requested_by)
 
 
 def latest_analysis(session: Session, company_id: str) -> PipelineRun | None:
