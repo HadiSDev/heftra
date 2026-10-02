@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from decimal import Decimal
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, order=True)
 class PriceBreak:
     """The price of one sale unit from `quantity` sale units up."""
 
