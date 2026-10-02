@@ -28,7 +28,7 @@
 - [x] 4.3 `tiers.py`: the ordered tier families (Intel Core, Core Ultra, Ryzen, Apple M, EN 10025 steel grades), the part parser for family, tier and generation, and the comparison: a lower tier is worse whatever the generation, an older generation is worse (tests: i3 and i5 against i7, 11th against 13th generation i7, Ultra 7 against i7)
 - [x] 4.4 The LLM decisions: product type pairs, tiered parts the table can't place (conservative, uncertain is worse) and the other attributes, batched per item and cached in `spec_comparisons` (tests: S355J2 against S235JR, Ryzen 7 against i7, a tablet against a laptop)
 - [x] 4.5 Standard VAT rates by country, the conversion to a price per pricing unit, without VAT, in base currency, and the saving threshold (tests: a webshop price with VAT, too small a saving)
-- [ ] 4.6 The yearly saving and the per-attribute comparison stored on the alternative
+- [x] 4.6 The yearly saving and the per-attribute comparison stored on the alternative
 
 ## 5. Sources (ai-api)
 
@@ -44,7 +44,7 @@
 
 ## 6. Searching and runs (ai-api)
 
-- [ ] 6.1 `alternatives/search.py`: one item's search across the enabled sources, replacing its open alternatives per source, keeping reviewed ones and skipping dismissed refs (tests)
+- [x] 6.1 `alternatives/search.py`: one item's search across the enabled sources, replacing its open alternatives per source, keeping reviewed ones and skipping dismissed refs (tests)
 - [ ] 6.2 The `find_alternatives` executor: extract the item's specification first when missing; a summary per source
 - [ ] 6.3 The `scan_alternatives` executor: refresh items, extract due specifications, update the index, and search the due items by spend up to the limit (tests)
 - [ ] 6.4 The worker tick queues a scan per company when `ALTERNATIVES_SCAN_ENABLED` is set and the interval has passed, below agreements and documents
