@@ -1,0 +1,36 @@
+## Why
+
+Finding the same product, or one that does the same job, for less is the core promise of Spendyard, and today the product only shows where money goes. Companies buy two kinds of things: production materials priced by weight, length or volume (steel, cutting inserts, wood, network cable by the metre) and finished goods priced by the piece or pack (toilet paper, laptops, snacks, smartphones). For both, a buyer rarely has time to check whether the same specification is sold cheaper elsewhere. We now have what this needs: every distinct item a company buys is known, with its spend and an embedding (`spend-item-index`), and the worker can search the web and read pages.
+
+## What Changes
+
+- Each item a company buys gets a **specification**: whether it is a material or a finished good, its identifiers (manufacturer part number, EAN, brand and model), its key attributes (a steel grade and dimensions; a laptop's processor, memory and storage; a toilet roll's ply and sheets), and a **pricing unit** (kg, m, m², m³, l, piece, sheet) with the line's unit converted to it, so a "pack of 8 rolls" and "box of 305 m" compare per roll and per metre.
+- **Alternatives** are found from three sources:
+  - **the company's own history:** the same or an equivalent product bought cheaper, from another supplier, by another company of the organization, or earlier;
+  - **other customers:** what other organizations on Spendyard pay for the same or an equivalent product, shown only as an anonymous aggregate of at least three organizations;
+  - **the open web:** webshops and supplier sites in the company's market, read for price, unit, pack size and VAT.
+- Every alternative is labelled **exact** (same identifier, or same make and model) or **equivalent** (every key attribute met or bettered), with the attributes compared side by side. A product that is worse on any key attribute is never shown as an alternative.
+- Prices are compared **per pricing unit, in the company's base currency, excluding VAT**, and each alternative gets an estimated yearly saving from the last 12 months' quantity.
+- Searches run as a **background scan** of each company's largest-spend items, limited per run and repeated after a set number of days, and **on request** from a "Find cheaper alternatives" action on an item.
+- A new **Alternatives** page lists items with savings, largest first; an item shows its specification and its alternatives, and a person can dismiss an alternative (with a reason) or mark that they switched.
+- The empty `procurement_agent` and `redundancy` stubs the sync calls are removed, and so is the unused `recommendations` table. **BREAKING** in name only: nothing reads them.
+
+## Capabilities
+
+### New Capabilities
+- `item-specifications`: a specification and pricing unit per item, extracted once and correctable, and the price per pricing unit of the item's lines.
+- `product-alternatives`: finding alternatives from history, other customers and the web; exact and equivalent matching with the attributes compared; price normalisation; the estimated saving; the background scan and on-request search; review of alternatives.
+- `price-benchmark`: the anonymous pool of what organizations pay per product and specification, its minimum of three organizations, and the organization setting to take part.
+- `frontend-alternatives`: the Alternatives page, the item view with its specification and alternatives, and the "Find cheaper alternatives" action.
+
+### Modified Capabilities
+- `spend-item-index`: an item's specification and pricing unit are stored with it, and the index can find items of the same product across the company's suppliers.
+- `pipeline-runs`: two new run kinds, `find_alternatives` for one item on request and `scan_alternatives` for the background scan, and runs carry parameters.
+
+## Impact
+
+- **ai-api:** new `specs/` (extraction, units), `alternatives/` (sources, matching, saving, scan) and `web_offers/` (search, page reading, offer cache) packages; the worker's tick gets the scan; the `procurement_agent` and `redundancy` stubs and their calls in the sync runner go.
+- **web-api:** new tables for stored items with their specifications, products, specification comparisons, web pages and offers, and alternatives with their reviews; a `params` column on pipeline runs and a benchmark setting on organizations; `recommendations` dropped; one migration; routers for alternatives, item specifications and the on-request search; an organization setting for the price benchmark.
+- **web:** the Alternatives page and item view, the action on items, and a sidebar entry.
+- **External:** more web search and page fetches (rate-limited, cached, behind a flag); more LLM calls for specification extraction and matching, bounded per run.
+- **Data sharing:** prices flow between organizations only as aggregates of at least three organizations, never with the buyer's name; an organization can opt out, and then gets no benchmark either.

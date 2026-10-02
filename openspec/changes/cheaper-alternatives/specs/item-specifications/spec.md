@@ -1,0 +1,59 @@
+## ADDED Requirements
+
+### Requirement: An item SHALL have a specification, extracted once
+
+Each item a company buys (see `spend-item-index`) SHALL get a **specification** read by the LLM from the item's name, description, unit, spend category and supplier. A specification holds:
+- its **class**: `material` (bought by weight, length, area, volume or as stock to be processed: steel, wood, cable by the metre, cutting inserts) or `finished_good` (bought to be used as it is: toilet paper, laptops, snacks, smartphones);
+- a short **product name** in English;
+- its **identifiers**, each when stated: manufacturer part number, EAN/GTIN, brand, model;
+- its **key attributes**: what a buyer must not get less of. Each attribute has a name, a value, a unit when it has one, and, for a number, whether more is better, less is better or it must be equal. For example: a steel bar's grade, form, diameter and length; a laptop's processor, memory, storage and screen size; a toilet roll's ply and sheets per roll;
+- its **pricing unit**: one of `kg`, `m`, `m2`, `m3`, `l`, `piece`, `sheet`, `roll`, `pack`;
+- **units per line unit**: how many pricing units one unit of the line holds, when it can be told. "Pack of 8 rolls" with pricing unit `roll` is 8; "box of 305 m" with pricing unit `m` is 305;
+- a **confidence** from 0 to 1.
+
+A specification SHALL be extracted only once per item, and again only when the item's text changes; it SHALL be stored with the item. An item whose specification cannot be read SHALL be retried on a later run, and counted.
+
+#### Scenario: A cable sold by the box
+
+- **WHEN** an item is "Cat6 U/UTP installationskabel LSZH 305m kasse" bought per "stk"
+- **THEN** its class is `material`, its pricing unit is `m`, its units per line unit is 305, and its key attributes include the category Cat6, shielding U/UTP and jacket LSZH
+
+#### Scenario: A laptop
+
+- **WHEN** an item is "Lenovo ThinkPad T14 Gen 5 21ML003XMX, Ultra 7 155U, 16GB, 512GB SSD"
+- **THEN** its class is `finished_good`, its model is ThinkPad T14 Gen 5, its part number is 21ML003XMX, its pricing unit is `piece`, and its key attributes include 16 GB memory and 512 GB storage, more being better
+
+#### Scenario: Toilet paper by the pack
+
+- **WHEN** an item is "Lotus Professional toiletpapir 2-lag 8 ruller x 50 m"
+- **THEN** its pricing unit is `roll` with 8 per line unit, and its key attributes include 2 ply and 50 m per roll
+
+#### Scenario: Only new items are read
+
+- **WHEN** a scan runs after a sync that added 40 new items to a company with 3,000 specified items
+- **THEN** only the 40 new items' specifications are extracted
+
+### Requirement: A specification SHALL be correctable by a person
+
+A manager SHALL be able to correct an item's specification: its class, identifiers, key attributes, pricing unit and units per line unit. A corrected specification SHALL be marked as set by a person, SHALL NOT be overwritten by extraction, and SHALL make the item's alternatives be found again. The change SHALL be audited.
+
+#### Scenario: A wrong pack size is corrected
+
+- **WHEN** a manager changes an item's units per line unit from 1 to 8 rolls
+- **THEN** the item's price per roll is divided by 8, its alternatives are found again, and a later extraction leaves the correction in place
+
+### Requirement: An item SHALL have a price per pricing unit
+
+An item's **unit price** SHALL be its net spend in base currency over the last 12 months divided by the quantity bought in that time, in pricing units: each line's quantity times the units per line unit. Lines without a quantity SHALL be left out of the price and counted. An item with no units per line unit, or no line with a quantity, SHALL have no unit price and SHALL NOT get alternatives with a saving; it SHALL say why.
+
+The item SHALL also carry its **yearly quantity**: the pricing units bought in the last 12 months.
+
+#### Scenario: Price per metre of a cable box
+
+- **WHEN** a company bought 4 boxes of 305 m Cat6 cable for DKK 3,660 in the last year
+- **THEN** the item's unit price is DKK 3 per metre and its yearly quantity is 1,220 m
+
+#### Scenario: No quantity
+
+- **WHEN** an item's lines carry an amount but no quantity
+- **THEN** the item has no unit price, says the quantity is missing, and gets no saving
