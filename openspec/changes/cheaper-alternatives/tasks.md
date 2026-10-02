@@ -5,6 +5,7 @@
 - [ ] 1.3 Migration `0023_cheaper_alternatives` creating the tables and columns, dropping `recommendations`, with a downgrade; the indexes the list and the searches need
 - [ ] 1.4 New run kinds `find_alternatives` and `scan_alternatives` in `PipelineRunKind`, the web types and the run labels
 - [ ] 1.5 Config: the `ALTERNATIVES_*`, `BENCHMARK_MIN_ORGANIZATIONS`, `SEARXNG_URL`, `ALTERNATIVES_PAGES_PER_ITEM`, `ALTERNATIVES_HOST_INTERVAL_S` and distributor key settings with defaults, documented in `.env.example`
+- [ ] 1.6 A `searxng` service in `docker-compose.yml` on port 8888 with a mounted `settings.yml` (JSON format on, limiter off), and `SEARXNG_URL` in `.env.example`
 
 ## 2. Stored items and unit prices (ai-api)
 
@@ -37,7 +38,7 @@
 - [ ] 5.4 Product page reading: Crawl4AI fetch with the robots check, per-host interval and timeout; schema.org Product/Offer from JSON-LD and microdata first; the LLM only for missing attributes or pages without structured data (tests with saved pages)
 - [ ] 5.5 Shop-search connector: `shops.yaml` per market with search URL templates and product hosts, results page crawled for product links, identifier query then attribute query (tests with saved pages)
 - [ ] 5.6 Distributor connectors: RS, Farnell, Mouser and Digi-Key clients, part number then keyword, price breaks at the item's typical order quantity (tests with recorded responses)
-- [ ] 5.7 Open-web connector: the `SearchProvider` interface with DuckDuckGo and SearXNG, the block list, found product pages read as in 5.4 (tests with a stub search)
+- [ ] 5.7 Open-web connector: the `SearchProvider` interface with SearXNG (JSON API, market language) as default and DuckDuckGo as fallback, the block list, found product pages read as in 5.4 (tests with a stub search)
 - [ ] 5.8 A failing connector is logged, counted and skipped for the rest of the run (tests)
 - [ ] 5.9 Agreement conflicts: preferred-supplier and behind commitments from the item's in-scope rulings (tests)
 

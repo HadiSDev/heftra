@@ -113,7 +113,7 @@ The v1 connectors are all free:
   - The queries are the part number or EAN first, then the product name with its two most telling attributes.
 
   Searching one shop directly finds that shop's listing far more reliably than a general web search does.
-- **Open web.** Web search through a `SearchProvider`: DuckDuckGo (`ddgs`, keyless) by default, or a self-hosted SearXNG when `SEARXNG_URL` is set. SearXNG is a free metasearch engine that runs as one more container in the compose file, and is far less likely to be throttled. Hosts on the block list (social, encyclopaedias, company registers, reviews, manuals) are skipped. The remaining product pages are crawled the same way.
+- **Open web.** Web search through a `SearchProvider`. The default is a self-hosted **SearXNG**, a free metasearch engine, run as a `searxng` service in `docker-compose.yml` (port 8888, `SEARXNG_URL=http://localhost:8888`). Its settings enable the JSON output format and turn off the limiter, since only the worker calls it. Queries go to `/search?format=json` with the market's language (`language=da-DK`) and a few general engines (Google, Bing, Brave, DuckDuckGo); SearXNG spreads the load across them, so no single engine throttles the worker. When `SEARXNG_URL` is unset or SearXNG can't be reached, DuckDuckGo (`ddgs`, keyless) is the fallback, and the run's summary says so. Hosts on the block list (social, encyclopaedias, company registers, reviews, manuals) are skipped. The remaining product pages are crawled the same way.
 - **Distributors.** RS, Farnell (element14), Mouser and Digi-Key, each a small client of its public product-search API with a free developer key. Each is enabled only when its key is set. They search by manufacturer part number, then keyword. Price breaks are read at the item's typical order quantity: the median quantity per line.
 
 **Reading a product page.**
@@ -184,7 +184,7 @@ The `procurement_agent` and `redundancy` packages and their `_call_stub` calls i
 - **Specifications read wrong** (a pack size or grade misread). → Confidence is shown; a manager can correct the specification and the correction sticks; low-confidence specifications (< 0.5) get no web search until confirmed.
 - **Wrong marketplace prices** (a pack price read as a unit price, or a member-only price). → The pack quantity must be stated, otherwise the offer is dropped. Every marketplace alternative links to its offer with the date it was seen, and "price wrong" dismissals are counted per seller, so a seller with repeated wrong prices can be blocked.
 - **Pages without the attributes.** → Equivalence needs them, so the model reads the page text for them; without the attributes the candidate is only kept when it is an exact match.
-- **Free search is thin or throttled** (DuckDuckGo limits automated queries). → The shop search doesn't depend on it. SearXNG can be self-hosted. Queries are cached for 14 days, and few are made per item.
+- **Free search is thin or throttled** (DuckDuckGo limits automated queries). → The shop search doesn't depend on it. SearXNG spreads queries over several engines, and DuckDuckGo is only the fallback. Queries are cached for 14 days, and few are made per item.
 - **Shops change their search pages or block crawlers.** → The shop list is data; a shop whose search returns nothing for a week is reported in the run summaries. robots.txt is honoured, and a blocked shop is skipped.
 - **Website terms.** → Only public list prices are read, robots.txt is honoured, volumes are low and cached, and shops are listed deliberately.
 - **Tier tables go out of date** (new processor generations, new families). → An unknown part falls back to the conservative LLM decision, which counts "uncertain" as worse, so a new part is missed rather than wrongly accepted; the table is data, extended in one place.
@@ -201,7 +201,7 @@ The `procurement_agent` and `redundancy` packages and their `_call_stub` calls i
    - **new columns:** `pipeline_runs.params` and `organizations.price_benchmark_enabled` (default true);
    - **dropped:** `recommendations`.
 2. Deploy web-api and the worker; the flags default to history and benchmark on request only.
-3. Optionally add SearXNG to the compose file and set `SEARXNG_URL`, and create free developer keys for the distributors. Run `find_alternatives` on a few items of the test company, then turn on `ALTERNATIVES_SCAN_ENABLED`.
+3. Start the `searxng` service and set `SEARXNG_URL`; optionally create free developer keys for the distributors. Run `find_alternatives` on a few items of the test company, then turn on `ALTERNATIVES_SCAN_ENABLED`.
 4. Rollback: the downgrade drops the new tables and columns. `recommendations` is recreated empty.
 
 ## Open Questions

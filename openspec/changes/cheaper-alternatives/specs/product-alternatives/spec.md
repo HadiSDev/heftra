@@ -105,7 +105,7 @@ An item's alternatives SHALL include **offers** from marketplace connectors. Eve
 
 The v1 connectors SHALL need no paid service:
 - **shop search**: a configured list of shops per market, each with its site-search URL. The shop's search results and product pages SHALL be crawled, searched by identifiers first and by product name with key attributes otherwise;
-- **open web**: a web search (DuckDuckGo by default, or a self-hosted SearXNG when `SEARXNG_URL` is set) and crawling the product pages it finds;
+- **open web**: a web search through a self-hosted SearXNG at `SEARXNG_URL` (DuckDuckGo only when SearXNG isn't configured or can't be reached), in the market's language, and crawling the product pages it finds;
 - **distributors**: the product-search APIs of RS, Farnell, Mouser and Digi-Key, each used only when its free developer key is configured, searched by manufacturer part number first and by keyword otherwise. Quantity price breaks SHALL be read at the item's typical order quantity.
 
 A crawled page SHALL be read from its structured product data first (schema.org `Product` and `Offer` in JSON-LD or microdata: name, GTIN, SKU, MPN, brand, price, currency, availability). The LLM SHALL read the page text only when the page has no such data, or to get the attributes the data leaves out. Crawling SHALL honour robots.txt, keep a minimum interval per host, and read at most `ALTERNATIVES_PAGES_PER_ITEM` pages per item.
