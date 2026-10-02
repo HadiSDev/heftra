@@ -106,19 +106,31 @@ Marketplaces sit behind one interface:
 
 An `Offer` holds seller, title, identifiers, attributes, price (with quantity breaks), currency, VAT included, pack quantity and unit, stock, shipping when stated, URL and seen-at. Offers are normalised to the item's specification by the same extraction prompt, run on the offer's title and attributes, so matching treats every source alike.
 
-The v1 connectors:
-- **Shopping search** (`SHOPPING_SEARCH_PROVIDER`): SerpApi's Google Shopping engine first, behind a provider interface so DataForSEO can be added. It searches with the market's country and language (`gl=dk`, `hl=da` for Denmark): the part number or EAN first, then the product name with its two most telling attributes. Listings rarely carry full specifications, so an equivalent match needs the attributes from the listing's title or its product page; the product page is read only for candidates already cheaper than the item.
-- **Distributors**: RS, Farnell (element14), Mouser and Digi-Key, each a small client of its public product-search API (API key, or OAuth client credentials for Digi-Key). They search by manufacturer part number, then by keyword. Their price breaks are read at the item's typical order quantity, the median quantity per line.
-- **Open web** (`ALTERNATIVES_WEB_ENABLED`, default off): DDG search plus page reading with Crawl4AI, honouring robots.txt and a per-host interval. It's kept as a keyless fallback.
+The v1 connectors are all free:
+- **Shop search** (`shops.yaml`). A curated list of shops per market, each with a search URL template and the hosts its product pages live on. Examples for Denmark: Proshop, Komplett, Computersalg and Dustin for IT; Lyreco and Office Depot for office supplies; Sanistål and Lemvigh-Müller for materials, where list prices are public. The list is data, so shops can be added without code.
+  - The search results page is crawled for product links.
+  - Then up to `ALTERNATIVES_PAGES_PER_ITEM` product pages are crawled.
+  - The queries are the part number or EAN first, then the product name with its two most telling attributes.
+
+  Searching one shop directly finds that shop's listing far more reliably than a general web search does.
+- **Open web.** Web search through a `SearchProvider`: DuckDuckGo (`ddgs`, keyless) by default, or a self-hosted SearXNG when `SEARXNG_URL` is set. SearXNG is a free metasearch engine that runs as one more container in the compose file, and is far less likely to be throttled. Hosts on the block list (social, encyclopaedias, company registers, reviews, manuals) are skipped. The remaining product pages are crawled the same way.
+- **Distributors.** RS, Farnell (element14), Mouser and Digi-Key, each a small client of its public product-search API with a free developer key. Each is enabled only when its key is set. They search by manufacturer part number, then keyword. Price breaks are read at the item's typical order quantity: the median quantity per line.
+
+**Reading a product page.**
+- **Fetching.** Pages are fetched with Crawl4AI, as supplier enrichment does: the robots.txt check, a timeout, and a per-host minimum interval (`ALTERNATIVES_HOST_INTERVAL_S`, default 5) kept in the worker.
+- **Structured data first.** Offers are read from the page's schema.org `Product` / `Offer` data first, in JSON-LD or microdata: name, GTIN, SKU, MPN, brand, price, currency, availability, and `priceSpecification` with `valueAddedTaxIncluded` when given. Most webshops embed this data for search engines. It's exact, and costs no LLM call.
+- **The model fills gaps.** It reads the page's cleaned markdown, cut to `ALTERNATIVES_PAGE_CHARS`, only for what the structured data leaves out. That's usually the key attributes, and the VAT treatment when the data doesn't state it. On a page without structured data, the model reads the whole offer.
+- **Same specification.** The result is normalised to a specification by the same extraction as items, so matching treats every source alike.
 
 **VAT.** A price stated with VAT is converted without it using a static table of standard rates by seller country (DK 25, SE 25, NO 25, DE 19, NL 21, FI 25.5, GB 20, and so on). Distributor APIs state prices without VAT. An offer whose VAT treatment, currency or pack quantity can't be told is dropped.
 
 **Caching.** Each connector's answers are cached in `marketplace_queries` (connector, query, market, fetched_at), with their offers in `marketplace_offers`, for `ALTERNATIVES_OFFER_TTL_DAYS`. Both are shared across organizations, since the data is public. A failing connector is counted in the run's summary and skipped for the rest of the run.
 
-**Credentials.** The connectors use Spendyard's own keys, from the environment (`SERPAPI_API_KEY`, `RS_API_KEY`, `FARNELL_API_KEY`, `MOUSER_API_KEY`, `DIGIKEY_CLIENT_ID`/`DIGIKEY_CLIENT_SECRET`), not the customer's. Customer-connected marketplaces (Amazon Business, Unite) need the customer's account through OAuth and are left for a later change. The interface allows a per-organization credential then.
+**Credentials.** The distributor connectors use Spendyard's own free developer keys, from the environment (`RS_API_KEY`, `FARNELL_API_KEY`, `MOUSER_API_KEY`, `DIGIKEY_CLIENT_ID`/`DIGIKEY_CLIENT_SECRET`), not the customer's. A paid shopping-search API (SerpApi or DataForSEO) fits the same `SearchProvider` interface, and can be added later if the free search proves too thin. Customer-connected marketplaces (Amazon Business, Unite) need the customer's account through OAuth and are left for a later change. The interface allows a per-organization credential then.
 
 *Alternatives considered.*
-- DDG with page reading only is free, but slow, gets throttled and misreads prices; it stays a fallback.
+- A paid shopping-search API (SerpApi, DataForSEO) gives cleaner results across many shops, but costs per query. v1 starts free, and the provider interface keeps a paid one open.
+- Reading prices from page text with the model alone misreads pack and member prices; structured data comes first.
 - Scraping marketplaces directly breaks their terms and fails whenever a page changes.
 - Affiliate APIs (Amazon PA-API, price comparison sites) depend on generating sales and restrict how their data may be used.
 
@@ -171,10 +183,12 @@ The `procurement_agent` and `redundancy` packages and their `_call_stub` calls i
 
 - **Specifications read wrong** (a pack size or grade misread). → Confidence is shown; a manager can correct the specification and the correction sticks; low-confidence specifications (< 0.5) get no web search until confirmed.
 - **Wrong marketplace prices** (a pack price read as a unit price, or a member-only price). → The pack quantity must be stated, otherwise the offer is dropped. Every marketplace alternative links to its offer with the date it was seen, and "price wrong" dismissals are counted per seller, so a seller with repeated wrong prices can be blocked.
-- **Shopping listings without specifications.** → Equivalence needs the attributes, so the product page is read for cheaper candidates; without the attributes the candidate is only kept when it is an exact match.
+- **Pages without the attributes.** → Equivalence needs them, so the model reads the page text for them; without the attributes the candidate is only kept when it is an exact match.
+- **Free search is thin or throttled** (DuckDuckGo limits automated queries). → The shop search doesn't depend on it. SearXNG can be self-hosted. Queries are cached for 14 days, and few are made per item.
+- **Shops change their search pages or block crawlers.** → The shop list is data; a shop whose search returns nothing for a week is reported in the run summaries. robots.txt is honoured, and a blocked shop is skipped.
+- **Website terms.** → Only public list prices are read, robots.txt is honoured, volumes are low and cached, and shops are listed deliberately.
 - **Tier tables go out of date** (new processor generations, new families). → An unknown part falls back to the conservative LLM decision, which counts "uncertain" as worse, so a new part is missed rather than wrongly accepted; the table is data, extended in one place.
-- **API costs and quotas** (the shopping search is paid per query; the distributor APIs have daily limits). → Answers are cached for 14 days and shared, queries per item are capped, the scan is capped per run, and each connector has its own flag.
-- **Website terms for the open-web fallback.** → It is off by default; robots.txt is honoured, volumes are low and cached.
+- **Distributor API quotas** (daily limits on free keys). → Answers are cached for 14 days and shared, queries per item are capped, the scan is capped per run, and each connector has its own flag.
 - **Benchmark re-identification** (with three organizations, one may guess the others). → At least three others besides the viewer, only the median and lowest quartile, no supplier or buyer. Organizations can opt out.
 - **GPU load** from extraction, comparison and page reading. → Everything is batched and cached. The scan is capped per run, off by default, and queued behind interactive work.
 - **Quantity missing on many ERP lines.** → Those items have no unit price and say why. History and the benchmark still show identifiers and prices, but no saving.
@@ -187,12 +201,12 @@ The `procurement_agent` and `redundancy` packages and their `_call_stub` calls i
    - **new columns:** `pipeline_runs.params` and `organizations.price_benchmark_enabled` (default true);
    - **dropped:** `recommendations`.
 2. Deploy web-api and the worker; the flags default to history and benchmark on request only.
-3. Create the API accounts (SerpApi, RS, Farnell, Mouser, Digi-Key) and set their keys. Run `find_alternatives` on a few items of the test company, then turn on `ALTERNATIVES_SCAN_ENABLED`.
+3. Optionally add SearXNG to the compose file and set `SEARXNG_URL`, and create free developer keys for the distributors. Run `find_alternatives` on a few items of the test company, then turn on `ALTERNATIVES_SCAN_ENABLED`.
 4. Rollback: the downgrade drops the new tables and columns. `recommendations` is recreated empty.
 
 ## Open Questions
 
 - **Benchmark default:** should taking part be on by default, as proposed, or should organizations opt in? This is a legal and terms-of-service question for Spendyard, not a technical one.
 - **No country:** for a company without a `country_code`, should the market come from its base currency, or should the web search be skipped (as proposed)?
-- **Shopping-search provider:** SerpApi or DataForSEO, on price per query and Danish coverage. The design starts with SerpApi behind a provider interface.
+- **The first shop list:** which Danish shops matter most to the first customers, per kind of spend (IT, office, cleaning, food, materials)?
 - **Tier table scope:** beyond processors, graphics and steel grades, which tiered families matter most to customers (paper quality classes, screw strength classes, cable categories)?

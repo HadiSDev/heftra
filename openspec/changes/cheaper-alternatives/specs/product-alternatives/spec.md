@@ -103,10 +103,12 @@ An item's alternatives SHALL include the price benchmark of its product or of eq
 
 An item's alternatives SHALL include **offers** from marketplace connectors. Every connector SHALL take an item's identifiers and specification and the company's market, and return offers: seller, product, identifiers, attributes, price, currency, whether VAT is included, pack size, stock when stated, and a link. A connector SHALL be used only when it is enabled and its credentials are configured, and SHALL be rate-limited to its provider's limits.
 
-The v1 connectors SHALL be:
-- **shopping search**: product listings from many shops in the company's market, through a shopping-search API, searched by identifiers first and by product name with key attributes otherwise;
-- **distributors**: the product-search APIs of RS, Farnell, Mouser and Digi-Key, searched by manufacturer part number first and by keyword otherwise; quantity price breaks SHALL be read at the item's typical order quantity;
-- **open web** (off by default): web search and reading the found pages with the LLM, honouring robots.txt and a per-host interval.
+The v1 connectors SHALL need no paid service:
+- **shop search**: a configured list of shops per market, each with its site-search URL. The shop's search results and product pages SHALL be crawled, searched by identifiers first and by product name with key attributes otherwise;
+- **open web**: a web search (DuckDuckGo by default, or a self-hosted SearXNG when `SEARXNG_URL` is set) and crawling the product pages it finds;
+- **distributors**: the product-search APIs of RS, Farnell, Mouser and Digi-Key, each used only when its free developer key is configured, searched by manufacturer part number first and by keyword otherwise. Quantity price breaks SHALL be read at the item's typical order quantity.
+
+A crawled page SHALL be read from its structured product data first (schema.org `Product` and `Offer` in JSON-LD or microdata: name, GTIN, SKU, MPN, brand, price, currency, availability). The LLM SHALL read the page text only when the page has no such data, or to get the attributes the data leaves out. Crawling SHALL honour robots.txt, keep a minimum interval per host, and read at most `ALTERNATIVES_PAGES_PER_ITEM` pages per item.
 
 An offer SHALL be kept for `ALTERNATIVES_OFFER_TTL_DAYS` (default 14) and reused by every search that asks the same connector the same question in that time, for any organization, since it is public. A marketplace alternative SHALL name its connector and seller, link to the offer and say when it was seen.
 
@@ -114,7 +116,7 @@ A connector that fails SHALL be logged and counted in the run's summary, and the
 
 #### Scenario: A cheaper laptop in a Danish shop
 
-- **WHEN** a company pays DKK 9,200 for ThinkPad T14 Gen 5 21ML003XMX and the shopping search finds a Danish shop listing that part number for DKK 10,500 including VAT
+- **WHEN** a company pays DKK 9,200 for ThinkPad T14 Gen 5 21ML003XMX and the shop search finds a Danish shop listing that part number for DKK 10,500 including VAT
 - **THEN** the item has an exact alternative at DKK 8,400 without VAT, naming the shop, with the link and the date it was seen
 
 #### Scenario: A cable from a distributor at the order quantity
@@ -124,13 +126,18 @@ A connector that fails SHALL be logged and counted in the run's summary, and the
 
 #### Scenario: An offer is reused
 
-- **WHEN** two companies' searches ask the shopping search for the same part number within 14 days
-- **THEN** the provider is called once
+- **WHEN** two companies' searches ask the same shop for the same part number within 14 days
+- **THEN** the shop is crawled once
 
 #### Scenario: A connector is down
 
 - **WHEN** the distributor API fails during a search
-- **THEN** the run records the failure, and history, the benchmark and the shopping search still give their alternatives
+- **THEN** the run records the failure, and history, the benchmark and the shop search still give their alternatives
+
+#### Scenario: A product page with structured data
+
+- **WHEN** a crawled product page carries a schema.org Product with GTIN, price DKK 1,249.00 and currency DKK
+- **THEN** the offer is read from that data without asking the LLM for the price
 
 ### Requirement: Alternatives SHALL be found by a background scan and on request
 

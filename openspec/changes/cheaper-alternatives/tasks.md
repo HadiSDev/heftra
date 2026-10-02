@@ -4,7 +4,7 @@
 - [ ] 1.2 Remove the `Recommendation` model, `Company.recommendations` and its deletion in `company_deletion.py`
 - [ ] 1.3 Migration `0023_cheaper_alternatives` creating the tables and columns, dropping `recommendations`, with a downgrade; the indexes the list and the searches need
 - [ ] 1.4 New run kinds `find_alternatives` and `scan_alternatives` in `PipelineRunKind`, the web types and the run labels
-- [ ] 1.5 Config: the `ALTERNATIVES_*`, `BENCHMARK_MIN_ORGANIZATIONS`, `SHOPPING_SEARCH_PROVIDER` and connector key settings with defaults, documented in `.env.example`
+- [ ] 1.5 Config: the `ALTERNATIVES_*`, `BENCHMARK_MIN_ORGANIZATIONS`, `SEARXNG_URL`, `ALTERNATIVES_PAGES_PER_ITEM`, `ALTERNATIVES_HOST_INTERVAL_S` and distributor key settings with defaults, documented in `.env.example`
 
 ## 2. Stored items and unit prices (ai-api)
 
@@ -34,11 +34,12 @@
 - [ ] 5.1 History: same product and similar specifications within the organization, cheaper, with supplier, company and last date (tests)
 - [ ] 5.2 Benchmark: per-organization prices by product and by specification signature, taking-part organizations only, at least three besides the viewer, median and lowest quartile in the viewer's currency, nothing that names anyone (tests: too few, opted out)
 - [ ] 5.3 The `OfferSource` interface, `Offer` with price breaks, the per-provider rate limiter, the shared query and offer cache with expiry, and offers normalised to specifications by the extraction prompt (tests)
-- [ ] 5.4 Shopping-search connector: SerpApi Google Shopping behind a provider interface, the market's country and language, identifier query then attribute query, the product page read for cheaper candidates without attributes (tests with recorded responses)
-- [ ] 5.5 Distributor connectors: RS, Farnell, Mouser and Digi-Key clients, part number then keyword, price breaks at the item's typical order quantity (tests with recorded responses)
-- [ ] 5.6 Open-web connector (off by default): DDG search, Crawl4AI with the robots check, per-host interval, the LLM reading page offers (tests with stub search, fetch and model)
-- [ ] 5.7 A failing connector is logged, counted and skipped for the rest of the run (tests)
-- [ ] 5.8 Agreement conflicts: preferred-supplier and behind commitments from the item's in-scope rulings (tests)
+- [ ] 5.4 Product page reading: Crawl4AI fetch with the robots check, per-host interval and timeout; schema.org Product/Offer from JSON-LD and microdata first; the LLM only for missing attributes or pages without structured data (tests with saved pages)
+- [ ] 5.5 Shop-search connector: `shops.yaml` per market with search URL templates and product hosts, results page crawled for product links, identifier query then attribute query (tests with saved pages)
+- [ ] 5.6 Distributor connectors: RS, Farnell, Mouser and Digi-Key clients, part number then keyword, price breaks at the item's typical order quantity (tests with recorded responses)
+- [ ] 5.7 Open-web connector: the `SearchProvider` interface with DuckDuckGo and SearXNG, the block list, found product pages read as in 5.4 (tests with a stub search)
+- [ ] 5.8 A failing connector is logged, counted and skipped for the rest of the run (tests)
+- [ ] 5.9 Agreement conflicts: preferred-supplier and behind commitments from the item's in-scope rulings (tests)
 
 ## 6. Searching and runs (ai-api)
 
@@ -73,4 +74,4 @@
 
 - [ ] 9.1 Run the ai-api, web-api and web suites, and tsc
 - [ ] 9.2 A real-model sample: extract specifications for 100 items of the test companies (materials and finished goods) and check the class, pricing unit and pack size by hand; record accuracy in `design.md`
-- [ ] 9.3 With the user's go-ahead and API keys: run the migration on dev, search a few items on request (a laptop, a cable box, toilet paper, a steel bar), and check the alternatives, tiers and prices against the offers
+- [ ] 9.3 With the user's go-ahead: run the migration on dev, search a few items on request (a laptop, a cable box, toilet paper, a steel bar), and check the alternatives, tiers and prices against the offers
