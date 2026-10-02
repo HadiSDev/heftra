@@ -11,7 +11,7 @@ from ..db.models import ItemClass, PricingUnit
 from .attribute import Attribute
 from .units import line_unit
 
-SPEC_VERSION = 1
+SPEC_VERSION = 2
 
 
 class Specification(BaseModel):

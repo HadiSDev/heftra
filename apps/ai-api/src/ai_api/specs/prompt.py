@@ -35,11 +35,13 @@ _RULES = [
     "product_type: a short English noun phrase saying what kind of product it is and for what "
     "use, e.g. \"business laptop\", \"hot-rolled round bar\", \"network installation cable\", "
     "\"toilet paper\".",
-    "name: a short English product name. brand, model, part_number (the manufacturer's part "
+    "name: the product's short name as shops sell it, the product line first, e.g. \"MacBook "
+    "Pro 14 M5 Pro\", \"ThinkPad T14 Gen 5\", \"Cat6 U/UTP installation cable\"; never only a "
+    "component such as the processor. brand, model, part_number (the manufacturer's part "
     "number) and gtin (EAN) only when the text states them.",
     "attributes: the 2 to 6 attributes a buyer must not get less of, with snake_case English "
     "names. Each has a kind:",
-    "- \"numeric\" with number, unit and direction: \"more\" when more is better (memory, "
+    "- \"numeric\" with number (the number alone), unit and direction: \"more\" when more is better (memory, "
     "storage, sheets per roll, ply), \"less\" when less is better (weight of a laptop, power "
     "use), \"equal\" when it must match (a diameter, a cut length, a thread, a screen size, a "
     "voltage);",
@@ -47,7 +49,8 @@ _RULES = [
     "(family \"Intel Core\", tier \"i7\", generation \"13\"; family \"Intel Core Ultra\", tier "
     "\"7\", generation \"1\"; family \"AMD Ryzen\", tier \"7\", generation \"7000\"; family "
     "\"Apple M\", tier \"Pro\", generation \"3\"), a graphics card, a steel or quality grade "
-    "(family \"EN 10025\", tier \"S235\", generation null);",
+    "(family \"EN 10025\", tier \"S235\", generation null). A computer's processor is always "
+    "a tiered attribute named \"processor\";",
     "- \"other\" for anything else (a material, a coating, a jacket, a certification), with "
     "its value.",
     "pricing_unit: the unit the product is naturally priced by, one of kg, m, m2, m3, l, "

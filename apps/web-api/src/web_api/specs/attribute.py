@@ -1,9 +1,12 @@
 """One key attribute of a specification: a number, a ranked part, or anything else."""
 from __future__ import annotations
 
+import re
 from enum import Enum
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, model_validator
+
+_NUMBER = re.compile(r"-?\d+(?:[.,]\d+)?")
 
 
 class AttributeKind(str, Enum):
@@ -58,3 +61,12 @@ class Attribute(BaseModel):
     @classmethod
     def _text(cls, value: object) -> str | None:
         return None if value in (None, "") else str(value)
+
+    @model_validator(mode="after")
+    def _number_from_value(self) -> Attribute:
+        if self.kind != AttributeKind.NUMERIC or self.number is not None:
+            return self
+        found = _NUMBER.search(self.value)
+        if found is not None:
+            self.number = float(found.group().replace(",", "."))
+        return self

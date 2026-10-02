@@ -90,6 +90,12 @@ def no_category_retrieval(monkeypatch):
 
 
 @pytest.fixture(autouse=True)
+def no_alternative_scans(monkeypatch):
+    """No test queues background scans, whatever the local .env says."""
+    monkeypatch.setattr(ai_config, "ALTERNATIVES_SCAN_ENABLED", False)
+
+
+@pytest.fixture(autouse=True)
 def offline_categorizer(monkeypatch):
     """No test ever calls a real model."""
     def _words(text: str) -> set[str]:

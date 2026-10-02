@@ -32,3 +32,15 @@ def test_less_is_better_for_weight():
 
 def test_different_dimensions_are_left_to_the_llm():
     assert compare_numbers(number(16, "GB"), number(16, "W"), 2) is None
+
+
+def test_a_number_stated_only_in_the_value_is_read_from_it():
+    memory = Attribute(name="memory", kind="numeric", value="24", unit="GB")
+    paper = Attribute(name="weight", kind="numeric", value="80,5 g/m²", unit="g/m2")
+    assert memory.number == 24
+    assert paper.number == 80.5
+    assert compare_numbers(memory, number(16, "GB"), 2) == Verdict.WORSE
+
+
+def test_other_attributes_get_no_number():
+    assert Attribute(name="colour", value="black 2").number is None
