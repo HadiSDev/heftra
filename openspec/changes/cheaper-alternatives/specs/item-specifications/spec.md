@@ -3,7 +3,7 @@
 ### Requirement: An item SHALL have a specification, extracted once
 
 Each item a company buys (see `spend-item-index`) SHALL get a **specification** read by the LLM from the item's name, description, unit, spend category and supplier. A specification holds:
-- its **class**: `material` (bought by weight, length, area, volume or as stock to be processed: steel, wood, cable by the metre), `part` (a component bought by the piece to be built into something or to maintain a machine, usually known by its maker's part number: bearings, screws, connectors, motors, valves, filters, cutting inserts, spare parts) or `finished_good` (bought to be used as it is: toilet paper, laptops, snacks, smartphones);
+- its **class**: `material` (bought by weight, length, area, volume or as stock to be processed: steel, wood, cable by the metre), `part` (a component bought by the piece to be built into something or to maintain a machine, usually known by its maker's part number: bearings, screws, connectors, motors, valves, filters, cutting inserts, spare parts), `finished_good` (bought to be used as it is: toilet paper, laptops, snacks, smartphones) or `service` (not a physical product: a service, fee, subscription, licence, insurance, travel, shipping, rent, utility or tax);
 - a short **product name** in English;
 - its **identifiers**, each when stated: manufacturer part number, EAN/GTIN, brand, model;
 - its **product type**: what kind of product it is, for what use (a business laptop, a hot-rolled round bar, an installation cable);
@@ -16,6 +16,8 @@ Each item a company buys (see `spend-item-index`) SHALL get a **specification** 
 - its **pricing unit**: one of `kg`, `m`, `m2`, `m3`, `l`, `piece`, `sheet`, `roll`, `pack`;
 - **units per line unit**: how many pricing units one unit of the line holds, when it can be told. "Pack of 8 rolls" with pricing unit `roll` is 8; "box of 305 m" with pricing unit `m` is 305;
 - a **confidence** from 0 to 1.
+
+When an item is priced per kg, l or m, the reader gave no pack size or one, and its lines aren't bought in that measure, a size its unit, name or description states in that measure (10 g, 250 ml, 305 m) SHALL be its pack size; a rate such as 80 g / m² SHALL NOT count.
 
 A specification SHALL be extracted only once per item, and again only when the item's text changes; it SHALL be stored with the item. An item whose specification cannot be read SHALL be retried on a later run, and counted.
 
@@ -33,6 +35,16 @@ A specification SHALL be extracted only once per item, and again only when the i
 
 - **WHEN** an item is "SKF 6204-2RSH kugleleje 20x47x14"
 - **THEN** its class is `part`, its brand is SKF, its part number is 6204-2RSH, its pricing unit is `piece`, and its key attributes include its bore, outer diameter and width, each to be equal, and its sealing
+
+#### Scenario: Insurance is a service
+
+- **WHEN** an item is "Ansvarsforsikring Erhvervsansvar"
+- **THEN** its class is `service`
+
+#### Scenario: A size in the name is the pack size
+
+- **WHEN** an item "THERMAL HERO Wärmeleitpaste - 10g" bought per piece is read as priced per kg, and the reader gives no pack size or one
+- **THEN** its units per line unit is 0.01, taken from the size its name states
 
 #### Scenario: Toilet paper by the pack
 

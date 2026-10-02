@@ -8,7 +8,7 @@ from datetime import date, datetime, timedelta, timezone
 
 from sqlmodel import Session, col, select
 
-from web_api.db.models import Company, CompanyItem, SpecSource
+from web_api.db.models import Company, CompanyItem, ItemClass, SpecSource
 from web_api.fx.service import FxService
 from web_api.specs.pricing import price_item
 from web_api.specs.specification import read_spec
@@ -73,11 +73,13 @@ def scan_alternatives(session: Session, company_id: str, *, ask: Ask, embed_fn: 
 
 def due_for_search(session: Session, company_id: str, *, now: datetime,
                    limit: int) -> list[CompanyItem]:
-    """Bought items not searched in `ALTERNATIVES_RESCAN_DAYS`, most spend first."""
+    """Bought items that aren't services and weren't searched in `ALTERNATIVES_RESCAN_DAYS`,
+    most spend first."""
     stale = now - timedelta(days=config.ALTERNATIVES_RESCAN_DAYS)
     return list(session.exec(
         select(CompanyItem)
         .where(CompanyItem.company_id == company_id, CompanyItem.lines > 0,
+               col(CompanyItem.item_class).is_distinct_from(ItemClass.SERVICE.value),
                col(CompanyItem.searched_at).is_(None) | (col(CompanyItem.searched_at) < stale))
         .order_by(col(CompanyItem.spend).desc(), CompanyItem.id)
         .limit(limit)

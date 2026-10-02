@@ -32,6 +32,7 @@ export const CLASS_LABELS: Record<ItemClass, string> = {
   material: 'Material',
   part: 'Part',
   finished_good: 'Finished good',
+  service: 'Service',
 }
 
 export const VERDICT_LABELS: Record<Verdict, string> = {

@@ -29,7 +29,9 @@ _RULES = [
     "\"part\" when it is a component bought by the piece to be built into something or to "
     "maintain a machine, usually known by its maker's part number (bearings, screws, "
     "connectors, motors, valves, filters, cutting inserts, spare parts); \"finished_good\" "
-    "when it is used as it is (laptops, toilet paper, snacks, phones, cleaning products).",
+    "when it is used as it is (laptops, toilet paper, snacks, phones, cleaning products); "
+    "\"service\" when it is not a physical product: a service, fee, subscription, licence, "
+    "insurance, travel, shipping, rent, utility or tax (with pricing_unit piece).",
     "product_type: a short English noun phrase saying what kind of product it is and for what "
     "use, e.g. \"business laptop\", \"hot-rolled round bar\", \"network installation cable\", "
     "\"toilet paper\".",
@@ -53,7 +55,8 @@ _RULES = [
     "or sheet; pack only when the pack can't be counted in one of the others.",
     "units_per_line_unit: how many pricing units one unit of the line (\"Bought per\") holds, "
     "when the text says (a box of 305 m with pricing_unit m is 305; a pack of 8 rolls with "
-    "pricing_unit roll is 8); 1 when the line's unit is the pricing unit; null when unknown.",
+    "pricing_unit roll is 8; a 10 g tube with pricing_unit kg is 0.01; a 250 ml bottle with "
+    "pricing_unit l is 0.25); 1 when the line's unit is the pricing unit; null when unknown.",
     "confidence: from 0 to 1, how sure you are of the class, the pricing unit and the pack "
     "size.",
 ]

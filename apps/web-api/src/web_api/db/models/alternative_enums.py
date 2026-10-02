@@ -6,11 +6,13 @@ from enum import Enum
 
 class ItemClass(str, Enum):
     """Bought to be processed or by measure, bought by the piece to be built in or to maintain
-    something, or bought to be used as it is."""
+    something, bought to be used as it is, or not a product at all (a service, fee or
+    subscription), which has no alternatives searched."""
 
     MATERIAL = "material"
     PART = "part"
     FINISHED_GOOD = "finished_good"
+    SERVICE = "service"
 
 
 class PricingUnit(str, Enum):

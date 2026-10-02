@@ -176,3 +176,14 @@ def test_a_product_ruled_not_equivalent_is_not_proposed_again(session, shelves):
     search_item(session, mine, _tools())
 
     assert [entry.review_status for entry in _alternatives(session)] == ["dismissed"]
+
+
+def test_a_service_is_not_searched(session, shelves):
+    company = shelves.company(shelves.organization("Acme"))
+    item = shelves.item(company, "Business insurance", unit_price="1200",
+                        fields={"item_class": "service", "product_type": "insurance"})
+    shop = Shop([])
+
+    counts = search_item(session, item, _tools([shop]))
+
+    assert (counts["services"], shop.asked) == (1, 0)

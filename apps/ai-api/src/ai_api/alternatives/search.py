@@ -8,7 +8,7 @@ from decimal import Decimal
 
 from sqlmodel import Session
 
-from web_api.db.models import AlternativeSource, Company, CompanyItem
+from web_api.db.models import AlternativeSource, Company, CompanyItem, ItemClass
 from web_api.fx.service import FxService
 from web_api.specs.specification import read_spec
 
@@ -50,6 +50,11 @@ def search_item(session: Session, item: CompanyItem, tools: SearchTools) -> Coun
     company = session.get(Company, item.company_id)
     now = datetime.now(timezone.utc)
     item.searched_at = now
+    if spec is not None and spec.item_class == ItemClass.SERVICE:
+        counts["services"] += 1
+        session.add(item)
+        session.commit()
+        return counts
     if spec is None or item.unit_price is None or company is None:
         counts["unpriced"] += 1
         session.add(item)

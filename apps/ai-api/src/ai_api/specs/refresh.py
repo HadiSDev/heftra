@@ -16,6 +16,7 @@ from .products import link_product
 from .prompt import ItemText
 from .reader import SpecReader
 from .signature import signature
+from .sizes import with_stated_size
 
 
 @dataclass
@@ -65,6 +66,7 @@ def specify_items(session: Session, items: list[CompanyItem], reader: SpecReader
             item.spec_failures += 1
             counts.failed += 1
         else:
+            spec = with_stated_size(spec, item.unit, [item.item_name, item.description])
             apply_spec(session, item, spec, SpecSource.AI)
             counts.read += 1
         price_item(item, eur_rate)

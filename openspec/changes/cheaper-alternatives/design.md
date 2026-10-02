@@ -29,7 +29,7 @@ The product's users are procurement and finance people at small and mid-sized co
 - Commodity price indices for materials (steel, copper, timber) and price forecasting. The existing `price-indices` capability can feed them later.
 - Supplier catalogues or price lists uploaded by a person. That is a later source, and fits the connector interface.
 - Customer-connected marketplaces (Amazon Business, Unite) and punchout. They need the customer's account and come in a later change.
-- Alternatives for services (consulting, rent, licences): they have no comparable unit. Items whose specification can't give a pricing unit are left out and say so.
+- Alternatives for services (consulting, rent, licences, insurance, travel, fees): they have no comparable unit. The reader classes them as `service`, and they are never searched or scanned.
 
 ## Decisions
 

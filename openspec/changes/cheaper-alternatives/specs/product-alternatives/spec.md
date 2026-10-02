@@ -157,6 +157,15 @@ A new search of an item SHALL replace its open alternatives from the sources it 
 - **WHEN** a manager asks for alternatives to a laptop item
 - **THEN** a `find_alternatives` run is queued for it, and its alternatives appear when the run succeeds
 
+### Requirement: A service SHALL NOT be searched
+
+An item whose class is `service` SHALL get no alternatives, SHALL be left out of the background scan, and a search of it SHALL only record that it is a service.
+
+#### Scenario: Insurance is not searched
+
+- **WHEN** a person asks for alternatives to a business insurance item
+- **THEN** no source is searched, and the run's summary counts one service
+
 ### Requirement: Alternatives SHALL be reviewable
 
 An alternative's review status SHALL be `open`, `dismissed` or `switched`. A person SHALL be able to dismiss an alternative with a reason (`not_equivalent`, `supplier_not_approved`, `price_wrong` or `other`) and a note, mark it as switched, or reopen it. Reviews SHALL be audited.
