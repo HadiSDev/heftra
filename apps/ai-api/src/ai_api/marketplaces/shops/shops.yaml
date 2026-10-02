@@ -1,0 +1,31 @@
+# Shops searched directly, per market. `search_url` takes the query as {query};
+# `product_link` is a regular expression a product page's URL matches (without
+# one, same-host links with a long numeric id or /product/ in the path count);
+# `prices_include_vat` is how the shop shows prices, null when the page must say.
+# The patterns are checked against the live sites in the change's verification.
+shops:
+  - name: Proshop
+    market: DK
+    search_url: https://www.proshop.dk/?s={query}
+    product_link: ^https://www\.proshop\.dk/[^/?#]+/[^/?#]+/\d{5,}$
+    prices_include_vat: true
+  - name: Komplett
+    market: DK
+    search_url: https://www.komplett.dk/search?q={query}
+    product_link: ^https://www\.komplett\.dk/product/\d+
+    prices_include_vat: true
+  - name: Elgiganten
+    market: DK
+    search_url: https://www.elgiganten.dk/search?q={query}
+    product_link: ^https://www\.elgiganten\.dk/product/
+    prices_include_vat: true
+  - name: Dustin
+    market: DK
+    search_url: https://www.dustin.dk/search?q={query}
+    product_link: ^https://www\.dustin\.dk/product/\d+
+    prices_include_vat: null
+  - name: Computersalg
+    market: DK
+    search_url: https://www.computersalg.dk/l/0/s?sq={query}
+    product_link: ^https://www\.computersalg\.dk/i/\d+/
+    prices_include_vat: true
