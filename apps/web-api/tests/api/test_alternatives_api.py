@@ -71,6 +71,8 @@ def test_the_list_filters_by_source_and_class(client, seed, stocked):
 
     assert [item["id"] for item in by_source["items"]] == [stocked["laptop"]]
     assert [item["id"] for item in by_class["items"]] == [stocked["cable"]]
+    parts = client.get("/api/v1/alternatives?item_class=part", headers=auth("tokA")).json()
+    assert parts["items"] == []
 
 
 def test_another_organizations_items_are_not_found(client, seed, stocked):

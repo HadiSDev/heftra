@@ -3,7 +3,7 @@
 ### Requirement: An item SHALL have a specification, extracted once
 
 Each item a company buys (see `spend-item-index`) SHALL get a **specification** read by the LLM from the item's name, description, unit, spend category and supplier. A specification holds:
-- its **class**: `material` (bought by weight, length, area, volume or as stock to be processed: steel, wood, cable by the metre, cutting inserts) or `finished_good` (bought to be used as it is: toilet paper, laptops, snacks, smartphones);
+- its **class**: `material` (bought by weight, length, area, volume or as stock to be processed: steel, wood, cable by the metre), `part` (a component bought by the piece to be built into something or to maintain a machine, usually known by its maker's part number: bearings, screws, connectors, motors, valves, filters, cutting inserts, spare parts) or `finished_good` (bought to be used as it is: toilet paper, laptops, snacks, smartphones);
 - a short **product name** in English;
 - its **identifiers**, each when stated: manufacturer part number, EAN/GTIN, brand, model;
 - its **product type**: what kind of product it is, for what use (a business laptop, a hot-rolled round bar, an installation cable);
@@ -28,6 +28,11 @@ A specification SHALL be extracted only once per item, and again only when the i
 
 - **WHEN** an item is "Lenovo ThinkPad T14 Gen 5 21ML003XMX, Ultra 7 155U, 16GB, 512GB SSD"
 - **THEN** its class is `finished_good`, its product type is a business laptop, its model is ThinkPad T14 Gen 5, its part number is 21ML003XMX, its pricing unit is `piece`, and its key attributes include the processor as tiered (Intel Core Ultra, tier 7, series 1) and 16 GB memory and 512 GB storage, more being better
+
+#### Scenario: A bearing is a part
+
+- **WHEN** an item is "SKF 6204-2RSH kugleleje 20x47x14"
+- **THEN** its class is `part`, its brand is SKF, its part number is 6204-2RSH, its pricing unit is `piece`, and its key attributes include its bore, outer diameter and width, each to be equal, and its sealing
 
 #### Scenario: Toilet paper by the pack
 

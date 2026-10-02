@@ -17,7 +17,7 @@ The product's users are procurement and finance people at small and mid-sized co
 ## Goals / Non-Goals
 
 **Goals:**
-- An item specification and a price per pricing unit, for production materials and finished goods alike.
+- An item specification and a price per pricing unit, for production materials, parts and finished goods alike.
 - Exact and similar alternatives from the organization's own purchases, other customers' anonymous prices and marketplace connectors: the same kind of product, never worse on a key attribute, and never a lower tier of processor, graphics or grade.
 - A yearly saving per alternative, items ranked by it, and the scan and on-request search.
 - Bounded cost: LLM calls, searches and page reads per run are capped; everything that can be reused is cached.

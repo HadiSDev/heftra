@@ -1,6 +1,6 @@
 import type { Money, Page } from './types'
 
-export type ItemClass = 'material' | 'finished_good'
+export type ItemClass = 'material' | 'part' | 'finished_good'
 export type PricingUnit =
   'kg' | 'm' | 'm2' | 'm3' | 'l' | 'piece' | 'sheet' | 'roll' | 'pack'
 export type AlternativeSource = 'history' | 'benchmark' | 'marketplace'

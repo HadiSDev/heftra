@@ -11,7 +11,7 @@ const SOURCES: ReadonlyArray<AlternativeSource> = [
   'marketplace',
 ]
 const MATCHES: ReadonlyArray<AlternativeMatch> = ['exact', 'equivalent']
-const CLASSES: ReadonlyArray<ItemClass> = ['material', 'finished_good']
+const CLASSES: ReadonlyArray<ItemClass> = ['material', 'part', 'finished_good']
 
 function oneOf<T extends string>(
   value: unknown,

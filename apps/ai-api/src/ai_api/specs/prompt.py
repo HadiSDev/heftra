@@ -25,9 +25,11 @@ _RULES = [
     "the same or as good can be found. Use only what the text says or what the product "
     "unmistakably is; never guess a part number, EAN or size.",
     "item_class: \"material\" when it is bought by weight, length, area or volume, or as stock "
-    "to be cut, machined or built into something (steel, wood, cable by the metre, cutting "
-    "inserts, screws in bulk); \"finished_good\" when it is used as it is (laptops, toilet "
-    "paper, snacks, phones, cleaning products).",
+    "to be cut, machined or processed (steel, wood, plastic granulate, cable by the metre); "
+    "\"part\" when it is a component bought by the piece to be built into something or to "
+    "maintain a machine, usually known by its maker's part number (bearings, screws, "
+    "connectors, motors, valves, filters, cutting inserts, spare parts); \"finished_good\" "
+    "when it is used as it is (laptops, toilet paper, snacks, phones, cleaning products).",
     "product_type: a short English noun phrase saying what kind of product it is and for what "
     "use, e.g. \"business laptop\", \"hot-rolled round bar\", \"network installation cable\", "
     "\"toilet paper\".",

@@ -142,3 +142,15 @@ def test_a_better_steel_grade_is_equivalent(session):
 
     assert results["c"].match.value == "equivalent"
     assert results["c"].comparison[0].verdict.value == "better"
+
+
+def test_a_part_is_not_matched_with_a_finished_good(session):
+    bearing = _spec("Bearing 6204-2RSH", item_class="part", product_type="ball bearing",
+                    brand="SKF", part_number="6204-2RSH")
+    kit = _spec("Bearing kit", product_type="ball bearing", brand="SKF",
+                part_number="6204-2RSH")
+
+    results = match_candidates(bearing, None, [Candidate("c", kit, None)],
+                               PairJudge(session, Comparer()))
+
+    assert not results["c"].accepted

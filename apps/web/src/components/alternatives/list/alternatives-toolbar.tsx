@@ -112,7 +112,7 @@ export function AlternativesToolbar({
       <FilterSelect
         label="Kind of item"
         value={filters.item_class}
-        allLabel="Materials and goods"
+        allLabel="Every kind"
         options={entries(CLASS_LABELS)}
         onChange={(item_class) => {
           onChange({ item_class: item_class as ItemClass | undefined })

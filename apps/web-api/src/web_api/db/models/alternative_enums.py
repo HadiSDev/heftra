@@ -5,9 +5,11 @@ from enum import Enum
 
 
 class ItemClass(str, Enum):
-    """Bought to be processed or by measure, or bought to be used as it is."""
+    """Bought to be processed or by measure, bought by the piece to be built in or to maintain
+    something, or bought to be used as it is."""
 
     MATERIAL = "material"
+    PART = "part"
     FINISHED_GOOD = "finished_good"
 
 

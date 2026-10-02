@@ -30,6 +30,7 @@ export const MATCH_VARIANTS: Record<AlternativeMatch, BadgeVariant> = {
 
 export const CLASS_LABELS: Record<ItemClass, string> = {
   material: 'Material',
+  part: 'Part',
   finished_good: 'Finished good',
 }
 
