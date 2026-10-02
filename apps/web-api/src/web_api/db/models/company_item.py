@@ -11,9 +11,11 @@ from ._base import _uuid
 class CompanyItem(SQLModel, table=True):
     """One distinct thing a company buys, with its specification and price per pricing unit.
 
-    Spend, quantity and prices cover the last 12 months, in the company's base currency;
-    `quantity` is in the specification's pricing unit, and `unit_price_eur` lets organizations
-    with other base currencies be compared.
+    Spend, quantity and prices cover the last 12 months, in the company's base currency.
+    `line_quantity` is what the lines bought in their own unit and `priced_spend` what the lines
+    stating a quantity cost; with the specification's units per line unit they give `quantity`
+    in the pricing unit and `unit_price`. `order_quantity` is the average quantity per line, and
+    `unit_price_eur` lets organizations with other base currencies be compared.
     """
 
     __tablename__ = "company_items"
@@ -35,6 +37,8 @@ class CompanyItem(SQLModel, table=True):
     spend: Decimal = Field(sa_type=Numeric(16, 2), nullable=False, default=Decimal("0"))
     lines: int = Field(sa_type=Integer, nullable=False, default=0)
     last_bought_on: Optional[date] = Field(sa_type=Date, nullable=True, default=None)
+    line_quantity: Optional[Decimal] = Field(sa_type=Numeric(18, 4), nullable=True, default=None)
+    priced_spend: Optional[Decimal] = Field(sa_type=Numeric(16, 2), nullable=True, default=None)
     order_quantity: Optional[Decimal] = Field(sa_type=Numeric(14, 4), nullable=True, default=None)
     spec: Optional[dict] = Field(sa_type=JSON, nullable=True, default=None)
     spec_source: Optional[str] = Field(sa_type=String, nullable=True, default=None)

@@ -9,13 +9,13 @@
 
 ## 2. Stored items and unit prices (ai-api)
 
-- [ ] 2.1 `items/stored.py`: refresh `company_items` from the item grouping page by page: text, supplier, category, 12-month spend; keep the specification and product
-- [ ] 2.2 Pricing units and the line-unit table (stk, kg, m, l, rulle, pk…), with tests
-- [ ] 2.3 Unit price and yearly quantity per item from `base_amount` and `quantity × units per line unit`, also in EUR, with the reason when there is none (tests: cable box, missing quantity)
+- [x] 2.1 `items/stored.py`: refresh `company_items` from the item grouping page by page: text, supplier, category, 12-month spend; keep the specification and product
+- [x] 2.2 Pricing units and the line-unit table (stk, kg, m, l, rulle, pk…), with tests
+- [x] 2.3 Unit price and yearly quantity per item from `base_amount` and `quantity × units per line unit`, also in EUR, with the reason when there is none (tests: cable box, missing quantity)
 
 ## 3. Specifications (ai-api)
 
-- [ ] 3.1 `specs/` package: the `Specification` and `Attribute` models, the reply models, and `SPEC_VERSION`
+- [x] 3.1 `specs/` package: the `Specification` and `Attribute` models, the reply models, and `SPEC_VERSION`
 - [ ] 3.2 The extraction prompt (class rule, product type, pricing units, numeric attributes with direction and unit, tiered attributes with family, tier and generation) and batched extraction with one-by-one retry, as the agreement judge does (tests with a stub model)
 - [ ] 3.3 Extract only items without a specification or whose text hash or version changed; never overwrite a person's; count failures and retry later (tests)
 - [ ] 3.4 Identifier normalisation and product linking by GTIN and by brand and part number (tests: one keyboard, two suppliers)
