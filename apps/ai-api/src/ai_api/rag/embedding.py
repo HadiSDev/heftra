@@ -23,6 +23,9 @@ def query_text(text: str) -> str:
 
 def _load() -> SentenceTransformer:
     if torch.cuda.is_available():
-        return SentenceTransformer(config.EMBEDDING_MODEL,
-                                   model_kwargs={"torch_dtype": torch.float16})
-    return SentenceTransformer(config.EMBEDDING_MODEL)
+        model = SentenceTransformer(config.EMBEDDING_MODEL,
+                                    model_kwargs={"torch_dtype": torch.float16})
+    else:
+        model = SentenceTransformer(config.EMBEDDING_MODEL)
+    model.max_seq_length = min(model.max_seq_length, config.EMBEDDING_MAX_TOKENS)
+    return model
