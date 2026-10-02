@@ -23,11 +23,11 @@
 
 ## 4. Matching and prices (ai-api)
 
-- [ ] 4.1 The exact match by identifiers (tests)
-- [ ] 4.2 Attribute unit conversion and the numeric comparison by direction; a missing attribute rejects (tests: 8 GB against 16 GB, mm against cm)
-- [ ] 4.3 `tiers.py`: the ordered tier families (Intel Core, Core Ultra, Ryzen, Apple M, EN 10025 steel grades), the part parser for family, tier and generation, and the comparison: a lower tier is worse whatever the generation, an older generation is worse (tests: i3 and i5 against i7, 11th against 13th generation i7, Ultra 7 against i7)
-- [ ] 4.4 The LLM decisions: product type pairs, tiered parts the table can't place (conservative, uncertain is worse) and the other attributes, batched per item and cached in `spec_comparisons` (tests: S355J2 against S235JR, Ryzen 7 against i7, a tablet against a laptop)
-- [ ] 4.5 Standard VAT rates by country, the conversion to a price per pricing unit, without VAT, in base currency, and the saving threshold (tests: a webshop price with VAT, too small a saving)
+- [x] 4.1 The exact match by identifiers (tests)
+- [x] 4.2 Attribute unit conversion and the numeric comparison by direction; a missing attribute rejects (tests: 8 GB against 16 GB, mm against cm)
+- [x] 4.3 `tiers.py`: the ordered tier families (Intel Core, Core Ultra, Ryzen, Apple M, EN 10025 steel grades), the part parser for family, tier and generation, and the comparison: a lower tier is worse whatever the generation, an older generation is worse (tests: i3 and i5 against i7, 11th against 13th generation i7, Ultra 7 against i7)
+- [x] 4.4 The LLM decisions: product type pairs, tiered parts the table can't place (conservative, uncertain is worse) and the other attributes, batched per item and cached in `spec_comparisons` (tests: S355J2 against S235JR, Ryzen 7 against i7, a tablet against a laptop)
+- [x] 4.5 Standard VAT rates by country, the conversion to a price per pricing unit, without VAT, in base currency, and the saving threshold (tests: a webshop price with VAT, too small a saving)
 - [ ] 4.6 The yearly saving and the per-attribute comparison stored on the alternative
 
 ## 5. Sources (ai-api)
