@@ -7,8 +7,8 @@ from qdrant_client import QdrantClient
 from agreement_books import embed
 from ai_api.items.index import SimilarityUnavailable
 from ai_api.specs.index import SpecEntry, SpecIndex
-from ai_api.specs.specification import Specification
 from spec_stub import spec
+from web_api.specs.specification import Specification
 
 
 def _spec(name: str, **fields) -> Specification:

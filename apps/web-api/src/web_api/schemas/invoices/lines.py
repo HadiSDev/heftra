@@ -41,6 +41,7 @@ class InvoiceLineRead(BaseModel):
     confidence: Decimal | None = None
     rationale: str | None = None
     spend_category_id: str | None = None
+    item_key: str | None = None
     verified_fields: list[str] = []
     category_stale: bool = False
     needs_review: bool = False

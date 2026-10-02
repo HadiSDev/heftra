@@ -9,20 +9,21 @@ from sqlmodel import Session, col, select
 
 from web_api.db.models import Company, CompanyItem, Invoice, InvoiceLine
 from web_api.fx.service import FxService
+from web_api.specs.pricing import PriceNote, price_item
 
 from .. import config
-from .pricing import PriceNote, price_item
 from .refresh import refresh_item_keys
 
 WINDOW_DAYS = 365
 
 
 def refresh_company_items(session: Session, company_id: str, *, today: date | None = None,
-                          fx: FxService | None = None, page_size: int | None = None) -> int:
-    """Store each item the company bought in the last 12 months: its text, supplier, category,
-    spend, lines, last purchase and quantities, priced by its specification, which is kept.
-    Items not bought in that time keep their row with nothing bought. Commits every page;
-    returns how many items were stored."""
+                          fx: FxService | None = None, page_size: int | None = None,
+                          item_keys: list[str] | None = None) -> int:
+    """Store each item the company bought in the last 12 months, or only those of `item_keys`:
+    its text, supplier, category, spend, lines, last purchase and quantities, priced by its
+    specification, which is kept. Items not bought in that time keep their row with nothing
+    bought. Commits every page; returns how many items were stored."""
     refresh_item_keys(session, company_id, None)
     today = today or date.today()
     started = datetime.now(timezone.utc)
@@ -31,7 +32,8 @@ def refresh_company_items(session: Session, company_id: str, *, today: date | No
     stored = 0
     after = ""
     while True:
-        rows = _grouped(session, company_id, today - timedelta(days=WINDOW_DAYS), after, size)
+        rows = _grouped(session, company_id, today - timedelta(days=WINDOW_DAYS), after, size,
+                        item_keys)
         if not rows:
             break
         existing = {item.item_key: item for item in session.exec(
@@ -46,7 +48,7 @@ def refresh_company_items(session: Session, company_id: str, *, today: date | No
         session.commit()
         stored += len(rows)
         after = rows[-1][0]
-    _clear_unbought(session, company_id, started)
+    _clear_unbought(session, company_id, started, item_keys)
     return stored
 
 
@@ -62,9 +64,10 @@ def company_eur_rate(session: Session, company_id: str, on: date,
     return Decimal(found[0]) if found else None
 
 
-def _grouped(session: Session, company_id: str, since: date, after: str, size: int) -> list:
+def _grouped(session: Session, company_id: str, since: date, after: str, size: int,
+             item_keys: list[str] | None) -> list:
     stated = col(InvoiceLine.quantity) > 0
-    return list(session.exec(
+    statement = (
         select(InvoiceLine.item_key, func.min(InvoiceLine.item_name),
                func.min(InvoiceLine.description), func.min(InvoiceLine.unit),
                func.min(InvoiceLine.spend_category_id), func.min(Invoice.vendor_id),
@@ -80,7 +83,10 @@ def _grouped(session: Session, company_id: str, since: date, after: str, size: i
         .group_by(InvoiceLine.item_key)
         .order_by(InvoiceLine.item_key)
         .limit(size)
-    ).all())
+    )
+    if item_keys is not None:
+        statement = statement.where(col(InvoiceLine.item_key).in_(item_keys))
+    return list(session.exec(statement).all())
 
 
 def _fill(item: CompanyItem, row, refreshed: datetime) -> None:
@@ -105,8 +111,9 @@ def _decimal(value) -> Decimal | None:
     return Decimal(str(value)) if value is not None else None
 
 
-def _clear_unbought(session: Session, company_id: str, started: datetime) -> None:
-    session.exec(
+def _clear_unbought(session: Session, company_id: str, started: datetime,
+                    item_keys: list[str] | None) -> None:
+    statement = (
         update(CompanyItem)
         .where(CompanyItem.company_id == company_id,
                (col(CompanyItem.refreshed_at).is_(None))
@@ -115,4 +122,7 @@ def _clear_unbought(session: Session, company_id: str, started: datetime) -> Non
                 order_quantity=None, quantity=None, unit_price=None, unit_price_eur=None,
                 price_note=PriceNote.NOT_BOUGHT.value, refreshed_at=started)
     )
+    if item_keys is not None:
+        statement = statement.where(col(CompanyItem.item_key).in_(item_keys))
+    session.exec(statement)
     session.commit()

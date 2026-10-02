@@ -5,8 +5,8 @@ from dataclasses import dataclass
 from decimal import Decimal
 
 from web_api.db.models import AlternativeMatch, AlternativeSource, CompanyItem
+from web_api.specs.specification import Specification
 
-from ...specs.specification import Specification
 
 
 @dataclass(frozen=True)

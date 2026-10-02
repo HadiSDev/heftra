@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from decimal import Decimal
 
-from web_api.db.models import PricingUnit
+from ..db.models import PricingUnit
 
 LINE_UNITS: dict[str, tuple[PricingUnit, Decimal]] = {
     **{word: (PricingUnit.PIECE, Decimal(1)) for word in (

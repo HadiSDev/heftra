@@ -10,6 +10,7 @@ from sqlmodel import Session
 
 from web_api.db.models import AlternativeSource, Company, CompanyItem
 from web_api.fx.service import FxService
+from web_api.specs.specification import read_spec
 
 from .. import config
 from ..items.stored import company_eur_rate
@@ -17,7 +18,6 @@ from ..marketplaces.market import market_for
 from ..marketplaces.source import OfferSource
 from ..specs.index import SpecIndex
 from ..specs.reader import SpecReader
-from ..specs.specification import read_spec
 from .agreements import agreement_notes, item_bindings
 from .matching.judge import Ask, PairJudge
 from .matching.matcher import Candidate, match_candidates

@@ -3,8 +3,8 @@ from __future__ import annotations
 
 from decimal import Decimal
 
-from ai_api.specs.units import line_unit, units_per_line_unit
 from web_api.db.models import PricingUnit
+from web_api.specs.units import line_unit, units_per_line_unit
 
 
 def test_danish_and_english_units_are_known():

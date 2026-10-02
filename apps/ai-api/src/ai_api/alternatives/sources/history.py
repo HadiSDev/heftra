@@ -8,11 +8,11 @@ from decimal import Decimal
 from sqlmodel import Session, col, select
 
 from web_api.db.models import AlternativeSource, Company, CompanyItem, Vendor
+from web_api.specs.specification import read_spec
 
 from ... import config
 from ...items.index import SimilarityUnavailable
 from ...specs.index import SpecIndex
-from ...specs.specification import read_spec
 from .found import Found, ItemContext
 
 logger = logging.getLogger("ai_api.alternatives")

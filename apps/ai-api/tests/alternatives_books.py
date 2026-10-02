@@ -8,9 +8,9 @@ from sqlmodel import Session
 
 from ai_api.alternatives.sources.found import ItemContext
 from ai_api.specs.signature import signature
-from ai_api.specs.specification import Specification
 from spec_stub import spec
 from web_api.db.models import Company, CompanyItem, Organization, Product, Vendor
+from web_api.specs.specification import Specification
 
 EUR = Decimal("0.134")
 
@@ -54,7 +54,7 @@ class Shelves:
             company_id=company.id, item_key=f"{company.id}:{name}:{unit_price}", item_name=name,
             base_currency=company.base_currency, lines=1, spend=price * Decimal(quantity),
             last_bought_on=date(2026, 5, 1), spec=specification.stored(), spec_source="ai",
-            spec_signature=signature(specification),
+            item_class=specification.item_class.value, spec_signature=signature(specification),
             product_id=product.id if product else None, vendor_id=vendor.id if vendor else None,
             quantity=Decimal(quantity), unit_price=price, unit_price_eur=price * EUR)
         self.session.add(item)

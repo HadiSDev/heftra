@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+from web_api.specs.attribute import Attribute, AttributeKind
+from web_api.specs.specification import Specification
 
-from .attribute import Attribute, AttributeKind
-from .specification import Specification
 
 
 def signature(spec: Specification) -> str:

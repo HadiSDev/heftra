@@ -2,9 +2,10 @@
 model with nothing that differs."""
 from __future__ import annotations
 
+from web_api.specs.attribute import Attribute
+from web_api.specs.specification import Specification
+
 from ...specs import identifiers
-from ...specs.attribute import Attribute
-from ...specs.specification import Specification
 
 
 def is_exact(item: Specification, item_product: str | None, candidate: Specification,

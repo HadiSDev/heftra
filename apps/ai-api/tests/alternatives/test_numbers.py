@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from ai_api.alternatives.matching.numbers import compare_numbers
 from ai_api.alternatives.matching.verdicts import Verdict
-from ai_api.specs.attribute import Attribute
+from web_api.specs.attribute import Attribute
 
 
 def number(value: float, unit: str | None, direction: str = "more") -> Attribute:

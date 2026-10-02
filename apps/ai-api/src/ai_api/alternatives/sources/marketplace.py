@@ -11,6 +11,7 @@ from urllib.parse import urlparse
 from sqlmodel import Session
 
 from web_api.db.models import AlternativeSource, MarketplaceOffer
+from web_api.specs.specification import read_spec
 
 from ... import config
 from ...marketplaces.cache import cached_offers
@@ -19,7 +20,6 @@ from ...marketplaces.queries import search_queries
 from ...marketplaces.source import ConnectorFailed, OfferSource
 from ...specs.prompt import ItemText
 from ...specs.reader import SpecReader
-from ...specs.specification import read_spec
 from ..saving import Convert, StatedPrice, unit_price
 from .found import Found, ItemContext
 

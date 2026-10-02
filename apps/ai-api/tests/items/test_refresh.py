@@ -6,7 +6,7 @@ from datetime import datetime, timedelta, timezone
 from sqlmodel import Session, select
 
 from agreement_books import Books
-from ai_api.items.keys import item_key
+from web_api.items.keys import item_key
 from ai_api.items.refresh import refresh_item_keys
 from web_api.db.models import Invoice, InvoiceLine
 

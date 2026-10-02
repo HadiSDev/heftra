@@ -1,8 +1,8 @@
 """What to ask marketplaces about an item: its identifiers first, then what it is."""
 from __future__ import annotations
+from web_api.specs.attribute import AttributeKind
+from web_api.specs.specification import Specification
 
-from ..specs.attribute import AttributeKind
-from ..specs.specification import Specification
 
 TELLING_ATTRIBUTES = 2
 

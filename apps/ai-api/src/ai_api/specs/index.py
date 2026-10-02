@@ -9,11 +9,12 @@ from typing import NamedTuple
 from qdrant_client import QdrantClient
 from qdrant_client.http import models
 
+from web_api.specs.specification import Specification
+
 from .. import config
 from ..items.index import SimilarityUnavailable
 from ..rag.collections import collection_exists
 from ..rag.embedding import embed
-from .specification import Specification
 
 Embed = Callable[[list[str]], list[list[float]]]
 COLLECTION = "item_specs"

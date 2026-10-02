@@ -1,7 +1,7 @@
 """Which lines bought the same item."""
 from __future__ import annotations
 
-from ai_api.items.keys import item_key, item_text
+from web_api.items.keys import item_key, item_text
 
 
 def test_case_and_spacing_do_not_make_another_item():

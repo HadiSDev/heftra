@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class UserRead(BaseModel):
@@ -24,6 +24,7 @@ class OrganizationRead(BaseModel):
     name: str
     slug: str | None = None
     status: str
+    price_benchmark_enabled: bool = True
     created_at: datetime
 
 
@@ -32,3 +33,11 @@ class OrganizationUpdate(BaseModel):
 
     name: str | None = Field(default=None, min_length=1)
     slug: str | None = Field(default=None, min_length=1)
+    price_benchmark_enabled: bool | None = None
+
+    @field_validator("price_benchmark_enabled")
+    @classmethod
+    def _not_null(cls, value: bool | None) -> bool:
+        if value is None:
+            raise ValueError("Say whether the organization takes part in the price benchmark.")
+        return value

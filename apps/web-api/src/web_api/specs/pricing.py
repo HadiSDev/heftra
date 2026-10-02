@@ -4,10 +4,10 @@ from __future__ import annotations
 from decimal import ROUND_HALF_UP, Decimal
 from enum import Enum
 
-from web_api.db.models import CompanyItem
+from ..db.models import CompanyItem
 
-from ..specs.specification import read_spec
-from ..specs.units import units_per_line_unit
+from .specification import read_spec
+from .units import units_per_line_unit
 
 PRICE_PLACES = Decimal("0.000001")
 

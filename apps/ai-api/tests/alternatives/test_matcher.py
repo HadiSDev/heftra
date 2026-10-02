@@ -9,8 +9,8 @@ from sqlmodel import Session
 
 from ai_api.alternatives.matching.judge import PairJudge
 from ai_api.alternatives.matching.matcher import Candidate, match_candidates
-from ai_api.specs.specification import Specification
 from spec_stub import spec
+from web_api.specs.specification import Specification
 
 _CANDIDATES = re.compile(r"^Candidate (\d+):\nProduct type: (.*)$", re.M)
 

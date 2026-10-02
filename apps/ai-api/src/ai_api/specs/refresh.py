@@ -8,14 +8,14 @@ from decimal import Decimal
 from sqlmodel import Session, col, select
 
 from web_api.db.models import CompanyItem, SpecSource, SpendCategory, Vendor
+from web_api.specs.pricing import price_item
+from web_api.specs.specification import SPEC_VERSION, Specification
 
 from .. import config
-from ..items.pricing import price_item
 from .products import link_product
 from .prompt import ItemText
 from .reader import SpecReader
 from .signature import signature
-from .specification import SPEC_VERSION, Specification
 
 
 @dataclass
@@ -79,6 +79,7 @@ def apply_spec(session: Session, item: CompanyItem, spec: Specification,
     commits."""
     product = link_product(session, spec)
     item.spec = spec.stored()
+    item.item_class = spec.item_class.value
     item.spec_source = source.value
     item.spec_text_hash = spec_hash(item)
     item.spec_failures = 0

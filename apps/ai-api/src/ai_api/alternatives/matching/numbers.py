@@ -1,7 +1,8 @@
 """Numeric attributes compared in one unit, by which way is better."""
 from __future__ import annotations
 
-from ...specs.attribute import Attribute, Direction
+from web_api.specs.attribute import Attribute, Direction
+
 from .verdicts import Verdict
 
 _UNITS: dict[str, tuple[str, float]] = {

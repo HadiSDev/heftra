@@ -6,7 +6,7 @@ import json
 
 from pydantic import BaseModel, Field, ValidationError, field_validator
 
-from web_api.db.models import ItemClass, PricingUnit
+from ..db.models import ItemClass, PricingUnit
 
 from .attribute import Attribute
 from .units import line_unit

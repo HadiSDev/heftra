@@ -5,7 +5,8 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
-from ...specs.attribute import Attribute
+from web_api.specs.attribute import Attribute
+
 from .verdicts import Verdict
 
 FAMILIES: dict[str, list[str]] = {

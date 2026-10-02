@@ -166,7 +166,7 @@ The note is text plus the agreement id, so the UI links to the agreement.
 - `PATCH /items/{id}/specification` is for managers and audited.
 - `POST /items/{id}/find-alternatives` is for managers.
 - `PATCH /alternatives/{id}` reviews an alternative and is audited.
-- `GET /invoice-lines/{id}` gets the line's `item_id`.
+- `GET /invoice-lines/{id}/item` returns a spend line's item, and `POST /invoice-lines/{id}/find-alternatives` keys the line when needed, stores its item and queues its search. The item key function and the specification, unit and pricing models live in web-api (`web_api.items`, `web_api.specs`) so both the API and the worker use them; the search run refreshes the item's figures first.
 - The organization endpoint gets `price_benchmark_enabled` (org admin).
 
 **web:**

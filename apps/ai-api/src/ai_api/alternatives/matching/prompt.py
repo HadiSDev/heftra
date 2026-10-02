@@ -1,9 +1,10 @@
 """The prompt comparing an item's candidates with it."""
 from __future__ import annotations
 
+from web_api.specs.attribute import Attribute, AttributeKind
+from web_api.specs.specification import Specification
+
 from ...parsing import json_format_hint
-from ...specs.attribute import Attribute, AttributeKind
-from ...specs.specification import Specification
 from .questions import Answers, Question
 
 _RULES = [

@@ -52,13 +52,13 @@
 
 ## 7. web-api
 
-- [ ] 7.1 Schemas for items, specifications, alternatives and their list
-- [ ] 7.2 `GET /alternatives`: items with an open alternative, best saving first, with filters by company, source, match and class, paging, and the total (tests)
-- [ ] 7.3 `GET /items/{id}`: specification, unit price or the reason for none, alternatives, last search and a running one (tests)
-- [ ] 7.4 `PATCH /items/{id}/specification` for managers, audited, marking the item for a new search (tests)
-- [ ] 7.5 `POST /items/{id}/find-alternatives` for managers, reusing a queued run (tests)
-- [ ] 7.6 `PATCH /alternatives/{id}` to dismiss with a reason and note, mark switched or reopen, audited (tests)
-- [ ] 7.7 The line read gets its `item_id`; the organization endpoint gets `price_benchmark_enabled`, settable by org admins and audited (tests)
+- [x] 7.1 Schemas for items, specifications, alternatives and their list
+- [x] 7.2 `GET /alternatives`: items with an open alternative, best saving first, with filters by company, source, match and class, paging, and the total (tests)
+- [x] 7.3 `GET /items/{id}`: specification, unit price or the reason for none, alternatives, last search and a running one (tests)
+- [x] 7.4 `PATCH /items/{id}/specification` for managers, audited, marking the item for a new search (tests)
+- [x] 7.5 `POST /items/{id}/find-alternatives` for managers, reusing a queued run (tests)
+- [x] 7.6 `PATCH /alternatives/{id}` to dismiss with a reason and note, mark switched or reopen, audited (tests)
+- [x] 7.7 A line's item (`GET /invoice-lines/{id}/item`, `POST /invoice-lines/{id}/find-alternatives` storing the item when needed) and the line's `item_key`; the organization endpoint gets `price_benchmark_enabled`, settable by org admins and audited (tests)
 - [x] 7.8 Delete a company's items and alternatives in `company_deletion.py`
 
 ## 8. Web

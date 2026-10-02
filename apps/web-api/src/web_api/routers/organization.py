@@ -8,11 +8,14 @@ from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session
 
 from web_api.db.models import Organization
+from ..audit import diff_changes, record_audit
 from ..auth.clerk_client import ClerkClient, get_clerk_client
 from ..auth.deps import TenantScope, get_session, require_org_admin, tenant_scope
 from ..schemas import OrganizationRead, OrganizationUpdate
 
 router = APIRouter(prefix="/api/v1", tags=["organization"])
+
+AUDITED_FIELDS = ("price_benchmark_enabled",)
 
 
 @router.get("/organization", response_model=OrganizationRead)
@@ -35,9 +38,15 @@ def update_organization(
     org = session.get(Organization, scope.organization_id)
     if org is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Organization not found")
+    before = {field: getattr(org, field) for field in AUDITED_FIELDS}
     for field, value in body.model_dump(exclude_unset=True).items():
         setattr(org, field, value)
     session.add(org)
+    changes = diff_changes(before, {field: getattr(org, field) for field in AUDITED_FIELDS},
+                           AUDITED_FIELDS)
+    if changes:
+        record_audit(session, entity_type="organization", entity_id=org.id, action="update",
+                     actor=scope.user_id, changes=changes)
     try:
         session.commit()
     except IntegrityError:

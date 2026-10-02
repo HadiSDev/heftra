@@ -5,7 +5,8 @@ from dataclasses import dataclass
 
 from pydantic import BaseModel, field_validator
 
-from ...specs.specification import Specification
+from web_api.specs.specification import Specification
+
 from .verdicts import Verdict
 
 

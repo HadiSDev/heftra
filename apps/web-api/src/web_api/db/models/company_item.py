@@ -41,6 +41,7 @@ class CompanyItem(SQLModel, table=True):
     priced_spend: Optional[Decimal] = Field(sa_type=Numeric(16, 2), nullable=True, default=None)
     order_quantity: Optional[Decimal] = Field(sa_type=Numeric(14, 4), nullable=True, default=None)
     spec: Optional[dict] = Field(sa_type=JSON, nullable=True, default=None)
+    item_class: Optional[str] = Field(sa_type=String, nullable=True, default=None)
     spec_source: Optional[str] = Field(sa_type=String, nullable=True, default=None)
     spec_text_hash: Optional[str] = Field(sa_type=String, nullable=True, default=None)
     spec_failures: int = Field(sa_type=Integer, nullable=False, default=0)

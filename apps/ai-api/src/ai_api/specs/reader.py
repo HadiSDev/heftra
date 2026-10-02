@@ -5,11 +5,12 @@ import logging
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 
+from web_api.specs.specification import Specification
+
 from .. import config
 from ..parsing import parse_model
 from .prompt import ItemText, batch_spec_prompt, spec_prompt
 from .reply import BatchSpecifications
-from .specification import Specification
 
 logger = logging.getLogger("ai_api.specs")
 

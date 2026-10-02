@@ -2,8 +2,8 @@
 from __future__ import annotations
 
 from pydantic import BaseModel
+from web_api.specs.specification import Specification
 
-from .specification import Specification
 
 
 class NumberedSpecification(Specification):

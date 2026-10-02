@@ -4,9 +4,9 @@ from __future__ import annotations
 from sqlmodel import Session, select
 
 from web_api.db.models import Product
+from web_api.specs.specification import Specification
 
 from . import identifiers
-from .specification import Specification
 
 
 def link_product(session: Session, spec: Specification) -> Product | None:

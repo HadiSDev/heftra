@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from ai_api.alternatives.matching.tiers import compare_tiers, parse_part
 from ai_api.alternatives.matching.verdicts import Verdict
-from ai_api.specs.attribute import Attribute
+from web_api.specs.attribute import Attribute
 
 
 def cpu(value: str, **fields) -> Attribute:

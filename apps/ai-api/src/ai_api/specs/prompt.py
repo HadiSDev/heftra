@@ -3,9 +3,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from web_api.specs.specification import Specification
+
 from ..parsing import json_format_hint
 from .reply import BatchSpecifications
-from .specification import Specification
 
 
 @dataclass(frozen=True)

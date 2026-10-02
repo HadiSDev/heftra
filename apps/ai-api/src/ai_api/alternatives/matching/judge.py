@@ -9,9 +9,9 @@ from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, select
 
 from web_api.db.models import SpecComparison
+from web_api.specs.specification import Specification
 
 from ...parsing import parse_model
-from ...specs.specification import Specification
 from .prompt import compare_prompt
 from .questions import Answers, CandidateAnswer, Question
 

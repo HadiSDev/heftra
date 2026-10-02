@@ -21,6 +21,7 @@ from web_api.routers import (
     agreement_findings,
     agreement_terms,
     agreements,
+    alternatives,
     companies,
     emission_sectors,
     erp_entries,
@@ -81,6 +82,7 @@ def create_app() -> FastAPI:
     app.include_router(agreements.router)
     app.include_router(agreement_terms.router)
     app.include_router(agreement_findings.router)
+    app.include_router(alternatives.router)
     app.include_router(companies.router)
     app.include_router(invoices.router)
     app.include_router(invoice_lines.router)

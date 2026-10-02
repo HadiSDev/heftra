@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
 
-from .keys import item_text
+from web_api.items.keys import item_text
 
 
 @dataclass(frozen=True)

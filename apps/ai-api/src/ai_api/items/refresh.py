@@ -7,9 +7,9 @@ from sqlalchemy import case, or_, update
 from sqlmodel import Session, col, select
 
 from web_api.db.models import Invoice, InvoiceLine
+from web_api.items.keys import item_key
 
 from .. import config
-from .keys import item_key
 
 
 def refresh_item_keys(session: Session, company_id: str, since: datetime | None, *,

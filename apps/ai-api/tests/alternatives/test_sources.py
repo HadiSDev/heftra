@@ -11,8 +11,8 @@ from agreement_books import embed
 from ai_api.alternatives.sources.benchmark import benchmark_candidates
 from ai_api.alternatives.sources.history import history_candidates
 from ai_api.specs.index import SpecEntry, SpecIndex
-from ai_api.specs.specification import Specification
 from alternatives_books import Shelves
+from web_api.specs.specification import Specification
 
 
 @pytest.fixture

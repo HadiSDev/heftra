@@ -4,10 +4,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from web_api.db.models import AlternativeMatch
+from web_api.specs.attribute import Attribute, AttributeKind
+from web_api.specs.specification import Specification
 
 from ... import config
-from ...specs.attribute import Attribute, AttributeKind
-from ...specs.specification import Specification
 from .exact import is_exact
 from .judge import PairJudge
 from .numbers import compare_numbers

@@ -57,6 +57,7 @@ def upgrade() -> None:
         sa.Column('priced_spend', sa.Numeric(16, 2), nullable=True),
         sa.Column('order_quantity', sa.Numeric(14, 4), nullable=True),
         sa.Column('spec', sa.JSON(), nullable=True),
+        sa.Column('item_class', sa.String(), nullable=True),
         sa.Column('spec_source', sa.String(), nullable=True),
         sa.Column('spec_text_hash', sa.String(), nullable=True),
         sa.Column('spec_failures', sa.Integer(), nullable=False, server_default='0'),
