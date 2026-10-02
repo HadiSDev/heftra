@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import or_, update
+from sqlalchemy import case, or_, update
 from sqlmodel import Session, col, select
 
 from web_api.db.models import Invoice, InvoiceLine
@@ -37,13 +37,17 @@ def refresh_item_keys(session: Session, company_id: str, since: datetime | None,
         ).all()
         if not rows:
             return rekeyed
-        changes = []
+        changes: dict[str, str] = {}
         for line_id, current, name, description, unit, category_id, vendor_id in rows:
             key = item_key(name, description, unit, category_id, vendor_id)
             if key != current:
-                changes.append({"id": line_id, "item_key": key})
+                changes[line_id] = key
         if changes:
-            session.execute(update(InvoiceLine), changes)
+            session.exec(
+                update(InvoiceLine)
+                .where(col(InvoiceLine.id).in_(list(changes)))
+                .values(item_key=case(changes, value=InvoiceLine.id))
+            )
             session.commit()
         rekeyed += len(changes)
         after = rows[-1][0]
