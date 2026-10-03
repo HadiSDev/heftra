@@ -1,6 +1,7 @@
 """The postings every voucher view reads: which are visible, and with what columns."""
 from __future__ import annotations
 
+from sqlalchemy import String, func, literal
 from sqlmodel import Session, select
 
 from web_api.db.models import ErpAccount, ErpEntry, Invoice, InvoiceLine, Vendor
@@ -8,6 +9,12 @@ from web_api.db.models import ErpAccount, ErpEntry, Invoice, InvoiceLine, Vendor
 from .rows import EntryRow
 
 EXCLUDED_ENTRY_TYPES = ("payment",)
+
+GROUP_KEY = func.coalesce(
+    literal("v:", String) + ErpEntry.voucher_id,
+    literal("e:", String) + ErpEntry.id,
+)
+"""The voucher a posting belongs to, or the posting itself when it has none; matches `bucket_key`."""
 
 
 def sync_enabled_condition():

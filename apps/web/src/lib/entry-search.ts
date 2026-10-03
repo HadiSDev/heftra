@@ -3,8 +3,12 @@ import type {
   DocumentFilter,
   EntryFilters,
   LineOrigin,
+  SortOrder,
+  VoucherSort,
   VoucherTab,
 } from './api/types'
+import { oneOf, sortOrder } from './sorting'
+import type { SortState } from './sorting'
 
 /** Read one search key, dropping empty values. */
 function str(value: unknown): string | undefined {
@@ -61,6 +65,14 @@ function tab(value: unknown): VoucherTab | undefined {
     : undefined
 }
 
+/** The columns the voucher list sorts by. */
+const VOUCHER_SORTS: ReadonlyArray<VoucherSort> = [
+  'accounting_date',
+  'voucher_number',
+  'vendor_name',
+  'amount',
+]
+
 /** Parse the Entries route's search params. */
 export function validateEntrySearch(
   search: Record<string, unknown>,
@@ -76,6 +88,8 @@ export function validateEntrySearch(
     document: document(search.document),
     from: str(search.from),
     to: str(search.to),
+    sort: oneOf(search.sort, VOUCHER_SORTS),
+    order: sortOrder(search.order),
     page: Number.isInteger(page) && page > 1 ? page : undefined,
     voucher: str(search.voucher),
     entry: str(search.entry),
@@ -95,6 +109,35 @@ export function applyFilterChange(
     voucher: undefined,
     entry: undefined,
     tab: undefined,
+  }
+}
+
+/** Apply a sort change, returning to the first page and leaving the voucher panel as it is. */
+export function applySortChange(
+  filters: EntryFilters,
+  sort: SortState<VoucherSort>,
+): EntryFilters {
+  return { ...filters, ...sort, page: undefined }
+}
+
+/** The order a column sorts in when first chosen: suppliers A–Z, figures and dates largest first. */
+export function defaultVoucherOrder(sort: VoucherSort): SortOrder {
+  return sort === 'vendor_name' ? 'asc' : 'desc'
+}
+
+/** The sort in effect: the URL's, else newest first; amount only when it can be ordered. */
+export function resolveVoucherSort(
+  filters: EntryFilters,
+  amountSortable: boolean,
+): SortState<VoucherSort> {
+  const requested =
+    filters.sort === 'amount' && !amountSortable ? undefined : filters.sort
+  if (requested === undefined) {
+    return { sort: 'accounting_date', order: 'desc' }
+  }
+  return {
+    sort: requested,
+    order: filters.order ?? defaultVoucherOrder(requested),
   }
 }
 

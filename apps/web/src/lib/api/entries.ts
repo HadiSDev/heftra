@@ -44,6 +44,8 @@ export function voucherSummaryQueryOptions(
     entry: _entry,
     tab: _tab,
     page: _page,
+    sort: _sort,
+    order: _order,
     ...listFilters
   } = filters
   return queryOptions({

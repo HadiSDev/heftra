@@ -4,7 +4,7 @@ from __future__ import annotations
 from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import String, func, literal, nulls_last, or_
+from sqlalchemy import func, nulls_last, or_
 from sqlalchemy.orm import selectinload
 from sqlmodel import Session, select
 
@@ -44,16 +44,25 @@ from ..schemas import (
 from ..reconcile import reconcile_lines, totals_agree
 from ..spend_coverage import LineState, VoucherSpend
 from ..vouchers.amounts import bucket_key, group_invoice_id, shared_value, voucher_amount
-from ..vouchers.query import entry_rows, entry_select, sync_enabled_condition, visible_entry_conditions
+from ..vouchers.query import (
+    GROUP_KEY,
+    entry_rows,
+    entry_select,
+    sync_enabled_condition,
+    visible_entry_conditions,
+)
 from ..vouchers.rows import EntryRow, InvoiceHeaderState
+from ..vouchers.sorting import (
+    DEFAULT_SORT,
+    SortOrder,
+    VoucherSort,
+    default_order,
+    group_keys_select,
+    group_order,
+)
 from .invoices import _invoice_read
 
 router = APIRouter(prefix="/api/v1", tags=["erp-entries"])
-
-_GROUP_KEY = func.coalesce(
-    literal("v:", String) + ErpEntry.voucher_id,
-    literal("e:", String) + ErpEntry.id,
-)
 
 _OWN_FIELDS = tuple(
     name
@@ -195,15 +204,22 @@ def list_voucher_groups(
     needs_review: bool | None = Query(default=None),
     document: DocumentFilter | None = Query(default=None),
     currency_mode: CurrencyMode = Query(default="base"),
+    sort: VoucherSort = Query(default=DEFAULT_SORT),
+    order: SortOrder | None = Query(default=None),
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=25, ge=1, le=100),
     scope: TenantScope = Depends(tenant_scope),
     session: Session = Depends(get_session),
 ) -> Page[VoucherGroupRead]:
-    """Voucher groups, with totals in the company's base currency by default."""
+    """Voucher groups, with totals in the company's base currency by default, newest first by default."""
     company_ids = resolve_company_ids(scope, company_id)
     if not company_ids:
         return Page(items=[], page=page, page_size=page_size, total=0)
+    if sort == "amount" and len(set(_base_currencies(session, company_ids).values())) > 1:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="Amounts cannot be sorted across companies with different base currencies.",
+        )
 
     conditions = _entry_conditions(
         company_ids,
@@ -218,21 +234,13 @@ def list_voucher_groups(
     if document is not None:
         conditions.append(document_condition(session, company_ids, document))
 
-    grouped = (
-        select(
-            ErpEntry.company_id,
-            _GROUP_KEY.label("group_key"),
-            func.max(ErpEntry.accounting_date).label("last_date"),
-        )
-        .where(*conditions)
-        .group_by(ErpEntry.company_id, _GROUP_KEY)
-    )
+    grouped = group_keys_select(conditions)
     total = session.exec(
         select(func.count()).select_from(grouped.subquery())
     ).one()
     keys = session.exec(
         grouped
-        .order_by(nulls_last(func.max(ErpEntry.accounting_date).desc()), _GROUP_KEY)
+        .order_by(*group_order(sort, order or default_order(sort)))
         .offset((page - 1) * page_size)
         .limit(page_size)
     ).all()
@@ -244,7 +252,7 @@ def list_voucher_groups(
     rows = entry_rows(
         session,
         entry_select()
-        .where(*conditions, _GROUP_KEY.in_([key for _, key in order]))
+        .where(*conditions, GROUP_KEY.in_([key for _, key in order]))
         .order_by(ErpEntry.accounting_date, ErpEntry.id)
     )
 

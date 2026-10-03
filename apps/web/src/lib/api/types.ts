@@ -556,6 +556,10 @@ export type VoucherTab = 'details' | 'lines' | 'postings' | 'activity'
 /** A voucher's document state worth filtering by. */
 export type DocumentFilter = 'failed' | 'mismatch'
 
+/** A column the voucher list can be sorted by. */
+export type VoucherSort =
+  'accounting_date' | 'voucher_number' | 'vendor_name' | 'amount'
+
 export interface EntryFilters {
   company_id?: string
   entry_type?: string
@@ -569,6 +573,8 @@ export interface EntryFilters {
   document?: DocumentFilter
   from?: string
   to?: string
+  sort?: VoucherSort
+  order?: SortOrder
   page?: number
   currency_mode?: CurrencyMode
   /** The open voucher, or the lone posting when it has no voucher id. */

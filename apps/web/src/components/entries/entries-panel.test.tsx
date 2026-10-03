@@ -426,6 +426,10 @@ function common() {
     onFiltersChange: vi.fn(),
     onClearFilters: vi.fn(),
     onPageChange: vi.fn(),
+    sort: 'accounting_date' as const,
+    order: 'desc' as const,
+    amountSortable: true,
+    onSort: vi.fn(),
     onVendorSearch: vi.fn(),
     voucherDetail: undefined,
     voucherLoading: false,
@@ -1001,6 +1005,12 @@ describe('EntriesPanel — voucher rows', () => {
     })
     fireEvent.click(screen.getByRole('button', { name: '2' }))
     expect(props.onPageChange).toHaveBeenCalledWith(2)
+  })
+
+  it('sorts the vouchers by the header clicked', () => {
+    const props = setup()
+    fireEvent.click(screen.getByRole('button', { name: /supplier/i }))
+    expect(props.onSort).toHaveBeenCalledWith('vendor_name')
   })
 })
 

@@ -29,10 +29,16 @@ import { entriesSummaryOptions } from '#/lib/api/reports'
 import { spendTreeQueryOptions } from '#/lib/api/spend-trees'
 import {
   applyFilterChange,
+  applySortChange,
   applyVoucherSelection,
+  defaultVoucherOrder,
   listableEntryTypes,
+  resolveVoucherSort,
   validateEntrySearch,
 } from '#/lib/entry-search'
+import type { VoucherSort } from '#/lib/api/types'
+import { nextSort } from '#/lib/sorting'
+import { canSortBySpend } from '#/lib/supplier-search'
 import { vendorsQueryOptions } from '#/lib/api/vendors'
 import { useDebouncedValue } from '#/lib/use-debounced-value'
 
@@ -60,10 +66,18 @@ function EntriesPage() {
   const voucherOpen =
     filters.voucher !== undefined || filters.entry !== undefined
 
-  const groups = useQuery(voucherGroupsQueryOptions(api, filters))
+  const companies = useQuery(companiesQueryOptions(api))
+  const amountSortable = canSortBySpend(
+    companies.data ?? [],
+    filters.company_id,
+  )
+  const { sort, order } = resolveVoucherSort(filters, amountSortable)
+  const groups = useQuery({
+    ...voucherGroupsQueryOptions(api, { ...filters, sort, order }),
+    enabled: filters.sort !== 'amount' || companies.isSuccess,
+  })
   const coverage = useQuery(voucherSummaryQueryOptions(api, filters))
   const emissions = useQuery(voucherEmissionsQueryOptions(api, filters))
-  const companies = useQuery(companiesQueryOptions(api))
   const vendors = useQuery(vendorsQueryOptions(api, { q: vendorQuery }))
   const summary = useQuery(entriesSummaryOptions(api))
   const voucherDetail = useQuery(voucherDetailQueryOptions(api, voucherKey))
@@ -91,6 +105,15 @@ function EntriesPage() {
   const createLine = useMutation(createInvoiceLineMutation(api, queryClient))
   const deleteLine = useMutation(deleteInvoiceLineMutation(api, queryClient))
   const reprocess = useMutation(reprocessInvoiceMutation(api, queryClient))
+
+  function onSort(column: VoucherSort) {
+    void navigate({
+      search: applySortChange(
+        filters,
+        nextSort({ sort, order }, column, defaultVoucherOrder),
+      ),
+    })
+  }
 
   const entryTypes = React.useMemo(
     () =>
@@ -128,6 +151,10 @@ function EntriesPage() {
       }
       onClearFilters={() => navigate({ search: {} })}
       onPageChange={(page) => navigate({ search: { ...filters, page } })}
+      sort={sort}
+      order={order}
+      amountSortable={amountSortable}
+      onSort={onSort}
       onVendorSearch={setVendorQuery}
       voucherDetail={voucherDetail.data}
       voucherLoading={voucherDetail.isPending && voucherOpen}

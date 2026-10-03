@@ -11,11 +11,13 @@ function fakeApi() {
 }
 
 describe('emission queries', () => {
-  it('asks for the listed vouchers’ emissions under the list’s filters, not its page or drawer', async () => {
+  it('asks for the listed vouchers’ emissions under the list’s filters, not its page, sort or drawer', async () => {
     const { api, get } = fakeApi()
     const query = voucherEmissionsQueryOptions(api, {
       vendor_id: 'v1',
       page: 3,
+      sort: 'amount',
+      order: 'asc',
       voucher: '4821',
       tab: 'lines',
     })

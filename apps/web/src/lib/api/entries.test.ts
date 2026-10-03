@@ -6,6 +6,7 @@ import {
   voucherAuditQueryOptions,
   voucherDetailQueryOptions,
   voucherGroupsQueryOptions,
+  voucherSummaryQueryOptions,
 } from './entries'
 import { vendorsQueryOptions } from './vendors'
 import type { ApiClient } from './api-client'
@@ -42,6 +43,21 @@ describe('voucherGroupsQueryOptions', () => {
       vendor_id: 'v1',
       status: 'failed',
       page: 2,
+    })
+  })
+
+  it('sends the sort, which the server applies across pages', async () => {
+    const { api, get } = fakeApi()
+
+    await voucherGroupsQueryOptions(api, {
+      sort: 'vendor_name',
+      order: 'asc',
+    }).queryFn!({} as never)
+
+    expect(get.mock.calls[0][1]).toEqual({
+      currency_mode: 'base',
+      sort: 'vendor_name',
+      order: 'asc',
     })
   })
 
@@ -222,5 +238,25 @@ describe('vendorsQueryOptions', () => {
 
     await vendorsQueryOptions(api, { q: '' }).queryFn!({} as never)
     expect(get.mock.calls[1][1]).toEqual({ q: undefined })
+  })
+})
+
+describe('voucherSummaryQueryOptions', () => {
+  it('sums every listed voucher whatever the sort, so sorting refetches nothing', async () => {
+    const { api, get } = fakeApi()
+    const unsorted = voucherSummaryQueryOptions(api, { company_id: 'c1' })
+    const sorted = voucherSummaryQueryOptions(api, {
+      company_id: 'c1',
+      sort: 'amount',
+      order: 'asc',
+      page: 2,
+    })
+
+    await sorted.queryFn!({} as never)
+
+    expect(sorted.queryKey).toEqual(unsorted.queryKey)
+    expect(get).toHaveBeenCalledWith('/api/v1/erp-entries/vouchers/summary', {
+      company_id: 'c1',
+    })
   })
 })

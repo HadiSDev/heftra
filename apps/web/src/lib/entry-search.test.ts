@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import {
   applyFilterChange,
+  applySortChange,
   applyVoucherSelection,
+  defaultVoucherOrder,
   listableEntryTypes,
+  resolveVoucherSort,
   validateEntrySearch,
 } from './entry-search'
 
@@ -72,6 +75,18 @@ describe('validateEntrySearch', () => {
       voucher: '4821',
       tab: 'activity',
     })
+  })
+
+  it('carries the sort and its order', () => {
+    expect(
+      validateEntrySearch({ sort: 'vendor_name', order: 'asc' }),
+    ).toMatchObject({ sort: 'vendor_name', order: 'asc' })
+  })
+
+  it('drops a sort or order it does not know', () => {
+    const parsed = validateEntrySearch({ sort: 'emissions', order: 'up' })
+    expect(parsed.sort).toBeUndefined()
+    expect(parsed.order).toBeUndefined()
   })
 
   it('drops an unknown tab rather than trusting the URL', () => {
@@ -169,5 +184,75 @@ describe('listableEntryTypes', () => {
         'credit_note',
       ]),
     ).toEqual(['credit_note', 'purchase_invoice'])
+  })
+})
+
+describe('applySortChange', () => {
+  it('sorts from the first page, keeping the filters', () => {
+    expect(
+      applySortChange(
+        { company_id: 'c1', page: 4 },
+        { sort: 'amount', order: 'desc' },
+      ),
+    ).toEqual({
+      company_id: 'c1',
+      sort: 'amount',
+      order: 'desc',
+      page: undefined,
+    })
+  })
+
+  it('leaves an open voucher open', () => {
+    const next = applySortChange(
+      { voucher: '4821', tab: 'lines' },
+      { sort: 'vendor_name', order: 'asc' },
+    )
+    expect(next).toMatchObject({ voucher: '4821', tab: 'lines' })
+  })
+})
+
+describe('applyFilterChange and the sort', () => {
+  it('keeps the sort when a filter changes', () => {
+    expect(
+      applyFilterChange({ sort: 'amount', order: 'asc' }, { company_id: 'c1' }),
+    ).toMatchObject({ sort: 'amount', order: 'asc', company_id: 'c1' })
+  })
+})
+
+describe('defaultVoucherOrder', () => {
+  it('starts suppliers A–Z and figures and dates largest first', () => {
+    expect(defaultVoucherOrder('vendor_name')).toBe('asc')
+    expect(defaultVoucherOrder('amount')).toBe('desc')
+    expect(defaultVoucherOrder('accounting_date')).toBe('desc')
+    expect(defaultVoucherOrder('voucher_number')).toBe('desc')
+  })
+})
+
+describe('resolveVoucherSort', () => {
+  it('lists the newest vouchers first when the URL names no sort', () => {
+    expect(resolveVoucherSort({}, true)).toEqual({
+      sort: 'accounting_date',
+      order: 'desc',
+    })
+  })
+
+  it('starts a chosen column in its own order', () => {
+    expect(resolveVoucherSort({ sort: 'vendor_name' }, true)).toEqual({
+      sort: 'vendor_name',
+      order: 'asc',
+    })
+  })
+
+  it('keeps the order the URL asks for', () => {
+    expect(resolveVoucherSort({ sort: 'amount', order: 'asc' }, true)).toEqual({
+      sort: 'amount',
+      order: 'asc',
+    })
+  })
+
+  it('falls back to newest first when amounts are in different currencies', () => {
+    expect(resolveVoucherSort({ sort: 'amount', order: 'asc' }, false)).toEqual(
+      { sort: 'accounting_date', order: 'desc' },
+    )
   })
 })

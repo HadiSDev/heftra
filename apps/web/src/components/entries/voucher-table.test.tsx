@@ -1,6 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
-import type { InvoiceLineRead, VoucherGroupRead } from '#/lib/api/types'
+import type {
+  InvoiceLineRead,
+  VoucherGroupRead,
+  VoucherSort,
+} from '#/lib/api/types'
+import type { VoucherTableProps } from './voucher-table'
 import { VoucherTable } from './voucher-table'
 
 function line(): InvoiceLineRead {
@@ -73,8 +78,21 @@ const MISMATCH = {
   invoice_total: '1500.00',
 } as const
 
-function renderTable(groups: Array<VoucherGroupRead>) {
-  render(<VoucherTable groups={groups} onSelectEntry={vi.fn()} />)
+function renderTable(
+  groups: Array<VoucherGroupRead>,
+  overrides: Partial<VoucherTableProps> = {},
+) {
+  const props: VoucherTableProps = {
+    groups,
+    sort: 'accounting_date',
+    order: 'desc',
+    amountSortable: true,
+    onSort: vi.fn(),
+    onSelectEntry: vi.fn(),
+    ...overrides,
+  }
+  render(<VoucherTable {...props} />)
+  return props
 }
 
 afterEach(() => {
@@ -120,5 +138,51 @@ describe('VoucherTable — document total against the ERP', () => {
     fireEvent.click(screen.getByRole('button', { name: /Expand voucher 1042/ }))
 
     expect(screen.queryByRole('note')).toBeNull()
+  })
+})
+
+describe('VoucherTable — sorting', () => {
+  it('marks the column the list is sorted by, and which way', () => {
+    renderTable([group()], { sort: 'amount', order: 'asc' })
+
+    const amount = screen.getByRole('columnheader', { name: /total spend/i })
+    expect(amount.getAttribute('aria-sort')).toBe('ascending')
+    const date = screen.getByRole('columnheader', { name: /date/i })
+    expect(date.getAttribute('aria-sort')).toBe('none')
+  })
+
+  it.each<[string, VoucherSort]>([
+    ['Voucher', 'voucher_number'],
+    ['Supplier', 'vendor_name'],
+    ['Date', 'accounting_date'],
+    ['Total Spend', 'amount'],
+  ])('sorts by %s when its header is clicked', (label, column) => {
+    const props = renderTable([group()])
+
+    fireEvent.click(screen.getByRole('button', { name: label }))
+
+    expect(props.onSort).toHaveBeenCalledWith(column)
+  })
+
+  it('offers no amount sort when the amounts are in different currencies', () => {
+    renderTable([group()], { amountSortable: false })
+
+    expect(screen.queryByRole('button', { name: 'Total Spend' })).toBeNull()
+    expect(
+      screen.getByRole('columnheader', { name: /total spend/i }),
+    ).toBeTruthy()
+  })
+
+  it('leaves the invoice number, which suppliers number their own way, unsorted', () => {
+    renderTable([group()])
+
+    expect(screen.queryByRole('button', { name: 'Invoice no.' })).toBeNull()
+  })
+
+  it('keeps the supplier header spanning the columns its lines use', () => {
+    renderTable([group()])
+
+    const supplier = screen.getByRole('columnheader', { name: /supplier/i })
+    expect(supplier.getAttribute('colspan')).toBe('3')
   })
 })

@@ -9,11 +9,13 @@ import type {
   LineCorrections,
   InvoiceLineRead,
   Page,
+  SortOrder,
   SpendCategoryRead,
   VendorRead,
   VoucherAuditRead,
   VoucherDetailRead,
   VoucherGroupRead,
+  VoucherSort,
   VoucherTab,
   SpendCoverageRow,
 } from '#/lib/api/types'
@@ -105,6 +107,12 @@ export interface EntriesPanelProps {
   onFiltersChange: (changes: Partial<EntryFilters>) => void
   onClearFilters: () => void
   onPageChange: (page: number) => void
+  /** The voucher list's sort in effect. */
+  sort: VoucherSort
+  order: SortOrder
+  /** Whether the amount can be sorted; false when it would compare currencies. */
+  amountSortable: boolean
+  onSort: (column: VoucherSort) => void
   onVendorSearch: (query: string) => void
   /** The open voucher's detail; undefined while loading. */
   voucherDetail: VoucherDetailRead | undefined
@@ -155,6 +163,10 @@ export function EntriesPanel({
   onFiltersChange,
   onClearFilters,
   onPageChange,
+  sort,
+  order,
+  amountSortable,
+  onSort,
   onVendorSearch,
   voucherDetail,
   voucherLoading,
@@ -217,6 +229,10 @@ export function EntriesPanel({
         <>
           <VoucherTable
             groups={result.items}
+            sort={sort}
+            order={order}
+            amountSortable={amountSortable}
+            onSort={onSort}
             onSelectEntry={(key) => {
               setActiveLineId(key.line ?? null)
               onSelectEntry(key)

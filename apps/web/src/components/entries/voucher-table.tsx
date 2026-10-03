@@ -3,6 +3,7 @@ import { ChevronDown, ChevronRight } from 'lucide-react'
 import {
   Badge,
   IconButton,
+  SortHeader,
   Table,
   TableBody,
   TableCell,
@@ -16,7 +17,12 @@ import {
 } from '#/components/ui'
 import type { VoucherSelection } from '#/lib/api/entries'
 import { formatDay, formatMoney, toNumber } from '#/lib/format/format'
-import type { InvoiceLineRead, VoucherGroupRead } from '#/lib/api/types'
+import type {
+  InvoiceLineRead,
+  SortOrder,
+  VoucherGroupRead,
+  VoucherSort,
+} from '#/lib/api/types'
 import { ConvertedAmount } from './converted-amount'
 import { LineEmissions, LineSector } from './emissions/line-emissions'
 import { VoucherEmissions } from './emissions/voucher-emissions'
@@ -231,12 +237,25 @@ function LineRow({
 
 export interface VoucherTableProps {
   groups: Array<VoucherGroupRead>
+  sort: VoucherSort
+  order: SortOrder
+  /** Whether the amount can be sorted; false when it would compare currencies. */
+  amountSortable: boolean
+  onSort: (column: VoucherSort) => void
   /** Opens the voucher panel by voucher id, or by entry id for a voucherless group. */
   onSelectEntry: (key: VoucherSelection) => void
 }
 
 /** Synced postings grouped by voucher. */
-export function VoucherTable({ groups, onSelectEntry }: VoucherTableProps) {
+export function VoucherTable({
+  groups,
+  sort,
+  order,
+  amountSortable,
+  onSort,
+  onSelectEntry,
+}: VoucherTableProps) {
+  const header = { sort, order, onSort }
   const [expanded, setExpanded] = React.useState<Set<string>>(new Set())
 
   function toggle(key: string) {
@@ -257,11 +276,22 @@ export function VoucherTable({ groups, onSelectEntry }: VoucherTableProps) {
       <TableHeader>
         <TableRow>
           <TableHead className="w-10" />
-          <TableHead>Voucher</TableHead>
+          <SortHeader label="Voucher" column="voucher_number" {...header} />
           <TableHead>Invoice no.</TableHead>
-          <TableHead colSpan={3}>Supplier</TableHead>
-          <TableHead>Date</TableHead>
-          <TableHead className="text-right">Total Spend</TableHead>
+          <SortHeader
+            label="Supplier"
+            column="vendor_name"
+            colSpan={3}
+            {...header}
+          />
+          <SortHeader label="Date" column="accounting_date" {...header} />
+          <SortHeader
+            label="Total Spend"
+            column="amount"
+            align="right"
+            sortable={amountSortable}
+            {...header}
+          />
           <TableHead className="text-right">CO₂e</TableHead>
         </TableRow>
       </TableHeader>
