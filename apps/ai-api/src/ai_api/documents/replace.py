@@ -28,6 +28,7 @@ from web_api.fx.service import convert as fx_convert
 from web_api.rollup import recompute_invoice_status
 
 from .content import ExtractedLines
+from .numbers import consistent_unit_price
 
 logger = logging.getLogger("ai_api.documents")
 
@@ -121,7 +122,8 @@ def replace_invoice_lines(
             description=description,
             quantity=_dec(item.quantity),
             unit=(item.unit_type or "").strip() or None,
-            unit_price=_money(item.unit_price, rate),
+            unit_price=_money(consistent_unit_price(item.unit_price, item.quantity, item.amount),
+                              rate),
             amount=_money(item.amount, rate),
             subtotal=_money(item.subtotal, rate),
             tax_amount=_money(item.tax_amount, rate),

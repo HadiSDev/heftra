@@ -1,7 +1,7 @@
 """Stored items: what they bought in the last year, priced per pricing unit by their specification."""
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime, timezone
 from decimal import Decimal
 
 import pytest
@@ -9,7 +9,7 @@ from sqlmodel import Session, select
 
 from agreement_books import Books
 from ai_api.items.stored import refresh_company_items
-from web_api.db.models import CompanyItem, Invoice
+from web_api.db.models import CompanyItem, Invoice, ItemAlternative
 
 TODAY = date(2026, 6, 1)
 CABLE = {"item_class": "material", "product_type": "installation cable", "name": "Cat6 U/UTP",
@@ -181,3 +181,31 @@ def test_a_printed_net_amount_too_far_below_is_not_trusted(session, books):
     session.commit()
 
     assert _priced(session, books).unit_price == Decimal("484")
+
+
+def _alternative(session, item, price: str) -> ItemAlternative:
+    alternative = ItemAlternative(
+        company_id=item.company_id, item_id=item.id, source="marketplace", match="exact",
+        ref_key=f"offer:{price}", name="Apple 96W USB-C", unit_price=Decimal(price),
+        currency="DKK", saving_percent=Decimal("30.91"), saving_yearly=Decimal("149.60"),
+        comparison=[], origin={}, found_at=datetime(2026, 5, 1, tzinfo=timezone.utc))
+    session.add(alternative)
+    session.commit()
+    return alternative
+
+
+def test_a_refresh_recomputes_open_savings_from_the_items_price(session, books):
+    line = books.line(books.proshop, "Apple adapter 96W", unit_price="484", unit="stk")
+    line.base_currency = "DKK"
+    session.add(line)
+    session.commit()
+    item = _priced(session, books)
+    cheaper = _alternative(session, item, "334.40")
+    no_longer = _alternative(session, item, "385")
+    _invoice_totals(session, line, total="484", tax="96.80")
+
+    _refresh(session, books)
+
+    session.refresh(cheaper)
+    assert (cheaper.saving_yearly, cheaper.saving_percent) == (Decimal("52.80"), Decimal("13.64"))
+    assert session.get(ItemAlternative, no_longer.id) is None

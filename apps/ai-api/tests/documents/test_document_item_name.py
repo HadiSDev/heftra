@@ -136,3 +136,13 @@ def test_the_replacing_line_is_still_stored_in_the_invoices_money(engine, synced
 
     (line,) = _lines(engine)
     assert line.amount == Decimal("1000.00")
+
+
+def test_a_unit_price_read_far_from_the_amount_is_stored_from_it(engine, synced):
+    docs.run_documents(
+        extract=_extracting(LineItem(item_name="Apple adapter 96W", quantity=1.0,
+                                     unit_price=11000.0, amount=1000.0))
+    )
+
+    (line,) = _lines(engine)
+    assert line.unit_price == Decimal("1000.00")

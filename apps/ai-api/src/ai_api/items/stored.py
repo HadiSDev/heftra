@@ -14,6 +14,7 @@ from web_api.items.window import WINDOW_DAYS
 from web_api.specs.pricing import PriceNote, price_item
 
 from .. import config
+from ..alternatives.repricing import reprice_alternatives
 from .refresh import refresh_item_keys
 
 
@@ -45,6 +46,7 @@ def refresh_company_items(session: Session, company_id: str, *, today: date | No
             _fill(item, row, started)
             price_item(item, eur_rate)
             session.add(item)
+            reprice_alternatives(session, item)
         session.commit()
         stored += len(rows)
         after = rows[-1][0]
