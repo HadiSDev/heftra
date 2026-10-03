@@ -11,11 +11,15 @@ import type {
   AgreementRead,
   AgreementReport,
   FindingReview,
+  FindingSort,
 } from '#/lib/api/agreement-types'
 import type { ReportView } from '#/lib/agreement-search'
+import type { SortOrder } from '#/lib/api/types'
+import type { SortState } from '#/lib/sorting'
 import { AnalysisStatus, CoverageNotes } from './analysis-status'
 import { Commitments } from './commitments'
 import { FindingsList } from './findings-list'
+import { FindingsSort } from './findings-sort'
 import { ReportFigures } from './report-figures'
 
 export interface ReportTabProps {
@@ -25,6 +29,9 @@ export interface ReportTabProps {
   onRetry: () => void
   view: ReportView
   onViewChange: (view: ReportView) => void
+  sort: FindingSort
+  order: SortOrder
+  onSortChange: (next: SortState<FindingSort>) => void
   canEdit: boolean
   analysing: boolean
   /** `true` rechecks every line, not only what changed. */
@@ -38,7 +45,7 @@ const VIEWS: Array<{ value: ReportView; label: string }> = [
   { value: 'all', label: 'Everything' },
 ]
 
-/** What the spend shows against the agreement, rule breaks first. */
+/** What the spend shows against the agreement, rule breaks first unless sorted otherwise. */
 export function ReportTab({
   agreement,
   report,
@@ -46,6 +53,9 @@ export function ReportTab({
   onRetry,
   view,
   onViewChange,
+  sort,
+  order,
+  onSortChange,
   canEdit,
   analysing,
   onAnalyse,
@@ -121,26 +131,28 @@ export function ReportTab({
             className="flex flex-col gap-3 p-2"
           >
             <div className="flex flex-wrap items-center justify-between gap-2 px-3 pt-3">
-              <h2 className="font-display text-base font-medium">
-                Findings{' '}
-                <span className="text-sm font-normal text-muted-foreground">
-                  rule breaks first
-                </span>
-              </h2>
-              <Tabs
-                value={view}
-                onValueChange={(next) => {
-                  onViewChange(next as ReportView)
-                }}
-              >
-                <TabsList>
-                  {VIEWS.map((item) => (
-                    <TabsTab key={item.value} value={item.value}>
-                      {item.label}
-                    </TabsTab>
-                  ))}
-                </TabsList>
-              </Tabs>
+              <h2 className="font-display text-base font-medium">Findings</h2>
+              <div className="flex flex-wrap items-center gap-2">
+                <FindingsSort
+                  sort={sort}
+                  order={order}
+                  onSortChange={onSortChange}
+                />
+                <Tabs
+                  value={view}
+                  onValueChange={(next) => {
+                    onViewChange(next as ReportView)
+                  }}
+                >
+                  <TabsList>
+                    {VIEWS.map((item) => (
+                      <TabsTab key={item.value} value={item.value}>
+                        {item.label}
+                      </TabsTab>
+                    ))}
+                  </TabsList>
+                </Tabs>
+              </div>
             </div>
             {report.findings.items.length === 0 ? (
               <p className="p-6 text-center text-sm text-muted-foreground">

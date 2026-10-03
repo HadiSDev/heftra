@@ -151,6 +151,74 @@ def test_the_report_leads_with_rule_breaks(client, engine, seed):
     assert totals["off_contract"] == (1, "1000.00")
 
 
+def _sortable_findings(engine, seed) -> str:
+    with Session(engine) as s:
+        atea = supplier(s)
+        proshop = supplier(s, name="proshop A/S", vat="DK87654321")
+        record = agreement(s, seed["comp_a"], vendor=atea)
+        rule = term(s, record.id)
+        price = term(s, record.id, kind=AgreementTermKind.AGREED_PRICE, scope="Servers",
+                     item="Cloud server", unit_price=Decimal("80"))
+        discount = term(s, record.id, kind=AgreementTermKind.DISCOUNT, scope="Support",
+                        discount_percent=Decimal("10"))
+        finding(s, agreement=record, term=rule, line_id=seed["line_a2"], invoice_id=seed["inv_a"],
+                amount="1000.00", vendor_id=proshop.id, spent_on=date(2025, 7, 1))
+        finding(s, agreement=record, term=price, line_id=seed["line_a1"], invoice_id=seed["inv_a"],
+                kind=FindingKind.COMPLIANT, amount="0", line_amount="80.00", vendor_id=atea.id,
+                spent_on=date(2025, 8, 1))
+        finding(s, agreement=record, term=discount, line_id=seed["line_a1"],
+                invoice_id=seed["inv_a"], kind=FindingKind.MISSED_DISCOUNT, amount="300.00",
+                spent_on=date(2025, 6, 1))
+        return record.id
+
+
+def _sorted_kinds(client, agreement_id, **params) -> list[str]:
+    res = client.get(f"/api/v1/agreements/{agreement_id}/report", headers=auth("tokA"),
+                     params=params)
+    assert res.status_code == 200, res.text
+    return [item["kind"] for item in res.json()["findings"]["items"]]
+
+
+def test_findings_are_sorted_by_severity_by_default(client, engine, seed):
+    agreement_id = _sortable_findings(engine, seed)
+
+    assert _sorted_kinds(client, agreement_id) == ["off_contract", "missed_discount", "compliant"]
+    assert _sorted_kinds(client, agreement_id, sort="severity", order="asc") == [
+        "compliant", "missed_discount", "off_contract"]
+
+
+def test_findings_are_sorted_by_amount_and_date(client, engine, seed):
+    agreement_id = _sortable_findings(engine, seed)
+
+    assert _sorted_kinds(client, agreement_id, sort="amount") == [
+        "off_contract", "missed_discount", "compliant"]
+    assert _sorted_kinds(client, agreement_id, sort="amount", order="asc") == [
+        "compliant", "missed_discount", "off_contract"]
+    assert _sorted_kinds(client, agreement_id, sort="spent_on") == [
+        "compliant", "off_contract", "missed_discount"]
+
+
+def test_findings_are_sorted_by_item_and_supplier_with_unknown_suppliers_last(client, engine,
+                                                                               seed):
+    agreement_id = _sortable_findings(engine, seed)
+
+    assert _sorted_kinds(client, agreement_id, sort="item") == [
+        "missed_discount", "compliant", "off_contract"]
+    assert _sorted_kinds(client, agreement_id, sort="supplier") == [
+        "compliant", "off_contract", "missed_discount"]
+    assert _sorted_kinds(client, agreement_id, sort="supplier", order="desc") == [
+        "off_contract", "compliant", "missed_discount"]
+
+
+def test_an_unknown_findings_sort_is_refused(client, engine, seed):
+    agreement_id = _sortable_findings(engine, seed)
+
+    for params in ({"sort": "reason"}, {"order": "sideways"}):
+        res = client.get(f"/api/v1/agreements/{agreement_id}/report", headers=auth("tokA"),
+                         params=params)
+        assert res.status_code == 422
+
+
 def test_commitment_progress_is_reported(client, engine, seed):
     with Session(engine) as s:
         vendor = supplier(s)

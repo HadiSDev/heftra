@@ -1,6 +1,9 @@
 import { FileText } from 'lucide-react'
 import { Button, Card, Skeleton } from '#/components/ui'
+import { sortAgreements } from '#/lib/agreements/list-sort'
+import type { AgreementSort } from '#/lib/agreements/list-sort'
 import type { AgreementSummaryRead } from '#/lib/api/agreement-types'
+import type { SortOrder } from '#/lib/api/types'
 import { AgreementUpload } from './agreement-upload'
 import type { AgreementUploadProps } from './agreement-upload'
 import { AgreementsTable } from './agreements-table'
@@ -9,6 +12,9 @@ export interface AgreementsPanelProps {
   agreements: Array<AgreementSummaryRead> | undefined
   error: boolean
   onRetry: () => void
+  sort: AgreementSort
+  order: SortOrder
+  onSort: (column: AgreementSort) => void
   /** Upload controls, for managers only. */
   upload: AgreementUploadProps | null
 }
@@ -18,6 +24,9 @@ export function AgreementsPanel({
   agreements,
   error,
   onRetry,
+  sort,
+  order,
+  onSort,
   upload,
 }: AgreementsPanelProps) {
   const openBreaks = (agreements ?? []).reduce(
@@ -78,7 +87,12 @@ export function AgreementsPanel({
           </div>
         ) : null}
         {agreements && agreements.length > 0 ? (
-          <AgreementsTable agreements={agreements} />
+          <AgreementsTable
+            agreements={sortAgreements(agreements, { sort, order })}
+            sort={sort}
+            order={order}
+            onSort={onSort}
+          />
         ) : null}
       </Card>
     </div>

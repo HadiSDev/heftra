@@ -187,6 +187,12 @@ const REPORT: AgreementReport = {
   findings: { items: [FINDING], page: 1, page_size: 50, total: 1 },
 }
 
+const LIST_SORT = {
+  sort: 'created_at' as const,
+  order: 'desc' as const,
+  onSort: vi.fn(),
+}
+
 describe('AgreementsPanel', () => {
   it('lists agreements with their open rule breaks', () => {
     render(
@@ -203,6 +209,7 @@ describe('AgreementsPanel', () => {
         ]}
         error={false}
         onRetry={vi.fn()}
+        {...LIST_SORT}
         upload={null}
       />,
     )
@@ -220,6 +227,40 @@ describe('AgreementsPanel', () => {
     ).toBeNull()
   })
 
+  it('lists agreements in the chosen order and sorts by a header', () => {
+    const onSort = vi.fn()
+    render(
+      <AgreementsPanel
+        agreements={[
+          SUMMARY,
+          { ...SUMMARY, id: 'a2', title: 'Office supplies' },
+          { ...SUMMARY, id: 'a3', title: 'atea leasing' },
+        ]}
+        error={false}
+        onRetry={vi.fn()}
+        sort="title"
+        order="asc"
+        onSort={onSort}
+        upload={null}
+      />,
+    )
+
+    const list = within(screen.getByRole('region', { name: 'Agreements list' }))
+    expect(list.getAllByRole('link').map((link) => link.textContent)).toEqual([
+      'Atea framework 2026',
+      'atea leasing',
+      'Office supplies',
+    ])
+    expect(
+      list
+        .getByRole('columnheader', { name: /Agreement/ })
+        .getAttribute('aria-sort'),
+    ).toBe('ascending')
+
+    fireEvent.click(list.getByRole('button', { name: /Open rule breaks/ }))
+    expect(onSort).toHaveBeenCalledWith('open_rule_breaks')
+  })
+
   it('uploads a dropped PDF for a manager', async () => {
     const onUpload = vi.fn(async () => {})
     render(
@@ -227,6 +268,7 @@ describe('AgreementsPanel', () => {
         agreements={[]}
         error={false}
         onRetry={vi.fn()}
+        {...LIST_SORT}
         upload={{ companies: [{ id: 'c1', name: 'Acme' }], onUpload }}
       />,
     )
@@ -249,6 +291,7 @@ describe('AgreementsPanel', () => {
         agreements={[]}
         error={false}
         onRetry={vi.fn()}
+        {...LIST_SORT}
         upload={{ companies, onUpload }}
       />
     )
@@ -272,6 +315,7 @@ describe('AgreementsPanel', () => {
         agreements={[]}
         error={false}
         onRetry={vi.fn()}
+        {...LIST_SORT}
         upload={{ companies: [{ id: 'c1', name: 'Acme' }], onUpload: vi.fn() }}
       />,
     )
@@ -290,6 +334,7 @@ describe('AgreementsPanel', () => {
         agreements={undefined}
         error
         onRetry={onRetry}
+        {...LIST_SORT}
         upload={null}
       />,
     )
@@ -523,6 +568,9 @@ describe('ReportTab', () => {
       onRetry: vi.fn(),
       view: 'open' as const,
       onViewChange: vi.fn(),
+      sort: 'severity' as const,
+      order: 'desc' as const,
+      onSortChange: vi.fn(),
       canEdit: true,
       analysing: false,
       onAnalyse: vi.fn(),
@@ -552,6 +600,35 @@ describe('ReportTab', () => {
         .getByRole('link', { name: /Open the voucher/ })
         .getAttribute('href'),
     ).toBe('/invoice-lines?company_id=c1&voucher=4821&tab=lines')
+  })
+
+  it('turns the findings order around', () => {
+    const props = renderReport()
+
+    fireEvent.click(
+      screen.getByRole('button', { name: /Rule breaks first, reverse/ }),
+    )
+
+    expect(props.onSortChange).toHaveBeenCalledWith({
+      sort: 'severity',
+      order: 'asc',
+    })
+  })
+
+  it('sorts the findings by another column in its own order', async () => {
+    const props = renderReport({ sort: 'amount', order: 'asc' })
+
+    fireEvent.click(screen.getByRole('combobox', { name: 'Sort findings by' }))
+    const supplier = await screen.findByRole('option', { name: 'Supplier' })
+    fireEvent.mouseMove(supplier)
+    fireEvent.click(supplier)
+
+    await waitFor(() => {
+      expect(props.onSortChange).toHaveBeenCalledWith({
+        sort: 'supplier',
+        order: 'asc',
+      })
+    })
   })
 
   it('accepts a finding as an exception with a note', async () => {

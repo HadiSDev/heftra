@@ -18,11 +18,12 @@ from ..db.models import (
 )
 from ..schemas.agreements import AgreementReport, FindingTotal
 from .commitments import commitment_progress
-from .findings import finding_page
+from .findings import FindingSort, SortOrder, finding_page
 
 
 def agreement_report(session: Session, agreement: Agreement, today: date, *,
-                     kinds: list[str] | None, review_statuses: list[str] | None, page: int,
+                     kinds: list[str] | None, review_statuses: list[str] | None,
+                     sort: FindingSort, order: SortOrder, page: int,
                      page_size: int) -> AgreementReport:
     base_currency = session.get(Company, agreement.company_id).base_currency
     in_scope, supplier = _spend_in_scope(session, agreement)
@@ -35,7 +36,8 @@ def agreement_report(session: Session, agreement: Agreement, today: date, *,
         totals=_open_totals(session, agreement.id),
         commitments=commitment_progress(session, agreement, base_currency, today),
         findings=finding_page(session, agreement.id, kinds=kinds,
-                              review_statuses=review_statuses, page=page, page_size=page_size),
+                              review_statuses=review_statuses, sort=sort, order=order,
+                              page=page, page_size=page_size),
     )
 
 

@@ -1,14 +1,16 @@
 import { Link } from '@tanstack/react-router'
 import { AlertTriangle } from 'lucide-react'
 import {
+  SortHeader,
   Table,
   TableBody,
   TableCell,
-  TableHead,
   TableHeader,
   TableRow,
 } from '#/components/ui'
+import type { AgreementSort } from '#/lib/agreements/list-sort'
 import type { AgreementSummaryRead } from '#/lib/api/agreement-types'
+import type { SortOrder } from '#/lib/api/types'
 import { formatDay, formatMoney } from '#/lib/format/format'
 import { AgreementStatusBadge } from '../status-badge'
 
@@ -36,21 +38,36 @@ function RuleBreaks({ agreement }: { agreement: AgreementSummaryRead }) {
   )
 }
 
-/** The agreements, newest first, with their state and open rule breaks. */
+export interface AgreementsTableProps {
+  agreements: Array<AgreementSummaryRead>
+  sort: AgreementSort
+  order: SortOrder
+  onSort: (column: AgreementSort) => void
+}
+
+/** The agreements, in the chosen order, with their state and open rule breaks. */
 export function AgreementsTable({
   agreements,
-}: {
-  agreements: Array<AgreementSummaryRead>
-}) {
+  sort,
+  order,
+  onSort,
+}: AgreementsTableProps) {
+  const header = { sort, order, onSort }
+
   return (
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Agreement</TableHead>
-          <TableHead>Supplier</TableHead>
-          <TableHead>Valid</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead className="text-right">Open rule breaks</TableHead>
+          <SortHeader label="Agreement" column="title" {...header} />
+          <SortHeader label="Supplier" column="supplier" {...header} />
+          <SortHeader label="Valid" column="starts_on" {...header} />
+          <SortHeader label="Status" column="status" {...header} />
+          <SortHeader
+            label="Open rule breaks"
+            column="open_rule_breaks"
+            align="right"
+            {...header}
+          />
         </TableRow>
       </TableHeader>
       <TableBody>

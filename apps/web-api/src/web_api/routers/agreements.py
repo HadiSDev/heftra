@@ -33,6 +33,7 @@ from ..auth.deps import (
     resolve_company_ids,
     tenant_scope,
 )
+from ..compliance.findings import FindingSort, SortOrder, default_order
 from ..compliance.report import agreement_report
 from ..db.models import (
     AgreementStatus,
@@ -206,16 +207,20 @@ def get_agreement_report(
     agreement_id: str,
     kind: list[FindingKind] | None = Query(default=None),
     review_status: list[FindingReviewStatus] | None = Query(default=None),
+    sort: FindingSort = Query(default="severity"),
+    order: SortOrder | None = Query(default=None),
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=50, ge=1, le=200),
     scope: TenantScope = Depends(tenant_scope),
     session: Session = Depends(get_session),
 ) -> AgreementReport:
-    """Totals, spend in scope, commitments, and the findings with rule breaks first."""
+    """Totals, spend in scope, commitments, and the findings, rule breaks first unless sorted
+    otherwise."""
     agreement = get_agreement(session, scope, agreement_id)
     return agreement_report(
         session, agreement, date.today(),
         kinds=[value.value for value in kind] if kind else None,
         review_statuses=[value.value for value in review_status] if review_status else None,
+        sort=sort, order=order or default_order(sort),
         page=page, page_size=page_size,
     )

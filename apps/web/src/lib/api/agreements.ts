@@ -10,11 +10,12 @@ import type {
   FindingRead,
   FindingReview,
   FindingReviewStatus,
+  FindingSort,
   TermCreate,
   TermPatch,
   TermRead,
 } from './agreement-types'
-import type { PipelineRunRead } from './types'
+import type { PipelineRunRead, SortOrder } from './types'
 
 /** How often a reading agreement or an unfinished analysis is checked on. */
 export const AGREEMENT_POLL_INTERVAL_MS = 3000
@@ -68,6 +69,8 @@ export function agreementQueryOptions(api: ApiClient, agreementId: string) {
 export interface ReportFilters {
   kind?: Array<FindingKind>
   reviewStatus?: Array<FindingReviewStatus>
+  sort?: FindingSort
+  order?: SortOrder
   page?: number
 }
 
@@ -83,6 +86,12 @@ export function agreementReportQueryOptions(
   }
   for (const status of filters.reviewStatus ?? []) {
     params.append('review_status', status)
+  }
+  if (filters.sort) {
+    params.set('sort', filters.sort)
+  }
+  if (filters.order) {
+    params.set('order', filters.order)
   }
   params.set('page', String(filters.page ?? 1))
   return queryOptions({

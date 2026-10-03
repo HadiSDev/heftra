@@ -21,6 +21,10 @@ export type FindingSeverity = 'rule_break' | 'warning' | 'info'
 
 export type FindingReviewStatus = 'open' | 'exception' | 'not_in_scope'
 
+/** What the report's findings can be sorted by. */
+export type FindingSort =
+  'severity' | 'amount' | 'spent_on' | 'supplier' | 'item'
+
 export interface TermQuote {
   text: string
   page: number | null

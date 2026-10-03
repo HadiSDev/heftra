@@ -14,6 +14,7 @@ import { ReportTab } from '#/components/agreements/report/report-tab'
 import { TermsTab } from '#/components/agreements/terms/terms-tab'
 import {
   defaultAgreementTab,
+  resolveFindingSort,
   validateAgreementSearch,
 } from '#/lib/agreement-search'
 import type { AgreementTab, ReportView } from '#/lib/agreement-search'
@@ -72,9 +73,12 @@ function AgreementPage() {
   const status = agreement.data?.status
   const tab: AgreementTab = search.tab ?? defaultAgreementTab(agreement.data)
   const view: ReportView = search.view ?? 'open'
+  const { sort, order } = resolveFindingSort(search)
   const report = useQuery({
     ...agreementReportQueryOptions(api, agreementId, {
       reviewStatus: REVIEW_STATUSES[view],
+      sort,
+      order,
     }),
     enabled: tab === 'report' && status === 'active',
   })
@@ -211,6 +215,11 @@ function AgreementPage() {
           view={view}
           onViewChange={(next) => {
             void navigate({ search: { ...search, view: next } })
+          }}
+          sort={sort}
+          order={order}
+          onSortChange={(next) => {
+            void navigate({ search: { ...search, ...next } })
           }}
           canEdit={canEdit}
           analysing={analyse.isPending || isAnalysing(current)}

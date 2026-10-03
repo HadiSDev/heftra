@@ -1,7 +1,9 @@
-"""An agreement's findings as the report lists them, rule breaks first."""
+"""An agreement's findings as the report lists them, rule breaks first unless sorted otherwise."""
 from __future__ import annotations
 
-from sqlalchemy import case, func
+from typing import Literal
+
+from sqlalchemy import case, func, nulls_last
 from sqlmodel import Session, col, select
 
 from ..db.models import (
@@ -16,26 +18,51 @@ from ..schemas.agreements import FindingRead
 from ..schemas.common import Page
 from ..vouchers.invoices import voucher_ids
 
-SEVERITY_ORDER = case(
-    (AgreementFinding.severity == FindingSeverity.RULE_BREAK.value, 0),
+FindingSort = Literal["severity", "amount", "spent_on", "supplier", "item"]
+SortOrder = Literal["asc", "desc"]
+
+SEVERITY_RANK = case(
+    (AgreementFinding.severity == FindingSeverity.RULE_BREAK.value, 2),
     (AgreementFinding.severity == FindingSeverity.WARNING.value, 1),
-    else_=2,
+    else_=0,
+)
+
+_SORT_COLUMNS = {
+    "severity": SEVERITY_RANK,
+    "amount": col(AgreementFinding.amount),
+    "spent_on": col(AgreementFinding.spent_on),
+    "supplier": func.lower(Vendor.name),
+    "item": func.lower(func.coalesce(InvoiceLine.item_name, InvoiceLine.description)),
+}
+
+_DEFAULT_ORDER = (
+    SEVERITY_RANK.desc(),
+    col(AgreementFinding.amount).desc(),
+    nulls_last(col(AgreementFinding.spent_on).desc()),
+    col(AgreementFinding.id),
 )
 
 
+def default_order(sort: FindingSort) -> SortOrder:
+    """The order a column sorts in when first chosen: text A–Z, the rest largest, newest or
+    most severe first."""
+    return "asc" if sort in ("supplier", "item") else "desc"
+
+
 def finding_page(session: Session, agreement_id: str, *, kinds: list[str] | None,
-                 review_statuses: list[str] | None, page: int,
-                 page_size: int) -> Page[FindingRead]:
+                 review_statuses: list[str] | None, sort: FindingSort, order: SortOrder,
+                 page: int, page_size: int) -> Page[FindingRead]:
     conditions = [AgreementFinding.agreement_id == agreement_id]
     if kinds:
         conditions.append(col(AgreementFinding.kind).in_(kinds))
     if review_statuses:
         conditions.append(col(AgreementFinding.review_status).in_(review_statuses))
     total = session.exec(select(func.count(AgreementFinding.id)).where(*conditions)).one()
+    column = _SORT_COLUMNS[sort]
+    direction = column.asc() if order == "asc" else column.desc()
     rows = session.exec(
         _finding_rows().where(*conditions)
-        .order_by(SEVERITY_ORDER, col(AgreementFinding.amount).desc(),
-                  col(AgreementFinding.spent_on).desc(), col(AgreementFinding.id))
+        .order_by(nulls_last(direction), *_DEFAULT_ORDER)
         .offset((page - 1) * page_size)
         .limit(page_size)
     ).all()

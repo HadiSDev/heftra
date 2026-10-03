@@ -1,6 +1,11 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AgreementsPanel } from '#/components/agreements/list/agreements-panel'
+import {
+  defaultAgreementOrder,
+  resolveAgreementSort,
+  validateAgreementListSearch,
+} from '#/lib/agreements/list-sort'
 import { ApiError } from '#/lib/api/api-client'
 import {
   agreementsQueryOptions,
@@ -8,14 +13,18 @@ import {
 } from '#/lib/api/agreements'
 import { companiesQueryOptions } from '#/lib/api/companies'
 import { canManageCompanies, useApi, usePrincipal } from '#/lib/auth/auth'
+import { nextSort } from '#/lib/sorting'
 
 export const Route = createFileRoute('/_authed/agreements/')({
   component: AgreementsPage,
   staticData: { title: 'Agreements' },
+  validateSearch: validateAgreementListSearch,
 })
 
 function AgreementsPage() {
   const api = useApi()
+  const navigate = useNavigate({ from: Route.fullPath })
+  const { sort, order } = resolveAgreementSort(Route.useSearch())
   const queryClient = useQueryClient()
   const canManage = canManageCompanies(usePrincipal())
   const agreements = useQuery(agreementsQueryOptions(api))
@@ -31,6 +40,13 @@ function AgreementsPage() {
       error={agreements.isError}
       onRetry={() => {
         void agreements.refetch()
+      }}
+      sort={sort}
+      order={order}
+      onSort={(column) => {
+        void navigate({
+          search: nextSort({ sort, order }, column, defaultAgreementOrder),
+        })
       }}
       upload={
         canManage
