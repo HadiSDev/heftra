@@ -17,6 +17,7 @@ function line(
     quantity: '1',
     unit: null,
     base_amount,
+    net_amount: base_amount,
     base_currency: 'DKK',
   }
 }

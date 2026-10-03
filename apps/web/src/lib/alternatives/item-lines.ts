@@ -21,7 +21,7 @@ function key(line: ItemLineRead, sort: ItemLineSort): number | string | null {
   if (sort === 'date') {
     return line.invoice_date
   }
-  return line.base_amount === null ? null : toNumber(line.base_amount)
+  return line.net_amount === null ? null : toNumber(line.net_amount)
 }
 
 function compare(a: number | string, b: number | string): number {

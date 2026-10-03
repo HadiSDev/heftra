@@ -30,6 +30,7 @@ function line(id: string, date: string, amount: string): ItemLineRead {
     quantity: '1',
     unit: 'kg',
     base_amount: amount,
+    net_amount: amount,
     base_currency: 'DKK',
   }
 }
@@ -40,9 +41,7 @@ const LINES = [
 ]
 
 function invoiceOrder(): Array<string> {
-  return screen
-    .getAllByText(/^Invoice /)
-    .map((element) => element.textContent)
+  return screen.getAllByText(/^Invoice /).map((element) => element.textContent)
 }
 
 describe('ItemLinesCard', () => {
@@ -50,10 +49,23 @@ describe('ItemLinesCard', () => {
     render(<ItemLinesCard companyId="c1" lines={LINES} />)
     expect(invoiceOrder()).toEqual(['Invoice A1 · 1 kg', 'Invoice A2 · 1 kg'])
 
-    fireEvent.click(screen.getByRole('button', { name: 'Amount' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Excl. VAT' }))
     expect(invoiceOrder()).toEqual(['Invoice A2 · 1 kg', 'Invoice A1 · 1 kg'])
 
-    fireEvent.click(screen.getByRole('button', { name: 'Amount' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Excl. VAT' }))
     expect(invoiceOrder()).toEqual(['Invoice A1 · 1 kg', 'Invoice A2 · 1 kg'])
+  })
+
+  it('shows a line without VAT, with the invoice amount beside it', () => {
+    render(
+      <ItemLinesCard
+        companyId="c1"
+        lines={[
+          { ...line('a1', '2026-05-10', '484.00'), net_amount: '387.20' },
+        ]}
+      />,
+    )
+    expect(screen.getByText(/387\.20/)).toBeTruthy()
+    expect(screen.getByText(/484\.00.*incl\. VAT/)).toBeTruthy()
   })
 })

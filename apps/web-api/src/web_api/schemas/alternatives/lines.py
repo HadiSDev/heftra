@@ -9,7 +9,8 @@ from pydantic import BaseModel
 
 class ItemLineRead(BaseModel):
     """`voucher_id` is the ERP voucher the invoice was posted on, to open the line in Spend
-    Lines; none until the invoice is posted."""
+    Lines; none until the invoice is posted. `net_amount` is `base_amount` without VAT, as
+    the item's figures count it."""
 
     id: str
     invoice_id: str
@@ -20,4 +21,5 @@ class ItemLineRead(BaseModel):
     quantity: Decimal | None = None
     unit: str | None = None
     base_amount: Decimal | None = None
+    net_amount: Decimal | None = None
     base_currency: str | None = None

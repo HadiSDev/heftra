@@ -144,7 +144,8 @@ export interface ItemRead {
   alternatives: Array<AlternativeRead>
 }
 
-/** A spend line the item was bought on; `voucher_id` is null until its invoice is posted. */
+/** A spend line the item was bought on; `voucher_id` is null until its invoice is posted,
+ * and `net_amount` is `base_amount` without VAT, as the item's figures count it. */
 export interface ItemLineRead {
   id: string
   invoice_id: string
@@ -155,6 +156,7 @@ export interface ItemLineRead {
   quantity: Money | null
   unit: string | null
   base_amount: Money | null
+  net_amount: Money | null
   base_currency: string | null
 }
 

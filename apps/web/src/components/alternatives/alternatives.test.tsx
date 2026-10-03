@@ -278,6 +278,7 @@ const LINES: Array<ItemLineRead> = [
     quantity: '40',
     unit: 'kg',
     base_amount: '400.00',
+    net_amount: '400.00',
     base_currency: 'DKK',
   },
   {
@@ -290,6 +291,7 @@ const LINES: Array<ItemLineRead> = [
     quantity: '60',
     unit: 'kg',
     base_amount: '600.00',
+    net_amount: '600.00',
     base_currency: 'DKK',
   },
 ]

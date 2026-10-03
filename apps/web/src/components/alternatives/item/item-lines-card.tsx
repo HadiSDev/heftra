@@ -44,6 +44,14 @@ function lineDetail(line: ItemLineRead): string {
   )
 }
 
+function includesVat(line: ItemLineRead): boolean {
+  return (
+    line.base_amount !== null &&
+    line.net_amount !== null &&
+    toNumber(line.base_amount) !== toNumber(line.net_amount)
+  )
+}
+
 function LineRow({
   line,
   companyId,
@@ -57,10 +65,17 @@ function LineRow({
         <p className="font-medium">{formatDay(line.invoice_date)}</p>
         <p className="text-xs text-muted-foreground">{lineDetail(line)}</p>
       </TableCell>
-      <TableCell className="text-right font-medium tabular-nums">
-        {line.base_amount !== null
-          ? formatMoney(line.base_amount, line.base_currency)
-          : '—'}
+      <TableCell className="text-right tabular-nums">
+        <p className="font-medium">
+          {line.net_amount !== null
+            ? formatMoney(line.net_amount, line.base_currency)
+            : '—'}
+        </p>
+        {includesVat(line) ? (
+          <p className="text-xs whitespace-nowrap text-muted-foreground">
+            {formatMoney(line.base_amount ?? 0, line.base_currency)} incl. VAT
+          </p>
+        ) : null}
       </TableCell>
       <TableCell className="text-right">
         {line.voucher_id ? (
@@ -111,7 +126,7 @@ function LinesTable({
         <TableRow>
           <SortHeader label="Date" column="date" {...header} />
           <SortHeader
-            label="Amount"
+            label="Excl. VAT"
             column="amount"
             align="right"
             {...header}

@@ -264,6 +264,9 @@ def test_an_items_lines_of_the_last_year_come_with_their_vouchers(client, engine
         posted.item_key = item.item_key
         s.get(Invoice, voucher_seed["inv_a"]).invoice_date = date.today() - timedelta(days=30)
         unposted = _bought(s, voucher_seed["comp_a"], item, days_ago=10, number="A2")
+        with_vat = s.get(Invoice, unposted.invoice_id)
+        with_vat.document_total = Decimal("484")
+        with_vat.document_subtotal = Decimal("387.20")
         _bought(s, voucher_seed["comp_a"], item, days_ago=400, number="A0")
         s.commit()
         item_id, unposted_id = item.id, unposted.id
@@ -273,6 +276,7 @@ def test_an_items_lines_of_the_last_year_come_with_their_vouchers(client, engine
     assert [line["id"] for line in body] == [unposted_id, voucher_seed["line_a1"]]
     assert [line["voucher_id"] for line in body] == [None, "4821"]
     assert body[1]["invoice_number"] == "A1"
+    assert [Decimal(line["net_amount"]) for line in body] == [Decimal("387.20"), Decimal("80.00")]
 
 
 def test_another_organizations_item_lines_are_not_found(client, seed, stocked):
