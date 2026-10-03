@@ -17,6 +17,7 @@ import type {
   ItemSummary,
 } from '#/lib/api/alternative-types'
 import { AlternativesPanel } from './list/alternatives-panel'
+import type { AlternativesPanelProps } from './list/alternatives-panel'
 import { ItemPanel } from './item/item-panel'
 import { LineAlternativesView } from './line/line-alternatives-view'
 
@@ -178,27 +179,39 @@ function page(fields: Partial<AlternativesPage>): AlternativesPage {
   }
 }
 
-function renderPanel(result: AlternativesPage, filters = {}) {
+function renderPanel(
+  result: AlternativesPage,
+  filters = {},
+  sorting: Partial<
+    Pick<AlternativesPanelProps, 'sort' | 'order' | 'unitPriceSortable'>
+  > = {},
+) {
   const onSelect = vi.fn()
+  const onSort = vi.fn()
   render(
     <AlternativesPanel
       result={result}
       loading={false}
       error={false}
       filters={filters}
+      sort="saving"
+      order="desc"
+      unitPriceSortable
+      {...sorting}
       companies={[]}
       onFiltersChange={vi.fn()}
       onClearFilters={vi.fn()}
+      onSort={onSort}
       onPageChange={vi.fn()}
       onSelect={onSelect}
     />,
   )
-  return onSelect
+  return { onSelect, onSort }
 }
 
 describe('AlternativesPanel', () => {
   it('leads with the possible saving and lists the items', () => {
-    const onSelect = renderPanel(
+    const { onSelect } = renderPanel(
       page({
         items: [summary({ id: 'laptops', name: 'ThinkPad T14' }), summary({})],
         total: 2,
@@ -214,6 +227,28 @@ describe('AlternativesPanel', () => {
     expect(onSelect).toHaveBeenCalledWith(
       expect.objectContaining({ id: 'laptops' }),
     )
+  })
+
+  it('shows the sort on its header and sorts by a clicked one', () => {
+    const { onSort } = renderPanel(
+      page({ items: [summary({})], total: 1, searched_items: 1 }),
+    )
+
+    const saving = screen.getByRole('columnheader', { name: /yearly saving/i })
+    expect(saving.getAttribute('aria-sort')).toBe('descending')
+    fireEvent.click(screen.getByRole('button', { name: /supplier/i }))
+    expect(onSort).toHaveBeenCalledWith('supplier')
+  })
+
+  it('leaves unit price unsortable across currencies', () => {
+    renderPanel(
+      page({ items: [summary({})], total: 1, searched_items: 1 }),
+      {},
+      { unitPriceSortable: false },
+    )
+
+    const now = screen.getByRole('columnheader', { name: 'Now' })
+    expect(within(now).queryByRole('button')).toBeNull()
   })
 
   it('says when nothing was searched yet', () => {

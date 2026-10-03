@@ -22,7 +22,7 @@ function invalidateAlternatives(queryClient: QueryClient) {
   return queryClient.invalidateQueries({ queryKey: alternativesKey })
 }
 
-/** Items with an open alternative, best saving first (`GET /alternatives`). */
+/** Items with an open alternative, best saving first unless sorted (`GET /alternatives`). */
 export function alternativesQueryOptions(
   api: ApiClient,
   filters: AlternativeFilters,
@@ -35,6 +35,8 @@ export function alternativesQueryOptions(
         source: filters.source,
         match: filters.match,
         item_class: filters.item_class,
+        sort: filters.sort,
+        order: filters.order,
         page: filters.page,
       }),
     placeholderData: keepPreviousData,

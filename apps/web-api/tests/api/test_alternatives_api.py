@@ -10,12 +10,14 @@ from sqlmodel import Session, select
 
 from web_api.db.models import (
     AuditLog,
+    Company,
     CompanyItem,
     Invoice,
     InvoiceLine,
     ItemAlternative,
     Organization,
     PipelineRun,
+    Vendor,
 )
 from web_api_testkit import auth
 
@@ -81,6 +83,65 @@ def test_the_list_filters_by_source_and_class(client, seed, stocked):
     assert [item["id"] for item in by_class["items"]] == [stocked["cable"]]
     parts = client.get("/api/v1/alternatives?item_class=part", headers=auth("tokA")).json()
     assert parts["items"] == []
+
+
+def _listed(client, **params) -> list[str]:
+    body = client.get("/api/v1/alternatives", params=params, headers=auth("tokA")).json()
+    return [item["id"] for item in body["items"]]
+
+
+def test_the_list_sorts_by_the_specifications_name_or_else_the_items(client, engine, seed,
+                                                                      stocked):
+    with Session(engine) as s:
+        zinc = _item(s, seed["comp_a"], "A drum", spec={**CABLE, "name": "Zinc sheet"})
+        _alternative(s, zinc, ref="item:z")
+        s.commit()
+        zinc_id = zinc.id
+
+    assert _listed(client, sort="name") == [stocked["cable"], stocked["laptop"], zinc_id]
+    assert _listed(client, sort="name", order="desc") == \
+        [zinc_id, stocked["laptop"], stocked["cable"]]
+
+
+def test_the_list_sorts_by_unit_price_and_alternatives_largest_first(client, seed, stocked):
+    assert _listed(client, sort="unit_price") == [stocked["cable"], stocked["laptop"]]
+    assert _listed(client, sort="unit_price", order="asc") == \
+        [stocked["cable"], stocked["laptop"]]
+    assert _listed(client, sort="alternatives") == [stocked["laptop"], stocked["cable"]]
+    assert _listed(client, sort="alternatives", order="asc") == \
+        [stocked["cable"], stocked["laptop"]]
+    assert _listed(client, order="asc") == [stocked["cable"], stocked["laptop"]]
+
+
+def test_the_list_sorts_by_supplier_with_the_unknown_last(client, engine, seed, stocked):
+    with Session(engine) as s:
+        vendor = Vendor(name="Atea")
+        s.add(vendor)
+        s.flush()
+        s.get(CompanyItem, stocked["laptop"]).vendor_id = vendor.id
+        s.commit()
+
+    assert _listed(client, sort="supplier") == [stocked["laptop"], stocked["cable"]]
+    assert _listed(client, sort="supplier", order="desc") == [stocked["laptop"], stocked["cable"]]
+
+
+def test_an_unknown_sort_or_order_is_422(client, seed, stocked):
+    for params in ({"sort": "spend"}, {"order": "sideways"}):
+        response = client.get("/api/v1/alternatives", params=params, headers=auth("tokA"))
+        assert response.status_code == 422
+
+
+def test_a_unit_price_sort_across_base_currencies_is_refused(client, engine, seed, stocked):
+    with Session(engine) as s:
+        s.add(Company(organization_id=seed["org_a"], name="Acme EU", base_currency="EUR"))
+        s.commit()
+
+    response = client.get("/api/v1/alternatives", params={"sort": "unit_price"},
+                          headers=auth("tokA"))
+
+    assert response.status_code == 422
+    assert "currenc" in response.json()["detail"]
+    assert _listed(client, sort="saving") == [stocked["laptop"], stocked["cable"]]
 
 
 def test_another_organizations_items_are_not_found(client, seed, stocked):

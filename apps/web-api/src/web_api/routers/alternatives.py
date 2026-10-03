@@ -5,9 +5,10 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlmodel import Session
 
 from web_api.db.models import AlternativeMatch, AlternativeSource, ItemClass
+from web_api.vendor_spend import base_currencies
 from ..alternatives.access import get_alternative, get_item, get_line
 from ..alternatives.lines import item_lines
-from ..alternatives.listing import AlternativeFilters, list_items
+from ..alternatives.listing import AlternativeFilters, AlternativeSort, SortOrder, list_items
 from ..alternatives.reads import alternative_reads, item_read
 from ..alternatives.review import review_alternative
 from ..alternatives.search_requests import request_item_search
@@ -39,17 +40,25 @@ def list_alternatives(
     source: AlternativeSource | None = Query(default=None),
     match: AlternativeMatch | None = Query(default=None),
     item_class: ItemClass | None = Query(default=None),
+    sort: AlternativeSort = Query(default="saving"),
+    order: SortOrder | None = Query(default=None),
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=25, ge=1, le=100),
     scope: TenantScope = Depends(tenant_scope),
     session: Session = Depends(get_session),
 ) -> AlternativesPage:
-    """Items with an open alternative, the largest best yearly saving first."""
+    """Items with an open alternative, the largest best yearly saving first unless sorted
+    otherwise; unit prices are sorted only within one base currency."""
     company_ids = resolve_company_ids(scope, company_id)
     if not company_ids:
         return AlternativesPage(items=[], page=page, page_size=page_size, total=0)
+    if sort == "unit_price" and len(base_currencies(session, company_ids)) > 1:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="Unit prices cannot be sorted across companies with different base currencies.",
+        )
     return list_items(session, company_ids, AlternativeFilters(source, match, item_class),
-                      page, page_size)
+                      page, page_size, sort, order)
 
 
 @router.get("/items/{item_id}", response_model=ItemRead)

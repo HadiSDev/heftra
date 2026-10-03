@@ -1,10 +1,13 @@
-import type { Money, Page } from './types'
+import type { Money, Page, SortOrder } from './types'
 
 export type ItemClass = 'material' | 'part' | 'finished_good' | 'service'
 export type PricingUnit =
   'kg' | 'm' | 'm2' | 'm3' | 'l' | 'piece' | 'sheet' | 'roll' | 'pack'
 export type AlternativeSource = 'history' | 'benchmark' | 'marketplace'
 export type AlternativeMatch = 'exact' | 'equivalent'
+/** A column the Alternatives list sorts by; `saving` is the best alternative's yearly saving. */
+export type AlternativeSort =
+  'saving' | 'name' | 'supplier' | 'unit_price' | 'alternatives'
 export type AlternativeReviewStatus = 'open' | 'dismissed' | 'switched'
 export type DismissReason =
   'not_equivalent' | 'supplier_not_approved' | 'price_wrong' | 'other'
@@ -166,5 +169,7 @@ export interface AlternativeFilters {
   source?: AlternativeSource
   match?: AlternativeMatch
   item_class?: ItemClass
+  sort?: AlternativeSort
+  order?: SortOrder
   page?: number
 }

@@ -3,10 +3,11 @@ import { PiggyBank } from 'lucide-react'
 import { Button, Card, Pagination, Skeleton } from '#/components/ui'
 import type {
   AlternativeFilters,
+  AlternativeSort,
   AlternativesPage,
   ItemSummary,
 } from '#/lib/api/alternative-types'
-import type { CompanyRead } from '#/lib/api/types'
+import type { CompanyRead, SortOrder } from '#/lib/api/types'
 import { isFiltered } from '#/lib/alternative-search'
 import { formatCount, formatMoney } from '#/lib/format/format'
 import { AlternativesTable } from './alternatives-table'
@@ -101,9 +102,14 @@ export interface AlternativesPanelProps {
   loading: boolean
   error: boolean
   filters: AlternativeFilters
+  sort: AlternativeSort
+  order: SortOrder
+  /** Whether unit prices can be sorted; false when they would compare currencies. */
+  unitPriceSortable: boolean
   companies: Array<CompanyRead>
   onFiltersChange: (changes: Partial<AlternativeFilters>) => void
   onClearFilters: () => void
+  onSort: (column: AlternativeSort) => void
   onPageChange: (page: number) => void
   onSelect: (item: ItemSummary) => void
 }
@@ -114,9 +120,13 @@ export function AlternativesPanel({
   loading,
   error,
   filters,
+  sort,
+  order,
+  unitPriceSortable,
   companies,
   onFiltersChange,
   onClearFilters,
+  onSort,
   onPageChange,
   onSelect,
 }: AlternativesPanelProps) {
@@ -152,7 +162,14 @@ export function AlternativesPanel({
     return (
       <>
         <Headline result={result} />
-        <AlternativesTable items={result.items} onSelect={onSelect} />
+        <AlternativesTable
+          items={result.items}
+          sort={sort}
+          order={order}
+          unitPriceSortable={unitPriceSortable}
+          onSort={onSort}
+          onSelect={onSelect}
+        />
         {pageCount > 1 ? (
           <div className="flex justify-end">
             <Pagination

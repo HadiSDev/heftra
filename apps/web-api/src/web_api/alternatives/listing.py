@@ -1,8 +1,9 @@
-"""The items with open alternatives, best yearly saving first."""
+"""The items with open alternatives, best yearly saving first unless sorted otherwise."""
 from __future__ import annotations
 
 from dataclasses import dataclass
 from decimal import Decimal
+from typing import Literal
 
 from sqlalchemy import func, nulls_last
 from sqlmodel import Session, col, select
@@ -14,10 +15,14 @@ from ..db.models import (
     CompanyItem,
     ItemAlternative,
     ItemClass,
+    Vendor,
 )
 from ..schemas.alternatives import AlternativeRead, AlternativesPage, ItemSummary
 from ..specs.specification import read_spec
 from .reads import alternative_reads, vendor_names
+
+AlternativeSort = Literal["saving", "name", "supplier", "unit_price", "alternatives"]
+SortOrder = Literal["asc", "desc"]
 
 
 @dataclass(frozen=True)
@@ -27,10 +32,19 @@ class AlternativeFilters:
     item_class: ItemClass | None = None
 
 
+def default_order(sort: AlternativeSort) -> SortOrder:
+    """The order a column sorts in when first chosen: names A-Z, figures largest first."""
+    if sort in ("name", "supplier"):
+        return "asc"
+    return "desc"
+
+
 def list_items(session: Session, company_ids: list[str], filters: AlternativeFilters,
-               page: int, page_size: int) -> AlternativesPage:
+               page: int, page_size: int, sort: AlternativeSort = "saving",
+               order: SortOrder | None = None) -> AlternativesPage:
     """The companies' items with an open alternative passing the filters, each with its best
-    one; the page totals their best savings when they share a currency."""
+    one, in the sort's order with ties by id; the page totals their best savings when they
+    share a currency."""
     conditions = _open(company_ids, filters)
     best = (select(ItemAlternative.item_id, func.max(ItemAlternative.saving_yearly).label("best"),
                    func.count().label("found"))
@@ -46,7 +60,11 @@ def list_items(session: Session, company_ids: list[str], filters: AlternativeFil
                func.max(listed.c.base_currency))
     ).one()
 
-    rows = session.exec(statement.order_by(nulls_last(best.c.best.desc()), CompanyItem.id)
+    column = _sort_column(sort, best)
+    if sort == "supplier":
+        statement = statement.outerjoin(Vendor, Vendor.id == CompanyItem.vendor_id)
+    direction = column.asc() if (order or default_order(sort)) == "asc" else column.desc()
+    rows = session.exec(statement.order_by(nulls_last(direction), CompanyItem.id)
                         .offset((page - 1) * page_size).limit(page_size)).all()
     items = [item for item, _ in rows]
     best_of = _best_alternatives(session, [item.id for item in items], conditions)
@@ -59,6 +77,18 @@ def list_items(session: Session, company_ids: list[str], filters: AlternativeFil
         searched_items=session.exec(select(func.count()).where(
             col(CompanyItem.company_id).in_(company_ids),
             col(CompanyItem.searched_at).is_not(None))).one())
+
+
+def _sort_column(sort: AlternativeSort, best):
+    """The expression the items are ordered by; the name is the specification's when known."""
+    columns = {
+        "saving": best.c.best,
+        "name": func.coalesce(CompanyItem.spec["name"].as_string(), CompanyItem.item_name),
+        "supplier": Vendor.name,
+        "unit_price": CompanyItem.unit_price,
+        "alternatives": best.c.found,
+    }
+    return columns[sort]
 
 
 def _open(company_ids: list[str], filters: AlternativeFilters) -> list:
