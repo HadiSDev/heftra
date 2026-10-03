@@ -1,8 +1,8 @@
 import type { SortOrder } from '#/components/ui'
 
 /** A table's sort: the column and which way. */
-export interface SortState<C extends string> {
-  sort: C
+export interface SortState<TColumn extends string> {
+  sort: TColumn
   order: SortOrder
 }
 
@@ -10,11 +10,11 @@ const ORDERS: ReadonlyArray<SortOrder> = ['asc', 'desc']
 
 /** The sort after a header is clicked: another column starts in its own order, the same
  * column turns around. */
-export function nextSort<C extends string>(
-  current: SortState<C>,
-  column: C,
-  defaultOrder: (column: C) => SortOrder,
-): SortState<C> {
+export function nextSort<TColumn extends string>(
+  current: SortState<TColumn>,
+  column: TColumn,
+  defaultOrder: (column: TColumn) => SortOrder,
+): SortState<TColumn> {
   if (column !== current.sort) {
     return { sort: column, order: defaultOrder(column) }
   }

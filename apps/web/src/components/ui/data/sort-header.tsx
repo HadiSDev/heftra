@@ -4,16 +4,17 @@ import { TableHead } from './table'
 
 export type SortOrder = 'asc' | 'desc'
 
-export interface SortHeaderProps<C extends string> {
+export interface SortHeaderProps<TColumn extends string> {
   label: string
-  column: C
+  column: TColumn
   /** The column the table is currently sorted by. */
-  sort: C
+  sort: TColumn
   order: SortOrder
-  onSort: (column: C) => void
+  onSort: (column: TColumn) => void
   align?: 'left' | 'right'
   /** When false the header is a plain label. */
   sortable?: boolean
+  colSpan?: number
 }
 
 function ariaSort(active: boolean, order: SortOrder) {
@@ -24,7 +25,7 @@ function ariaSort(active: boolean, order: SortOrder) {
 }
 
 /** A column header that sorts the table by its column, and shows which way. */
-export function SortHeader<C extends string>({
+export function SortHeader<TColumn extends string>({
   label,
   column,
   sort,
@@ -32,13 +33,15 @@ export function SortHeader<C extends string>({
   onSort,
   align = 'left',
   sortable = true,
-}: SortHeaderProps<C>) {
+  colSpan,
+}: SortHeaderProps<TColumn>) {
   const active = sortable && sort === column
   const Icon = active ? (order === 'asc' ? ArrowUp : ArrowDown) : ArrowUpDown
 
   return (
     <TableHead
       aria-sort={sortable ? ariaSort(active, order) : undefined}
+      colSpan={colSpan}
       className={cn(align === 'right' && 'text-right')}
     >
       {sortable ? (
