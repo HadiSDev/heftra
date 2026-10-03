@@ -154,6 +154,11 @@ export {
 } from './data/table'
 export { Pagination, type PaginationProps } from './data/pagination'
 export {
+  SortHeader,
+  type SortHeaderProps,
+  type SortOrder,
+} from './data/sort-header'
+export {
   DataTable,
   type ColumnDef,
   type DataTableProps,

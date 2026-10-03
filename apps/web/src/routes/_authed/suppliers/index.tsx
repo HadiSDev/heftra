@@ -6,6 +6,7 @@ import { useApi } from '#/lib/auth/auth'
 import { companiesQueryOptions } from '#/lib/api/companies'
 import { supplierOverviewQueryOptions } from '#/lib/api/vendors'
 import type { SupplierFilters, SupplierSort } from '#/lib/api/types'
+import { nextSort } from '#/lib/sorting'
 import {
   applySupplierFilterChange,
   canSortBySpend,
@@ -42,11 +43,7 @@ function SuppliersPage() {
   )
 
   function onSort(column: SupplierSort) {
-    if (column !== sort) {
-      onFiltersChange({ sort: column, order: defaultOrder(column) })
-      return
-    }
-    onFiltersChange({ sort: column, order: order === 'asc' ? 'desc' : 'asc' })
+    onFiltersChange(nextSort({ sort, order }, column, defaultOrder))
   }
 
   return (

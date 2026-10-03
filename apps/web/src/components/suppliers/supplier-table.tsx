@@ -1,4 +1,5 @@
 import {
+  SortHeader,
   Table,
   TableBody,
   TableCell,
@@ -12,7 +13,6 @@ import type {
   SupplierSort,
   VendorOverviewRead,
 } from '#/lib/api/types'
-import { SortHeader } from './sort-header'
 import { SupplierCountry } from './supplier-country'
 import { SupplierDescription } from './supplier-description'
 import { SupplierSpend } from './supplier-spend'

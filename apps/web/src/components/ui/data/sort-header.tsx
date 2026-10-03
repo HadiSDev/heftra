@@ -1,14 +1,16 @@
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react'
-import { TableHead, cn } from '#/components/ui'
-import type { SortOrder, SupplierSort } from '#/lib/api/types'
+import { cn } from '../cn'
+import { TableHead } from './table'
 
-export interface SortHeaderProps {
+export type SortOrder = 'asc' | 'desc'
+
+export interface SortHeaderProps<C extends string> {
   label: string
-  column: SupplierSort
-  /** The sort the table is currently in. */
-  sort: SupplierSort
+  column: C
+  /** The column the table is currently sorted by. */
+  sort: C
   order: SortOrder
-  onSort: (column: SupplierSort) => void
+  onSort: (column: C) => void
   align?: 'left' | 'right'
   /** When false the header is a plain label. */
   sortable?: boolean
@@ -22,7 +24,7 @@ function ariaSort(active: boolean, order: SortOrder) {
 }
 
 /** A column header that sorts the table by its column, and shows which way. */
-export function SortHeader({
+export function SortHeader<C extends string>({
   label,
   column,
   sort,
@@ -30,7 +32,7 @@ export function SortHeader({
   onSort,
   align = 'left',
   sortable = true,
-}: SortHeaderProps) {
+}: SortHeaderProps<C>) {
   const active = sortable && sort === column
   const Icon = active ? (order === 'asc' ? ArrowUp : ArrowDown) : ArrowUpDown
 
