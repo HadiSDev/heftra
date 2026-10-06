@@ -11,15 +11,15 @@ const REPO = join(dirname(fileURLToPath(import.meta.url)), '../../../../..')
 const brand = (path: string) => readFileSync(join(REPO, 'brand', path), 'utf8')
 
 describe('Logo', () => {
-  it('is an image named Steelyard, with no text node spelling the name', () => {
+  it('is an image named Heftra, with no text node spelling the name', () => {
     const { container } = render(<Logo width={140} />)
-    const logo = screen.getByRole('img', { name: 'Steelyard' })
+    const logo = screen.getByRole('img', { name: 'Heftra' })
     expect(logo.tagName.toLowerCase()).toBe('svg')
     expect(container.textContent).toBe('')
   })
 
   it("draws the wordmark from the pack's outlines, verbatim", () => {
-    const pack = brand('svg/steelyard-lockup-black.svg')
+    const pack = brand('svg/heftra-lockup-black.svg')
     expect(pack).toContain(`d="${WORDMARK_PATH}"`)
   })
 
@@ -59,7 +59,7 @@ describe('Logo', () => {
   })
 
   it('keeps the geometry of the pack symbol and favicon', () => {
-    expect(brand('svg/steelyard-symbol-black.svg')).toContain(
+    expect(brand('svg/heftra-symbol-black.svg')).toContain(
       '<circle cx="18" cy="32" r="12"/><rect x="18" y="29" width="36" height="6"/><circle cx="54" cy="32" r="6"/>',
     )
     expect(brand('favicon/favicon.svg')).toContain(

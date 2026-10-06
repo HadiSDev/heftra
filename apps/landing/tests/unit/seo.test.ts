@@ -8,15 +8,15 @@ import {
   websiteJsonLd,
 } from '../../src/lib/seo'
 
-const siteUrl = 'https://steelyard.com/'
+const siteUrl = 'https://heftra.com/'
 
 describe('organizationJsonLd', () => {
   it('describes the organization with a sales contact', () => {
     const data = organizationJsonLd({
-      name: 'Steelyard',
+      name: 'Heftra',
       siteUrl,
-      logoUrl: 'https://steelyard.com/favicon-512.png',
-      email: 'hello@steelyard.com',
+      logoUrl: 'https://heftra.com/favicon-512.png',
+      email: 'hello@heftra.com',
       parent: {
         legalName: 'VectorLab ApS',
         vatId: 'DK46341732',
@@ -36,31 +36,31 @@ describe('organizationJsonLd', () => {
       address: { addressLocality: 'Roskilde', addressCountry: 'DK' },
     })
     expect(data['@type']).toBe('Organization')
-    expect(data['@id']).toBe('https://steelyard.com/#organization')
+    expect(data['@id']).toBe('https://heftra.com/#organization')
     expect(data.contactPoint).toMatchObject({
       contactType: 'sales',
-      email: 'hello@steelyard.com',
+      email: 'hello@heftra.com',
     })
   })
 })
 
 describe('websiteJsonLd', () => {
   it('names the site and links its publisher', () => {
-    const data = websiteJsonLd('Steelyard', siteUrl)
+    const data = websiteJsonLd('Heftra', siteUrl)
     expect(data).toMatchObject({
       '@type': 'WebSite',
       url: siteUrl,
-      publisher: { '@id': 'https://steelyard.com/#organization' },
+      publisher: { '@id': 'https://heftra.com/#organization' },
     })
   })
 })
 
 describe('softwareApplicationJsonLd', () => {
   const data = softwareApplicationJsonLd({
-    name: 'Steelyard',
+    name: 'Heftra',
     description: 'Spend analytics',
     siteUrl,
-    imageUrl: 'https://steelyard.com/og-image-1200x630.png',
+    imageUrl: 'https://heftra.com/og-image-1200x630.png',
     plans: [
       { name: 'Starter', monthlyPriceEur: 249 },
       { name: 'Growth', monthlyPriceEur: 690 },
@@ -86,10 +86,10 @@ describe('breadcrumbJsonLd', () => {
   it('numbers the trail from one', () => {
     const data = breadcrumbJsonLd([
       { name: 'Home', url: siteUrl },
-      { name: 'Privacy policy', url: 'https://steelyard.com/privacy/' },
+      { name: 'Privacy policy', url: 'https://heftra.com/privacy/' },
     ])
     expect(data.itemListElement.map((item) => item.position)).toEqual([1, 2])
-    expect(data.itemListElement[1].item).toBe('https://steelyard.com/privacy/')
+    expect(data.itemListElement[1].item).toBe('https://heftra.com/privacy/')
   })
 })
 

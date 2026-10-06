@@ -1,6 +1,6 @@
-# Steelyard landing site
+# Heftra landing site
 
-The public marketing site for Steelyard, served at `https://steelyard.com`. It is
+The public marketing site for Heftra, served at `https://heftra.com`. It is
 a static [Astro](https://astro.build) site: Tailwind CSS v4, Geist, GSAP for
 scroll motion, and no server runtime.
 
@@ -14,8 +14,8 @@ bun install
 
 | Variable          | Local                   | Production                  |
 | ----------------- | ----------------------- | --------------------------- |
-| `PUBLIC_SITE_URL` | `http://localhost:3200` | `https://steelyard.com`     |
-| `PUBLIC_APP_URL`  | `http://localhost:3100` | `https://app.steelyard.com` |
+| `PUBLIC_SITE_URL` | `http://localhost:3200` | `https://heftra.com`        |
+| `PUBLIC_APP_URL`  | `http://localhost:3100` | `https://app.heftra.com`    |
 | `PUBLIC_API_URL`  | `http://localhost:8100` | the web API's public origin |
 
 The build fails when any of them is missing.
@@ -65,7 +65,7 @@ asset URL as a CSS mask.
 | `billy.svg`        | billy.dk site header (Billy by Shine), brand teal `#002E33`                    |
 
 The logos are the vendors' trademarks, shown only to say which systems
-Steelyard connects to.
+Heftra connects to.
 
 ## Product screenshots
 
@@ -108,28 +108,31 @@ security headers, `/healthz`). `docker-compose.yml` runs it next to `cloudflared
 so nothing is published on the host.
 
 1. **Cloudflare**: in Zero Trust → Networks → Tunnels, create a tunnel and copy
-   its token. Add the public hostname `steelyard.com` → `http://landing:8080`
-   (and `www.steelyard.com` → the same, or a redirect rule to the apex).
+   its token. Add the public hostname `heftra.com` → `http://landing:8080`.
+   `heftra.com` is the only host the site serves: add a redirect rule that sends
+   `www.heftra.com`, `heftra.ai` and `www.heftra.ai` to `https://heftra.com`
+   with a 301, keeping the path and query string. Those hostnames need proxied
+   DNS records so the rule can run.
 2. **Dokploy**: create a Compose service from this repository with compose path
    `apps/landing/docker-compose.yml`, and set these environment variables:
 
-   | Variable          | Value                                 |
-   | ----------------- | ------------------------------------- |
-   | `TUNNEL_TOKEN`    | the tunnel token (required)           |
-   | `PUBLIC_SITE_URL` | `https://steelyard.com` (default)     |
-   | `PUBLIC_APP_URL`  | `https://app.steelyard.com` (default) |
-   | `PUBLIC_API_URL`  | `https://api.steelyard.com` (default) |
+   | Variable          | Value                              |
+   | ----------------- | ---------------------------------- |
+   | `TUNNEL_TOKEN`    | the tunnel token (required)        |
+   | `PUBLIC_SITE_URL` | `https://heftra.com` (default)     |
+   | `PUBLIC_APP_URL`  | `https://app.heftra.com` (default) |
+   | `PUBLIC_API_URL`  | `https://api.heftra.com` (default) |
 
    The `PUBLIC_*` values are baked in at build time, so change them by
    redeploying. Don't add a Dokploy domain for this service; the tunnel routes
    traffic.
 
 3. **Demo form**: the web API at `PUBLIC_API_URL` must be reachable and list
-   `https://steelyard.com` in `WEB_API_CORS_ORIGINS`, with `DEMO_BOOKING_URL` set.
+   `https://heftra.com` in `WEB_API_CORS_ORIGINS`, with `DEMO_BOOKING_URL` set.
 
 To try the image locally:
 
 ```bash
-docker build -t steelyard-landing .
-docker run --rm -p 8088:8080 steelyard-landing
+docker build -t heftra-landing .
+docker run --rm -p 8088:8080 heftra-landing
 ```

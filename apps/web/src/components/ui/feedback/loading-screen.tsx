@@ -9,7 +9,7 @@ export interface LoadingScreenProps {
 
 const BAR_DELAYS = ['0ms', '120ms', '240ms', '360ms']
 
-/** Full-screen loading state: the Steelyard lockup above animated spend bars. */
+/** Full-screen loading state: the Heftra lockup above animated spend bars. */
 export function LoadingScreen({ message, className }: LoadingScreenProps) {
   return (
     <div
@@ -21,7 +21,7 @@ export function LoadingScreen({ message, className }: LoadingScreenProps) {
       )}
     >
       <div className="relative flex flex-col items-center gap-7">
-        <Logo width={160} />
+        <Logo width={116} />
 
         <div className="flex h-9 items-end gap-1.5" aria-hidden="true">
           {BAR_DELAYS.map((delay) => (

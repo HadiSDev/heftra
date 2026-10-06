@@ -63,8 +63,8 @@ interface ActionSpec {
   sentence: Sentence
 }
 
-const AI_NAME = 'Steelyard AI'
-const SYSTEM_NAME = 'Steelyard'
+const AI_NAME = 'Heftra AI'
+const SYSTEM_NAME = 'Heftra'
 const UNKNOWN_PERSON = 'A team member'
 
 const CATEGORY_FIELDS = ['level_1', 'level_2', 'level_3', 'level_4']

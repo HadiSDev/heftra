@@ -118,7 +118,7 @@ describe('performance hints and discovery files', () => {
 
   it('serves a web manifest with the brand colour and icons', () => {
     const manifest = JSON.parse(readDist('site.webmanifest'))
-    expect(manifest.name).toBe('Steelyard')
+    expect(manifest.name).toBe('Heftra')
     expect(manifest.theme_color).toBe('#0A0A0A')
     expect(manifest.icons.map((icon: { sizes: string }) => icon.sizes)).toEqual(
       ['192x192', '512x512'],
@@ -127,7 +127,7 @@ describe('performance hints and discovery files', () => {
 
   it('publishes llms.txt with the product, features, pricing and FAQ', () => {
     const llms = readDist('llms.txt')
-    expect(llms.startsWith('# Steelyard')).toBe(true)
+    expect(llms.startsWith('# Heftra')).toBe(true)
     expect(llms).toContain('## Features')
     expect(llms).toContain('## Pricing')
     expect(llms).toContain('## FAQ')

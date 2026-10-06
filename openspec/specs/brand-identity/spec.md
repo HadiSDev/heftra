@@ -1,7 +1,7 @@
 # brand-identity Specification
 
 ## Purpose
-Defines the Steelyard brand in the product: the tracked brand source in the repository, the product name wherever a person reads it, the logo rendered from its outlines in ink, the web app's brand metadata, and the product name in local infrastructure.
+Defines the Heftra brand in the product: the tracked brand source in the repository, the product name wherever a person reads it, the logo rendered from its outlines in ink, the web app's brand metadata, and the product name in local infrastructure.
 
 ## Requirements
 ### Requirement: The brand source lives in the repository

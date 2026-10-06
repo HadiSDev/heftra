@@ -42,7 +42,7 @@ describe('describeEvent', () => {
   it('credits the AI and reads as a sentence for a categorization', () => {
     const event = describeEvent(AI_CATEGORIZED)
     expect(event.tone).toBe('ai')
-    expect(headlineText(event)).toBe('Steelyard AI categorized Line 1')
+    expect(headlineText(event)).toBe('Heftra AI categorized Line 1')
   })
 
   it('collapses the three category levels into one path', () => {
@@ -106,7 +106,7 @@ describe('describeEvent', () => {
       }),
     )
     expect(event.tone).toBe('failure')
-    expect(headlineText(event)).toBe("Steelyard AI couldn't categorize Line 1")
+    expect(headlineText(event)).toBe("Heftra AI couldn't categorize Line 1")
     expect(event.summary).toContainEqual({
       kind: 'note',
       label: 'Why it failed',

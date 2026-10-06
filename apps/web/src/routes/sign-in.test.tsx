@@ -31,13 +31,13 @@ beforeEach(() => {
 })
 
 describe('sign-in branding', () => {
-  it('shows the Steelyard lockup, rendered rather than typed', () => {
+  it('shows the Heftra lockup, rendered rather than typed', () => {
     const { container } = render(<SignInPage />)
 
     expect(
-      screen.getByRole('img', { name: 'Steelyard' }).tagName.toLowerCase(),
+      screen.getByRole('img', { name: 'Heftra' }).tagName.toLowerCase(),
     ).toBe('svg')
-    expect(container.textContent).not.toMatch(/steelyard/i)
+    expect(container.textContent).not.toMatch(/heftra/i)
   })
 })
 

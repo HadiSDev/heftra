@@ -1,5 +1,5 @@
 /** The document head's brand metadata: name, icons, theme colour, share card. */
-export const PRODUCT_NAME = 'Steelyard'
+export const PRODUCT_NAME = 'Heftra'
 export const TAGLINE = 'Know the true price of everything you buy.'
 /** The brand colour, also used for the browser chrome. */
 export const THEME_COLOR = '#0A0A0A'

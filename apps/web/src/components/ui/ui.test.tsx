@@ -540,12 +540,12 @@ describe('LoadingScreen', () => {
     expect(status.textContent).toContain('Preparing your workspace…')
   })
 
-  it('shows the Steelyard lockup, rendered rather than typed', () => {
+  it('shows the Heftra lockup, rendered rather than typed', () => {
     const { container } = render(<LoadingScreen />)
     expect(
-      screen.getByRole('img', { name: 'Steelyard' }).tagName.toLowerCase(),
+      screen.getByRole('img', { name: 'Heftra' }).tagName.toLowerCase(),
     ).toBe('svg')
-    expect(container.textContent).not.toMatch(/steelyard/i)
+    expect(container.textContent).not.toMatch(/heftra/i)
   })
 })
 

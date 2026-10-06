@@ -10,7 +10,7 @@ from web_api import config
 from web_api.db.models import DemoRequest
 
 _URL = "/api/v1/public/demo-requests"
-_BOOKING_URL = "https://cal.example/steelyard-demo"
+_BOOKING_URL = "https://cal.example/heftra-demo"
 
 
 def _now_ms() -> int:

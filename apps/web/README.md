@@ -1,4 +1,4 @@
-# Steelyard — admin panel frontend
+# Heftra — admin panel frontend
 
 Vite + React 19 + TanStack Start, styled with Tailwind v4 and a reusable UI
 component library built on [Base UI](https://base-ui.com/) primitives.
@@ -47,7 +47,7 @@ In dev the web API's `WEB_API_CORS_ORIGINS` must include the frontend origin
 ## UI component library (`src/components/ui/`)
 
 `src/components/ui/` is the design system: token-driven, accessible, reusable components
-that render the **Steelyard** palette — black `#0A0A0A` and white, with status
+that render the **Heftra** palette — black `#0A0A0A` and white, with status
 colours as the only hue (see `brand/README.md` at the repository root). Import everything from the barrel:
 
 ```tsx

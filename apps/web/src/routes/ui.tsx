@@ -296,7 +296,7 @@ function UiShowcase() {
       sidebar={
         <Sidebar>
           <SidebarHeader>
-            <Logo width={124} className="my-1" />
+            <Logo width={90} className="my-1" />
           </SidebarHeader>
           <SidebarContent>
             <SidebarNav>

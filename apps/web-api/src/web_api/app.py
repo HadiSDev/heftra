@@ -52,7 +52,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 def create_app() -> FastAPI:
     app = FastAPI(
         lifespan=lifespan,
-        title="Steelyard Web API",
+        title="Heftra Web API",
         version="0.1.0",
         description="Clerk-authenticated API for reviewing raw ERP spend data.",
         docs_url=None,

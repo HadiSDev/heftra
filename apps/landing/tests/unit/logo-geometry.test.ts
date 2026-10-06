@@ -25,15 +25,21 @@ function shapeMarkup(shapes: Array<MarkShape>): string {
     .join('')
 }
 
+function transformNumbers(transform: string): Array<number> {
+  return Array.from(transform.matchAll(/-?\d+(\.\d+)?/g), (match) =>
+    Number(match[0]),
+  )
+}
+
 describe('logo geometry', () => {
   it('uses the wordmark outline from the lockup SVG verbatim', () => {
-    expect(readBrand('svg/steelyard-lockup-black.svg')).toContain(
+    expect(readBrand('svg/heftra-lockup-black.svg')).toContain(
       `d="${WORDMARK_PATH}"`,
     )
   })
 
   it('uses the mark from the symbol SVG', () => {
-    expect(readBrand('svg/steelyard-symbol-black.svg')).toContain(
+    expect(readBrand('svg/heftra-symbol-black.svg')).toContain(
       shapeMarkup(MARK),
     )
   })
@@ -43,13 +49,14 @@ describe('logo geometry', () => {
   })
 
   it('places the mark in the lockup as the pack does', () => {
-    const lockup = readBrand('svg/steelyard-lockup-black.svg')
+    const lockup = readBrand('svg/heftra-lockup-black.svg')
     expect(lockup).toContain(shapeMarkup(MARK))
-    expect(lockup).toMatch(
-      /translate\(-15\.975(0+1)? -53\.25\) scale\(2\.6625\)/,
-    )
-    expect(LOCKUP_MARK_TRANSFORM).toBe(
-      'translate(-15.975 -53.25) scale(2.6625)',
+    const packTransform = lockup.match(/<g [^>]*transform="([^"]+)"/)?.[1]
+    expect(packTransform).toBeDefined()
+    expect(transformNumbers(LOCKUP_MARK_TRANSFORM)).toEqual(
+      transformNumbers(packTransform ?? '').map((value) =>
+        expect.closeTo(value, 6),
+      ),
     )
   })
 })

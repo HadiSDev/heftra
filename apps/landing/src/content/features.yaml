@@ -3,13 +3,13 @@
   icon: sparkles
   eyebrow: AI categorization
   title: Every invoice line, in your own spend tree
-  benefit: Steelyard reads each line on every supplier invoice and files it under the category your business actually uses, not a generic account code.
+  benefit: Heftra reads each line on every supplier invoice and files it under the category your business actually uses, not a generic account code.
   points:
     - Categorizes at line level, so one invoice can land in several categories
     - Learns from your spend tree, your suppliers and what they sell
     - Flags low-confidence lines for a person to confirm
   screenshot: spend-lines
-  screenshotAlt: The Steelyard spend lines table, with each invoice line showing its supplier, amount and spend category.
+  screenshotAlt: The Heftra spend lines table, with each invoice line showing its supplier, amount and spend category.
 
 - id: dashboard
   order: 2
@@ -22,33 +22,33 @@
     - Every figure converted to your reporting currency
     - Drill from a total down to the invoice line
   screenshot: dashboard
-  screenshotAlt: The Steelyard dashboard showing total spend, spend over time and the largest categories and suppliers.
+  screenshotAlt: The Heftra dashboard showing total spend, spend over time and the largest categories and suppliers.
 
 - id: alternatives
   order: 3
   icon: coins
   eyebrow: Cheaper alternatives
   title: Find the same item for less
-  benefit: Steelyard matches what you buy across suppliers and shows where you pay more than you need to for the same product.
+  benefit: Heftra matches what you buy across suppliers and shows where you pay more than you need to for the same product.
   points:
     - Compares unit prices for matching items across your suppliers
     - Ranks findings by the saving they are worth
     - Shows the evidence behind every match
   screenshot: alternatives
-  screenshotAlt: The Steelyard alternatives list, ranking items by potential saving with current and alternative unit prices.
+  screenshotAlt: The Heftra alternatives list, ranking items by potential saving with current and alternative unit prices.
 
 - id: agreements
   order: 4
   icon: fileCheck
   eyebrow: Agreement compliance
   title: Hold suppliers to the prices you negotiated
-  benefit: Upload your trade and framework agreements. Steelyard reads the terms and checks every invoice line against them.
+  benefit: Upload your trade and framework agreements. Heftra reads the terms and checks every invoice line against them.
   points:
     - Terms read from the agreement, each quote checked against its page
     - A manager confirms the terms before checks run
     - Findings come with the amount and the reason
   screenshot: agreements
-  screenshotAlt: A Steelyard agreement compliance report listing invoice lines priced above the agreed terms.
+  screenshotAlt: A Heftra agreement compliance report listing invoice lines priced above the agreed terms.
 
 - id: suppliers
   order: 5
@@ -61,7 +61,7 @@
     - Spend and categories per supplier
     - Redundant suppliers for the same category surfaced
   screenshot: suppliers
-  screenshotAlt: The Steelyard supplier directory with spend and categories for each supplier.
+  screenshotAlt: The Heftra supplier directory with spend and categories for each supplier.
 
 - id: emissions
   order: 6
@@ -74,4 +74,4 @@
     - Open emission factors, adjusted for inflation
     - Emissions alongside spend on the dashboard
   screenshot: dashboard
-  screenshotAlt: The Steelyard dashboard showing spend-based emissions next to spend.
+  screenshotAlt: The Heftra dashboard showing spend-based emissions next to spend.

@@ -3,12 +3,12 @@ import { buildLinks } from '../../src/lib/links'
 
 describe('buildLinks', () => {
   const links = buildLinks(
-    'https://app.steelyard.com',
-    'https://api.steelyard.com',
+    'https://app.heftra.com',
+    'https://api.heftra.com',
   )
 
   it('points sign-in at the web app', () => {
-    expect(links.signIn).toBe('https://app.steelyard.com/sign-in')
+    expect(links.signIn).toBe('https://app.heftra.com/sign-in')
   })
 
   it('sends every demo CTA to the on-site request form', () => {
@@ -17,7 +17,7 @@ describe('buildLinks', () => {
 
   it('posts demo requests to the public web API route', () => {
     expect(links.demoRequestEndpoint).toBe(
-      'https://api.steelyard.com/api/v1/public/demo-requests',
+      'https://api.heftra.com/api/v1/public/demo-requests',
     )
   })
 

@@ -21,8 +21,8 @@ const pages = [
 describe('search and sharing metadata', () => {
   const home = readDist('index.html')
 
-  it('shares as Steelyard with the tagline and an absolute OG image', () => {
-    expect(meta(home, 'property', 'og:title')).toBe('Steelyard')
+  it('shares as Heftra with the tagline and an absolute OG image', () => {
+    expect(meta(home, 'property', 'og:title')).toBe('Heftra')
     expect(meta(home, 'property', 'og:description')).toContain(
       'Know the true price of everything you buy.',
     )
@@ -81,6 +81,20 @@ describe('product name', () => {
       const content = readFileSync(file, 'utf8').toLowerCase()
       expect(content.includes('spend predictor'), file).toBe(false)
       expect(content.includes('erpsaa'), file).toBe(false)
+      expect(content.includes('steelyard'), file).toBe(false)
     }
+  })
+
+  it('publishes contact addresses only on heftra.com', () => {
+    const addresses = distTextFiles().flatMap((file) =>
+      Array.from(
+        readFileSync(file, 'utf8').matchAll(/[\w.+-]+@heftra\.[a-z]+/gi),
+        (match) => match[0].toLowerCase(),
+      ),
+    )
+    expect(addresses.length).toBeGreaterThan(0)
+    expect(
+      addresses.filter((address) => !address.endsWith('@heftra.com')),
+    ).toEqual([])
   })
 })

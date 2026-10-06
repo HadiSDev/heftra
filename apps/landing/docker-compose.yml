@@ -1,13 +1,13 @@
-name: steelyard-landing
+name: heftra-landing
 
 services:
   landing:
     build:
       context: .
       args:
-        PUBLIC_SITE_URL: ${PUBLIC_SITE_URL:-https://steelyard.com}
-        PUBLIC_APP_URL: ${PUBLIC_APP_URL:-https://app.steelyard.com}
-        PUBLIC_API_URL: ${PUBLIC_API_URL:-https://api.steelyard.com}
+        PUBLIC_SITE_URL: ${PUBLIC_SITE_URL:-https://heftra.com}
+        PUBLIC_APP_URL: ${PUBLIC_APP_URL:-https://app.heftra.com}
+        PUBLIC_API_URL: ${PUBLIC_API_URL:-https://api.heftra.com}
     restart: unless-stopped
     expose:
       - "8080"

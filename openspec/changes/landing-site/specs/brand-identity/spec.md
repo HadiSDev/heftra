@@ -21,12 +21,12 @@ effects MAY move the logo's container but SHALL NOT alter the logo itself.
 #### Scenario: Header lockup
 
 - **WHEN** the landing site's navigation renders
-- **THEN** it shows the Steelyard lockup as inline SVG with the accessible name
-  "Steelyard", no text node of the product name beside it, and in the ink colour
+- **THEN** it shows the Heftra lockup as inline SVG with the accessible name
+  "Heftra", no text node of the product name beside it, and in the ink colour
   of the current theme
 
 #### Scenario: No legacy name on the landing site
 
-- **WHEN** `apps/landing/src` is searched case-insensitively for "spend predictor"
-  and "erpsaa"
+- **WHEN** `apps/landing/src` is searched case-insensitively for "spend predictor",
+  "erpsaa" and "steelyard"
 - **THEN** there are no matches

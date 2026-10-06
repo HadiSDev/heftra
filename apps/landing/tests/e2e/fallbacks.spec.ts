@@ -62,7 +62,7 @@ test.describe('without JavaScript', () => {
   }) => {
     await page.goto('/demo/')
     await expect(
-      page.getByRole('link', { name: 'hello@steelyard.com' }).first(),
+      page.getByRole('link', { name: 'hello@heftra.com' }).first(),
     ).toBeVisible()
   })
 })

@@ -304,7 +304,7 @@ function SignInPage() {
     <div className="grid min-h-screen place-items-center bg-background px-4 py-10">
       <div className="w-full max-w-sm">
         <div className="mb-8 flex justify-center">
-          <Logo width={160} />
+          <Logo width={116} />
         </div>
 
         <Card className="p-6">

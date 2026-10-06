@@ -1,6 +1,6 @@
 type Theme = 'light' | 'dark'
 
-const storageKey = 'steelyard-theme'
+const storageKey = 'heftra-theme'
 
 function currentTheme(): Theme {
   return document.documentElement.classList.contains('dark') ? 'dark' : 'light'

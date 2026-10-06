@@ -30,8 +30,8 @@ describe('served brand assets', () => {
 
   it('the manifest names the product and uses the pack icons', () => {
     const manifest = JSON.parse(readFileSync(pub('manifest.json'), 'utf8'))
-    expect(manifest.name).toBe('Steelyard')
-    expect(manifest.short_name).toBe('Steelyard')
+    expect(manifest.name).toBe('Heftra')
+    expect(manifest.short_name).toBe('Heftra')
     expect(manifest.theme_color).toBe('#0A0A0A')
     const icons = manifest.icons.map((icon: { src: string }) => icon.src)
     expect(icons).toEqual(

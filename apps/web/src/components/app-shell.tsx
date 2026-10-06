@@ -153,7 +153,7 @@ export function AppSidebar({ pathname }: { pathname: string }) {
   return (
     <Sidebar>
       <SidebarHeader className="flex-col items-stretch gap-2">
-        <Logo width={124} className="my-1" />
+        <Logo width={90} className="my-1" />
         <OrgSwitcher />
       </SidebarHeader>
       <SidebarContent>

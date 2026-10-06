@@ -1,6 +1,6 @@
 ## Why
 
-Steelyard has a working product (ERP sync, AI categorization, cheaper alternatives,
+Heftra has a working product (ERP sync, AI categorization, cheaper alternatives,
 agreement compliance, spend-based emissions) but no public face: there is nowhere
 to send a prospect, nothing to link from LinkedIn or an email, and no page that
 explains the product before someone signs in. A marketing site that tells the
@@ -10,7 +10,7 @@ investor sees, so it has to look as premium as the product is serious.
 ## What Changes
 
 - Add a new app, `apps/landing`, an Astro static site (bun, Tailwind v4, Geist)
-  that serves the public marketing page for Steelyard.
+  that serves the public marketing page for Heftra.
 - The home page carries every section a SaaS AI product landing page is expected
   to have: sticky navigation, a hero with the value proposition and primary/secondary
   CTAs, an integrations strip, the problem, how it works (connect → categorize →
@@ -20,7 +20,7 @@ investor sees, so it has to look as premium as the product is serious.
 - Testimonials are a content-driven section that renders only when real quotes
   exist; the site ships no invented customers, logos, quotes or statistics.
 - Cinematic scroll storytelling (depth layers, text reveals, a pinned
-  "how it works" sequence) in the monochrome Steelyard brand, with a complete
+  "how it works" sequence) in the monochrome Heftra brand, with a complete
   reduced-motion fallback and no layout shift.
 - Supporting pages: privacy policy, terms, and a branded 404.
 - Search and sharing metadata: per-page title and description, canonical URL,
@@ -41,7 +41,7 @@ investor sees, so it has to look as premium as the product is serious.
 
 ### New Capabilities
 
-- `landing-site`: The public Steelyard marketing site in `apps/landing` — the app
+- `landing-site`: The public Heftra marketing site in `apps/landing` — the app
   itself (stack, build, dev port, configuration), the home page sections and their
   content rules, supporting pages, motion and accessibility, and SEO/sharing metadata.
 

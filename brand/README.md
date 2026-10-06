@@ -1,4 +1,4 @@
-# Steelyard logo pack
+# Heftra logo pack
 
 The mark is **Counterweight**. The palette is **black `#0A0A0A` and white only**. The wordmark is Geist SemiBold, converted to outlines, so no font is needed to use these files.
 
@@ -15,7 +15,7 @@ The mark is **Counterweight**. The palette is **black `#0A0A0A` and white only**
 <link rel="icon" href="/favicon.ico" sizes="48x48">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<meta property="og:image" content="https://steelyard.com/og-image-1200x630.png">
+<meta property="og:image" content="https://heftra.com/og-image-1200x630.png">
 <meta name="theme-color" content="#0A0A0A">
 ```
 

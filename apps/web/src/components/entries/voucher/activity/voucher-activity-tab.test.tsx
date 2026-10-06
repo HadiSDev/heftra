@@ -40,7 +40,7 @@ describe('VoucherActivityTab', () => {
     const items = screen.getAllByRole('listitem')
     expect(items).toHaveLength(2)
     expect(within(items[0]).getByText('Hadi Salameh')).toBeTruthy()
-    expect(within(items[1]).getByText('Steelyard AI')).toBeTruthy()
+    expect(within(items[1]).getByText('Heftra AI')).toBeTruthy()
   })
 
   it('names the person instead of printing their id', () => {

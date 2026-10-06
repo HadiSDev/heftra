@@ -1,6 +1,6 @@
 ## Context
 
-Steelyard is a B2B spend-analytics product for EU mid-market companies and the
+Heftra is a B2B spend-analytics product for EU mid-market companies and the
 bookkeeping firms that serve them. The product lives in `apps/web` (TanStack Start,
 React, Tailwind v4, Geist, bun) behind Clerk sign-in. There is no public page.
 
@@ -72,7 +72,7 @@ a JS workspace for one file.
 ### Logo as Astro components drawn from the pack's outlines
 
 `src/components/brand/Lockup.astro` and `Symbol.astro` inline the path data from
-`brand/svg/` with `fill="currentColor"`, `role="img"` and `aria-label="Steelyard"`,
+`brand/svg/` with `fill="currentColor"`, `role="img"` and `aria-label="Heftra"`,
 and switch to the favicon geometry below 32 px. A test reads `brand/svg/*.svg` and
 asserts the path data in the components is identical.
 
@@ -145,7 +145,7 @@ are edited in place later.
 
 ### Pricing
 
-Steelyard is sold to mid-size and enterprise companies running enterprise ERPs.
+Heftra is sold to mid-size and enterprise companies running enterprise ERPs.
 Plans scale by legal entities, ERP connections and invoice-line volume. Prices are
 in EUR, excluding VAT, with two months free on annual billing. No free trial is
 advertised; every plan starts with a demo.
@@ -161,17 +161,17 @@ advertised; every plan starts with a demo.
 `/privacy` and `/terms` are written as plain-language starter policies for an EU
 B2B SaaS, each with a "Last updated" date:
 
-- **Privacy**: Steelyard as controller for website and account data and as
+- **Privacy**: Heftra as controller for website and account data and as
   processor for customer ERP data; what is collected (account details, ERP spend
   data, uploaded agreements); purposes and lawful bases; EU hosting; sub-processor
   categories (hosting, authentication, AI inference); demo requests (name, work
   email, company, kept 24 months); retention and deletion when a company is
   removed; GDPR rights; no tracking cookies; contact
-  `privacy@steelyard.com`.
+  `privacy@heftra.com`.
 - **Terms**: the service and accounts, subscription billing, customer
   data ownership, acceptable use, AI output as decision support that customers
   review, availability, liability cap, termination and data export, governing law
-  (Denmark), contact `hello@steelyard.com`.
+  (Denmark), contact `hello@heftra.com`.
 
 ### Configuration
 
@@ -181,11 +181,12 @@ B2B SaaS, each with a "Last updated" date:
 missing. A small `src/lib/links.ts` builds the sign-in, `/demo` and demo-request
 endpoint URLs from them.
 
-The production site origin is `https://steelyard.com` (apex, no `www`), matching
+The production site origin is `https://heftra.com` (apex, no `www`), matching
 the OG image URL already given in `brand/README.md`. `.env.example` lists that as
 the production value of `PUBLIC_SITE_URL`, with `http://localhost:3200` as the
-local value; `www.steelyard.com` redirects to the apex at the host. The web app
-is `https://app.steelyard.com` in production and `http://localhost:3100` locally,
+local value; `www.heftra.com`, `heftra.ai` and `www.heftra.ai` redirect to it
+at the host. The web app
+is `https://app.heftra.com` in production and `http://localhost:3100` locally,
 which are the production and local values of `PUBLIC_APP_URL`.
 
 ### Folder layout
@@ -250,7 +251,7 @@ purpose and a 24-month retention.
 script `scripts/demo-form.ts`: client-side `required`/`type=email` for fast
 feedback, server errors mapped onto fields, a live-region confirmation that shows
 the "Choose a time" link. `WEB_API_CORS_ORIGINS` gains the landing origin
-(`http://localhost:3200` locally, `https://steelyard.com` in production).
+(`http://localhost:3200` locally, `https://heftra.com` in production).
 
 *Alternatives:* a hosted form (Tally, HubSpot): no backend work, but data leaves
 our stack and the booking link is easy to reach without submitting. A Clerk
@@ -298,7 +299,7 @@ shipped to visitors.
 ## Migration Plan
 
 Additive. The new app is built and previewed locally on port 3200; deploying it to
-a static host and pointing `steelyard.com` (and a `www` redirect) at it is a
+a static host and pointing `heftra.com` (and a `www` redirect) at it is a
 separate, manual step.
 Rollback is removing the deployment; nothing else depends on the site.
 

@@ -1,4 +1,4 @@
-"""Sync runner — Steelyard's batch pipeline."""
+"""Sync runner — Heftra's batch pipeline."""
 from __future__ import annotations
 
 import argparse

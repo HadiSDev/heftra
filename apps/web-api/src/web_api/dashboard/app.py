@@ -1,10 +1,10 @@
-"""Streamlit dashboard for Steelyard."""
+"""Streamlit dashboard for Heftra."""
 
 import streamlit as st
 
-st.set_page_config(page_title="Steelyard", layout="wide")
+st.set_page_config(page_title="Heftra", layout="wide")
 
-st.title("Steelyard")
+st.title("Heftra")
 
 tab1, tab2, tab3, tab4, tab5 = st.tabs(
     ["Overview", "Vendors", "Categories", "Savings", "Settings"]

@@ -4,7 +4,7 @@ import { BRAND_LINKS, BRAND_META } from './brand-head'
 
 describe('brand head', () => {
   it('names the product and sets the ink as theme colour', () => {
-    expect(BRAND_META).toContainEqual({ title: 'Steelyard' })
+    expect(BRAND_META).toContainEqual({ title: 'Heftra' })
     expect(BRAND_META).toContainEqual({
       name: 'theme-color',
       content: '#0A0A0A',
@@ -14,7 +14,7 @@ describe('brand head', () => {
   it('declares the share card from the pack', () => {
     expect(BRAND_META).toContainEqual({
       property: 'og:title',
-      content: 'Steelyard',
+      content: 'Heftra',
     })
     expect(BRAND_META).toContainEqual({
       property: 'og:image',

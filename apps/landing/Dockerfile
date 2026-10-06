@@ -7,9 +7,9 @@ COPY --from=bun /usr/local/bin/bun /usr/local/bin/bun
 COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile
 
-ARG PUBLIC_SITE_URL=https://steelyard.com
-ARG PUBLIC_APP_URL=https://app.steelyard.com
-ARG PUBLIC_API_URL=https://api.steelyard.com
+ARG PUBLIC_SITE_URL=https://heftra.com
+ARG PUBLIC_APP_URL=https://app.heftra.com
+ARG PUBLIC_API_URL=https://api.heftra.com
 ENV PUBLIC_SITE_URL=$PUBLIC_SITE_URL \
     PUBLIC_APP_URL=$PUBLIC_APP_URL \
     PUBLIC_API_URL=$PUBLIC_API_URL \

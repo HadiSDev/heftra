@@ -1,17 +1,17 @@
-- id: what-is-steelyard
+- id: what-is-heftra
   order: 1
-  question: What does Steelyard do?
-  answer: Steelyard connects to your ERP, reads every supplier invoice line, and categorizes it with AI against your own spend tree. On top of that it shows cheaper alternatives for items you already buy, checks invoices against your supplier agreements, and estimates spend-based emissions.
+  question: What does Heftra do?
+  answer: Heftra connects to your ERP, reads every supplier invoice line, and categorizes it with AI against your own spend tree. On top of that it shows cheaper alternatives for items you already buy, checks invoices against your supplier agreements, and estimates spend-based emissions.
 
 - id: which-erps
   order: 2
   question: Which ERP systems do you support?
-  answer: Steelyard is built for enterprise ERP systems. Connectors for Microsoft Dynamics 365 (Business Central and Finance & Operations), SAP S/4HANA and Business One, Oracle NetSuite, IFS Cloud and Visma.net are in development, and Billy is supported today. If you use another system, tell us when you request a demo.
+  answer: Heftra is built for enterprise ERP systems. Connectors for Microsoft Dynamics 365 (Business Central and Finance & Operations), SAP S/4HANA and Business One, Oracle NetSuite, IFS Cloud and Visma.net are in development, and Billy is supported today. If you use another system, tell us when you request a demo.
 
 - id: setup-time
   order: 3
   question: How long does it take to get started?
-  answer: Connecting an ERP and choosing the accounts to import takes minutes, and Steelyard then imports and categorizes your invoices in the background. For larger ERP landscapes, we map your entities and accounts together with your team during onboarding.
+  answer: Connecting an ERP and choosing the accounts to import takes minutes, and Heftra then imports and categorizes your invoices in the background. For larger ERP landscapes, we map your entities and accounts together with your team during onboarding.
 
 - id: ai-accuracy
   order: 4
@@ -26,12 +26,12 @@
 - id: data-training
   order: 6
   question: Is my data used to train AI models?
-  answer: No. Your invoices and agreements are used to run Steelyard for you, and are not used to train models for anyone else.
+  answer: No. Your invoices and agreements are used to run Heftra for you, and are not used to train models for anyone else.
 
 - id: spend-tree
   order: 7
   question: Do I have to use your categories?
-  answer: No. You can start from our default spend tree, copy and adapt it, or build your own. Steelyard categorizes against whichever tree your organization uses.
+  answer: No. You can start from our default spend tree, copy and adapt it, or build your own. Heftra categorizes against whichever tree your organization uses.
 
 - id: multi-entity
   order: 8

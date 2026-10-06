@@ -34,8 +34,8 @@ when any of them is missing.
 
 #### Scenario: CTA targets
 
-- **WHEN** the site is built with `PUBLIC_APP_URL=https://app.steelyard.com`
-- **THEN** every "Sign in" link's `href` is `https://app.steelyard.com/sign-in`,
+- **WHEN** the site is built with `PUBLIC_APP_URL=https://app.heftra.com`
+- **THEN** every "Sign in" link's `href` is `https://app.heftra.com/sign-in`,
   every "Get a demo" CTA's `href` is `/demo`, and no `href` contains `/sign-up`
 
 #### Scenario: Missing configuration
@@ -48,13 +48,13 @@ when any of them is missing.
 The home page SHALL render, in order, these sections, each as its own component
 with a stable anchor id where it is a navigation target:
 
-1. **Navigation** — sticky header with the Steelyard lockup, links to Product,
+1. **Navigation** — sticky header with the Heftra lockup, links to Product,
    How it works, Security, Pricing and FAQ, a "Sign in" link and a "Get a demo"
    button; on narrow viewports the links collapse into an accessible menu.
 2. **Hero** — a single `h1` stating the value proposition, a supporting line, a
    primary CTA ("Get a demo") and a secondary CTA ("See how it works"), and a product
    visual of the web app.
-3. **Integrations strip** — the ERP systems Steelyard connects to, each shown
+3. **Integrations strip** — the ERP systems Heftra connects to, each shown
    with the vendor's official, unmodified logo and marked "Live" or "Coming
    soon" according to whether a connector ships.
 4. **Problem** — why spend is opaque today (uncategorized ledger lines, duplicate
@@ -183,7 +183,7 @@ base layout with the navigation and footer.
 #### Scenario: Unknown path
 
 - **WHEN** the static host serves a path that does not exist
-- **THEN** the 404 page is shown with the Steelyard lockup and a link to `/`
+- **THEN** the 404 page is shown with the Heftra lockup and a link to `/`
 
 ### Requirement: Cinematic motion with a full reduced-motion fallback
 
@@ -299,22 +299,22 @@ content collections, and the headline font SHALL be preloaded.
 #### Scenario: Summary for AI assistants
 
 - **WHEN** `/llms.txt` is requested
-- **THEN** it describes Steelyard and lists its features, ERP integrations, plans
+- **THEN** it describes Heftra and lists its features, ERP integrations, plans
   and FAQ from the content collections
 
 #### Scenario: Share card
 
 - **WHEN** the home page's head is parsed
-- **THEN** `og:title` is "Steelyard", `og:description` contains "Know the true
+- **THEN** `og:title` is "Heftra", `og:description` contains "Know the true
   price of everything you buy.", and `og:image` is an absolute URL to
   `og-image-1200x630.png`
 
 #### Scenario: Production canonical URLs
 
-- **WHEN** the site is built with `PUBLIC_SITE_URL=https://steelyard.com`
-- **THEN** the home page's canonical link is `https://steelyard.com/`, `/privacy`
-  has `https://steelyard.com/privacy`, and every sitemap entry starts with
-  `https://steelyard.com/`
+- **WHEN** the site is built with `PUBLIC_SITE_URL=https://heftra.com`
+- **THEN** the home page's canonical link is `https://heftra.com/`, `/privacy`
+  has `https://heftra.com/privacy`, and every sitemap entry starts with
+  `https://heftra.com/`
 
 #### Scenario: FAQ structured data matches the page
 

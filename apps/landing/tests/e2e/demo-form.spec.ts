@@ -25,7 +25,7 @@ test('a valid request shows the booking link from the API', async ({
     body = route.request().postDataJSON()
     await route.fulfill({
       status: 201,
-      json: { booking_url: 'https://booking.example/steelyard' },
+      json: { booking_url: 'https://booking.example/heftra' },
     })
   })
   await page.goto('/demo/')
@@ -37,7 +37,7 @@ test('a valid request shows the booking link from the API', async ({
   ).toBeVisible()
   await expect(
     page.getByRole('link', { name: 'Choose a time' }),
-  ).toHaveAttribute('href', 'https://booking.example/steelyard')
+  ).toHaveAttribute('href', 'https://booking.example/heftra')
   expect(body).toMatchObject({
     company_size: '50-249',
     consent: true,

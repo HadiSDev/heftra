@@ -1,6 +1,6 @@
 ## 1. Scaffold apps/landing
 
-- [x] 1.1 Create `apps/landing` with `package.json` (scripts `dev --port 3200`, `build`, `preview`, `check`, `test`), `astro.config.ts` (`output: 'static'`, `@tailwindcss/vite`, `@astrojs/sitemap`, `site` from `PUBLIC_SITE_URL`), `tsconfig.json` (Astro strict), `.gitignore` and `.env.example` (local `PUBLIC_SITE_URL=http://localhost:3200` and `PUBLIC_APP_URL=http://localhost:3100`; production values `https://steelyard.com` and `https://app.steelyard.com` documented beside them)
+- [x] 1.1 Create `apps/landing` with `package.json` (scripts `dev --port 3200`, `build`, `preview`, `check`, `test`), `astro.config.ts` (`output: 'static'`, `@tailwindcss/vite`, `@astrojs/sitemap`, `site` from `PUBLIC_SITE_URL`), `tsconfig.json` (Astro strict), `.gitignore` and `.env.example` (local `PUBLIC_SITE_URL=http://localhost:3200` and `PUBLIC_APP_URL=http://localhost:3100`; production values `https://heftra.com` and `https://app.heftra.com` documented beside them)
 - [x] 1.2 Declare dependencies (`astro`, `@astrojs/sitemap`, `@astrojs/check`, `tailwindcss`, `@tailwindcss/vite`, `@fontsource-variable/geist`, `@fontsource-variable/geist-mono`, `gsap`, `vitest`, `@playwright/test`, `typescript`) and have Hadi run `bun install` in `apps/landing` to create `bun.lock`
 - [x] 1.3 Add the `PUBLIC_SITE_URL`, `PUBLIC_APP_URL`, `PUBLIC_API_URL` env schema in `astro.config.ts` and `src/lib/links.ts` building the sign-in, `/demo` and demo-request endpoint URLs; unit-test `links.ts`
 - [x] 1.4 Copy `favicon.ico`, `favicon.svg`, `apple-touch-icon.png`, `favicon-192.png`, `favicon-512.png` and `og-image-1200x630.png` from `brand/` into `apps/landing/public`, and add a test asserting byte-equality with `brand/`
@@ -16,7 +16,7 @@
 
 ## 3. Brand and UI primitives
 
-- [x] 3.1 Create `components/brand/Lockup.astro` and `Symbol.astro` from `brand/svg` path data in `currentColor` with `role="img"` and `aria-label="Steelyard"`, switching to favicon geometry below 32 px; add a path-parity test against `brand/svg`
+- [x] 3.1 Create `components/brand/Lockup.astro` and `Symbol.astro` from `brand/svg` path data in `currentColor` with `role="img"` and `aria-label="Heftra"`, switching to favicon geometry below 32 px; add a path-parity test against `brand/svg`
 - [x] 3.2 Create `components/ui/Button.astro` (primary/secondary/ghost, link-based), `Badge.astro`, `SectionHeading.astro` (eyebrow, title, lead) and `ProductFrame.astro` (window chrome around a `<Picture>`)
 - [x] 3.3 Create `components/ui/FeatureBlock.astro` and `PricingCard.astro`
 
@@ -73,7 +73,7 @@
 
 ## 10. Verification
 
-- [x] 10.1 Built-output tests over `dist/`: one `h1`, the five anchors, header/nav/footer, absolute `og:image` with "Steelyard" title and tagline, sitemap lists all pages, no testimonials heading when empty, no legacy product names, Sign in links use `PUBLIC_APP_URL`, Get a demo CTAs go to `/demo`, no `/sign-up` link exists, and the booking URL appears nowhere in `dist/`
+- [x] 10.1 Built-output tests over `dist/`: one `h1`, the five anchors, header/nav/footer, absolute `og:image` with "Heftra" title and tagline, sitemap lists all pages, no testimonials heading when empty, no legacy product names, Sign in links use `PUBLIC_APP_URL`, Get a demo CTAs go to `/demo`, no `/sign-up` link exists, and the booking URL appears nowhere in `dist/`
 - [x] 10.2 Test that a production build without `PUBLIC_SITE_URL` fails naming the variable
 - [x] 10.3 Playwright smoke tests against `astro preview`: mobile menu keyboard flow at 375 px, theme persistence without flash, reduced-motion and no-JS runs leave all content visible, Pricing nav link lands on the heading
 - [ ] 10.4 Run Lighthouse (mobile) on the built home page; meet ≥ 90 in all four categories and CLS < 0.1, and fix any failures

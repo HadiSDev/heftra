@@ -1,11 +1,11 @@
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="brand/png/steelyard-lockup-white-600.png">
-  <img alt="Steelyard" src="brand/png/steelyard-lockup-black-600.png" width="300">
+  <source media="(prefers-color-scheme: dark)" srcset="brand/png/heftra-lockup-white-600.png">
+  <img alt="Heftra" src="brand/png/heftra-lockup-black-600.png" width="300">
 </picture>
 
-# Steelyard
+# Heftra
 
-**Know the true price of everything you buy.** Steelyard ingests a company's
+**Know the true price of everything you buy.** Heftra ingests a company's
 spend from its ERP, categorizes every invoice line against the company's own
 spend tree, and surfaces redundant suppliers and product-level savings. The
 brand pack — logo, favicons, usage rules — lives in [`brand/`](brand/README.md).
@@ -53,6 +53,21 @@ cp .env.example .env
 #      BUYER_NAME=Your Company, Inc.
 #      BUYER_WEBSITE=https://yourcompany.example
 #    (VLLM_* defaults already point at http://localhost:8000/v1)
+```
+
+The compose project, database, role and default bucket are named `heftra`. The
+`POSTGRES_*` values only apply when `pgdata/` is first initialised. To carry over
+a stack created under an older name, stop it with `docker compose -p steelyard
+down`, start `postgres` and run `scripts/rename-dev-db.sh` (pass
+`--from spend_predictor` for the oldest stacks). Then copy the `rustfs_data`
+volume across and keep the old `S3_*` values in `.env`:
+
+```bash
+docker volume create heftra_rustfs_data
+docker run --rm -v steelyard_rustfs_data:/from:ro -v heftra_rustfs_data:/to \
+  alpine cp -a /from/. /to/
+# .env: S3_BUCKET=steelyard  S3_ACCESS_KEY=steelyard  S3_SECRET_KEY=steelyard-dev-secret
+#       DATABASE_URL=postgresql://heftra:heftra@localhost:5432/heftra
 ```
 
 ## Run
@@ -124,7 +139,7 @@ working on their own.
 
 ## Landing site
 
-The public marketing site at `steelyard.com` lives in [`apps/landing`](apps/landing/README.md),
+The public marketing site at `heftra.com` lives in [`apps/landing`](apps/landing/README.md),
 a static Astro site with its own bun project. It runs on `http://localhost:3200`
 and posts demo requests to the web API, so add `http://localhost:3200` to
 `WEB_API_CORS_ORIGINS` and set `DEMO_BOOKING_URL` to hand out the booking link.

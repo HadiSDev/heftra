@@ -16,6 +16,7 @@ const RETIRED = [
   /spend predictor/i,
   /\bspendly\b/i,
   /erpsaa/i,
+  /steelyard/i,
 ]
 
 function sourceFiles(dir: string): string[] {

@@ -28,7 +28,7 @@ export const GET: APIRoute = async ({ site: siteUrl }) => {
     '',
     `> ${site.tagline} ${site.description}`,
     '',
-    'Steelyard is spend analytics software for mid-size and enterprise companies and groups in the EU, built for enterprise ERP systems. Data is hosted in the EU, and people review every AI decision.',
+    'Heftra is spend analytics software for mid-size and enterprise companies and groups in the EU, built for enterprise ERP systems. Data is hosted in the EU, and people review every AI decision.',
     '',
     '## Features',
     '',
