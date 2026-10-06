@@ -1,4 +1,4 @@
-name: steelyard
+name: heftra
 
 services:
   mock-erp-api:
@@ -25,9 +25,9 @@ services:
   postgres:
     image: postgres:16
     environment:
-      POSTGRES_DB: steelyard
-      POSTGRES_USER: steelyard
-      POSTGRES_PASSWORD: steelyard
+      POSTGRES_DB: heftra
+      POSTGRES_USER: heftra
+      POSTGRES_PASSWORD: heftra
     ports:
       - "5432:5432"
     volumes:
@@ -41,8 +41,8 @@ services:
       RUSTFS_ADDRESS: 0.0.0.0:9000
       RUSTFS_CONSOLE_ADDRESS: 0.0.0.0:9001
       RUSTFS_CONSOLE_ENABLE: "true"
-      RUSTFS_ACCESS_KEY: ${S3_ACCESS_KEY:-steelyard}
-      RUSTFS_SECRET_KEY: ${S3_SECRET_KEY:-steelyard-dev-secret}
+      RUSTFS_ACCESS_KEY: ${S3_ACCESS_KEY:-heftra}
+      RUSTFS_SECRET_KEY: ${S3_SECRET_KEY:-heftra-dev-secret}
     ports:
       - "9100:9000"
       - "9101:9001"

@@ -15,7 +15,7 @@ from web_api.storage.memory import MemoryFileStore
 from web_api.storage.s3 import S3FileStore, S3Settings
 from web_api.storage.startup import ensure_storage
 
-SETTINGS = S3Settings("http://localhost:9100", "us-east-1", "steelyard", "key", "secret", 5)
+SETTINGS = S3Settings("http://localhost:9100", "us-east-1", "heftra", "key", "secret", 5)
 
 
 def _client_error(code: str) -> ClientError:
@@ -122,7 +122,7 @@ def test_a_missing_bucket_is_created():
 
     asyncio.run(_s3(fake).ensure_bucket())
 
-    assert fake.created == ["steelyard"]
+    assert fake.created == ["heftra"]
 
 
 def test_an_existing_bucket_is_left_alone():

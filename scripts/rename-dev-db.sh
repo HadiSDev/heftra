@@ -2,17 +2,18 @@
 # Rename a development PostgreSQL database and its owning role in place.
 #
 # Usage:
-#   scripts/rename-dev-db.sh                       # spend_predictor -> steelyard
-#   scripts/rename-dev-db.sh --from steelyard --to spend_predictor   # roll back
-#   scripts/rename-dev-db.sh --container NAME      # a container outside compose
+#   scripts/rename-dev-db.sh                        # steelyard -> heftra
+#   scripts/rename-dev-db.sh --from spend_predictor # an older dev database
+#   scripts/rename-dev-db.sh --from heftra --to steelyard   # roll back
+#   scripts/rename-dev-db.sh --container NAME       # a container outside compose
 set -euo pipefail
 
-FROM=spend_predictor
-TO=steelyard
+FROM=steelyard
+TO=heftra
 CONTAINER=""
 
 usage() {
-  sed -n '2,7p' "$0"
+  sed -n '2,8p' "$0"
 }
 
 while [[ $# -gt 0 ]]; do

@@ -16,7 +16,7 @@ def _env_flag(name: str, default: str) -> bool:
 
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql://steelyard:steelyard@localhost:5432/steelyard",
+    "postgresql://heftra:heftra@localhost:5432/heftra",
 )
 
 WEB_API_CREDENTIAL_ENC_KEY = os.getenv("WEB_API_CREDENTIAL_ENC_KEY", "")
@@ -57,7 +57,7 @@ PRICE_INDEX_HTTP_TIMEOUT_SECONDS = float(os.getenv("PRICE_INDEX_HTTP_TIMEOUT_SEC
 
 S3_ENDPOINT_URL = os.getenv("S3_ENDPOINT_URL", "")
 S3_REGION = os.getenv("S3_REGION", "us-east-1")
-S3_BUCKET = os.getenv("S3_BUCKET", "steelyard")
+S3_BUCKET = os.getenv("S3_BUCKET", "heftra")
 S3_ACCESS_KEY = os.getenv("S3_ACCESS_KEY", "")
 S3_SECRET_KEY = os.getenv("S3_SECRET_KEY", "")
 S3_TIMEOUT_SECONDS = float(os.getenv("S3_TIMEOUT_SECONDS", "30"))
