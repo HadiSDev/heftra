@@ -35,6 +35,9 @@ WEB_API_CORS_ORIGINS = [
     o.strip() for o in os.getenv("WEB_API_CORS_ORIGINS", "").split(",") if o.strip()
 ]
 
+DEMO_BOOKING_URL = os.getenv("DEMO_BOOKING_URL", "")
+DEMO_REQUEST_RATE_LIMIT = int(os.getenv("DEMO_REQUEST_RATE_LIMIT", "5"))
+
 CLERK_SYSTEM_ADMIN_CLAIM = os.getenv("CLERK_SYSTEM_ADMIN_CLAIM", "system_admin")
 
 DOC_RECONCILE_TOLERANCE_PCT = float(os.getenv("DOC_RECONCILE_TOLERANCE_PCT", "0.01"))

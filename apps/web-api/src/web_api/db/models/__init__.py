@@ -24,6 +24,7 @@ from .alternative_enums import (
 from .audit_log import AuditLog
 from .company import Company
 from .company_item import CompanyItem
+from .demo_request import DemoRequest
 from .emission_country_region import EmissionCountryRegion
 from .emission_factor import EmissionFactor
 from .emission_factor_set import EmissionFactorSet
@@ -92,6 +93,7 @@ __all__ = [
     "AlternativeSource",
     "AuditLog",
     "CompanyItem",
+    "DemoRequest",
     "DismissReason",
     "ItemAlternative",
     "ItemClass",

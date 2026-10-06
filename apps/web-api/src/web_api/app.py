@@ -30,6 +30,7 @@ from web_api.routers import (
     invoices,
     organization,
     pipeline_runs,
+    public_demo_requests,
     reports,
     spend_reports,
     spend_trees,
@@ -57,6 +58,7 @@ def create_app() -> FastAPI:
         docs_url=None,
         redoc_url=None,
     )
+    app.state.demo_request_limiter = public_demo_requests.new_demo_request_limiter()
 
     if config.WEB_API_CORS_ORIGINS:
         app.add_middleware(
@@ -91,6 +93,7 @@ def create_app() -> FastAPI:
     app.include_router(erp_integrations.router)
     app.include_router(organization.router)
     app.include_router(pipeline_runs.router)
+    app.include_router(public_demo_requests.router)
     app.include_router(reports.router)
     app.include_router(spend_reports.router)
     app.include_router(spend_trees.router)
