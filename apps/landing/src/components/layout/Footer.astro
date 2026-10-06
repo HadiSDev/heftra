@@ -1,5 +1,6 @@
 ---
 import Lockup from '../brand/Lockup.astro'
+import { company } from '../../lib/company'
 import { site } from '../../lib/site'
 import { links } from '../../lib/site-links'
 
@@ -40,8 +41,8 @@ const year = new Date().getFullYear()
 ---
 
 <footer class="border-t border-border bg-canvas">
-  <div class="page-container grid gap-12 py-16 md:grid-cols-[1.4fr_repeat(3,1fr)]">
-    <div class="flex flex-col gap-4">
+  <div class="page-container grid grid-cols-2 gap-x-8 gap-y-12 py-16 md:grid-cols-3 lg:grid-cols-[1.4fr_repeat(4,1fr)]">
+    <div class="col-span-2 flex flex-col gap-4 md:col-span-3 lg:col-span-1">
       <a href="/" class="w-fit text-foreground" aria-label="Steelyard home">
         <Lockup width={128} />
       </a>
@@ -72,9 +73,57 @@ const year = new Date().getFullYear()
         </ul>
       </nav>
     ))}
+    <section aria-labelledby="footer-contact" class="col-span-2 md:col-span-1">
+      <h2
+        id="footer-contact"
+        class="font-mono text-xs font-medium tracking-[0.18em] text-muted-foreground uppercase"
+      >
+        Contact
+      </h2>
+      <address class="mt-4 flex flex-col gap-3 text-sm text-foreground/80 not-italic">
+        <span>
+          <span class="block font-medium text-foreground">
+            {company.legalName}
+          </span>
+          <span class="block">{company.streetAddress}</span>
+          <span class="block">
+            {company.postalCode} {company.city}, {company.country}
+          </span>
+        </span>
+        <a
+          href={company.phoneHref}
+          class="w-fit transition-colors hover:text-foreground"
+        >
+          {company.phone}
+        </a>
+        <a
+          href={`mailto:${company.email}`}
+          class="w-fit transition-colors hover:text-foreground"
+        >
+          {company.email}
+        </a>
+        <a
+          href={company.linkedin}
+          rel="noopener"
+          class="w-fit transition-colors hover:text-foreground"
+        >
+          LinkedIn
+        </a>
+        <span class="text-xs text-muted-foreground">CVR {company.vatId}</span>
+      </address>
+    </section>
   </div>
   <div class="page-container flex flex-col gap-2 border-t border-border py-6 text-xs text-muted-foreground sm:flex-row sm:justify-between">
-    <p>© {year} Steelyard. All rights reserved.</p>
+    <p>
+      © {year} Steelyard, a product of{' '}
+      <a
+        href={company.website}
+        rel="noopener"
+        class="underline-offset-4 hover:text-foreground hover:underline"
+      >
+        {company.legalName}
+      </a>
+    </p>
     <p>Hosted in the EU.</p>
   </div>
 </footer>

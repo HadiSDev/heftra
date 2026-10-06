@@ -19,6 +19,7 @@ import {
   websiteJsonLd,
 } from '../lib/seo'
 import type { PricedPlan } from '../lib/seo'
+import { company } from '../lib/company'
 import { site } from '../lib/site'
 
 const siteUrl = new URL('/', Astro.site).href
@@ -37,6 +38,7 @@ const organization = serializeJsonLd(
     siteUrl,
     logoUrl: new URL(site.logoPath, Astro.site).href,
     email: site.contactEmail,
+    parent: { ...company, sameAs: [company.linkedin] },
   }),
 )
 const application = serializeJsonLd(

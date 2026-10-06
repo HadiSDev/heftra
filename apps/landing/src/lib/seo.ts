@@ -3,11 +3,25 @@ export interface FaqItem {
   answer: string
 }
 
+export interface ParentOrganizationInput {
+  legalName: string
+  vatId: string
+  streetAddress: string
+  postalCode: string
+  city: string
+  countryCode: string
+  email: string
+  phone: string
+  website: string
+  sameAs: Array<string>
+}
+
 export interface OrganizationInput {
   name: string
   siteUrl: string
   logoUrl: string
   email: string
+  parent: ParentOrganizationInput
 }
 
 export interface PricedPlan {
@@ -49,6 +63,23 @@ export function organizationJsonLd(input: OrganizationInput) {
       email: input.email,
       areaServed: 'EU',
       availableLanguage: ['en', 'da'],
+    },
+    parentOrganization: {
+      '@type': 'Organization',
+      name: input.parent.legalName,
+      legalName: input.parent.legalName,
+      vatID: input.parent.vatId,
+      url: input.parent.website,
+      email: input.parent.email,
+      telephone: input.parent.phone,
+      sameAs: input.parent.sameAs,
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: input.parent.streetAddress,
+        postalCode: input.parent.postalCode,
+        addressLocality: input.parent.city,
+        addressCountry: input.parent.countryCode,
+      },
     },
   }
 }

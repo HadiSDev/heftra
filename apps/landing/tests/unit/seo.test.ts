@@ -17,6 +17,23 @@ describe('organizationJsonLd', () => {
       siteUrl,
       logoUrl: 'https://steelyard.com/favicon-512.png',
       email: 'hello@steelyard.com',
+      parent: {
+        legalName: 'VectorLab ApS',
+        vatId: 'DK46341732',
+        streetAddress: 'Gormsvej 2',
+        postalCode: '4000',
+        city: 'Roskilde',
+        countryCode: 'DK',
+        email: 'info@vectorlab.dk',
+        phone: '+45 60 14 70 23',
+        website: 'https://vectorlab.dk',
+        sameAs: ['https://www.linkedin.com/company/vectorlab-dk'],
+      },
+    })
+    expect(data.parentOrganization).toMatchObject({
+      legalName: 'VectorLab ApS',
+      vatID: 'DK46341732',
+      address: { addressLocality: 'Roskilde', addressCountry: 'DK' },
     })
     expect(data['@type']).toBe('Organization')
     expect(data['@id']).toBe('https://steelyard.com/#organization')
