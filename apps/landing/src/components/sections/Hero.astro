@@ -25,13 +25,16 @@ const headline = ['Know the true price', 'of everything you buy.']
   >
     <a
       href="#product"
-      class="mb-8 inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/5 py-1 pr-3 pl-1 text-sm text-white/80 transition-colors hover:bg-white/10"
+      class="mb-8 inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/5 py-1 pr-3 pl-1 text-sm pointer-coarse:py-2 text-white/80 transition-colors hover:bg-white/10"
       data-reveal="fade"
     >
       <span class="rounded-full bg-white px-2 py-0.5 text-xs font-semibold text-[#0a0a0a]">
         New
       </span>
-      Agreement compliance checks every invoice line
+      <span class="sm:hidden">Agreement compliance checks</span>
+      <span class="hidden sm:inline">
+        Agreement compliance checks every invoice line
+      </span>
       <Icon name="arrowRight" size={14} />
     </a>
     <h1
@@ -91,7 +94,7 @@ const headline = ['Know the true price', 'of everything you buy.']
             name="dashboard"
             alt="The Heftra dashboard: total spend, spend over time, and the largest categories and suppliers."
             eager
-            sizes="(min-width: 1024px) 64rem, 100vw"
+            sizes="(min-width: 1024px) 64rem, (min-width: 640px) 100vw, 220vw"
           />
         </div>
       </div>

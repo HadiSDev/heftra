@@ -43,13 +43,17 @@ const year = new Date().getFullYear()
 <footer class="border-t border-border bg-canvas">
   <div class="page-container grid grid-cols-2 gap-x-8 gap-y-12 py-16 md:grid-cols-3 lg:grid-cols-[1.4fr_repeat(4,1fr)]">
     <div class="col-span-2 flex flex-col gap-4 md:col-span-3 lg:col-span-1">
-      <a href="/" class="w-fit text-foreground" aria-label="Heftra home">
+      <a
+        href="/"
+        class="flex w-fit items-center text-foreground pointer-coarse:min-h-11"
+        aria-label="Heftra home"
+      >
         <Lockup width={93} />
       </a>
       <p class="max-w-xs text-sm text-muted-foreground">{site.tagline}</p>
       <a
         href={`mailto:${site.contactEmail}`}
-        class="w-fit text-sm font-medium text-foreground underline-offset-4 hover:underline"
+        class="flex w-fit items-center text-sm font-medium text-foreground underline-offset-4 hover:underline pointer-coarse:min-h-11"
       >
         {site.contactEmail}
       </a>
@@ -59,12 +63,12 @@ const year = new Date().getFullYear()
         <h2 class="font-mono text-xs font-medium tracking-[0.18em] text-muted-foreground uppercase">
           {column.title}
         </h2>
-        <ul class="mt-4 flex flex-col gap-3">
+        <ul class="mt-4 flex flex-col gap-3 pointer-coarse:mt-2 pointer-coarse:gap-0">
           {column.items.map((item) => (
             <li>
               <a
                 href={item.href}
-                class="text-sm text-foreground/80 transition-colors hover:text-foreground"
+                class="text-sm text-foreground/80 transition-colors hover:text-foreground pointer-coarse:flex pointer-coarse:min-h-11 pointer-coarse:items-center"
               >
                 {item.label}
               </a>
@@ -80,7 +84,7 @@ const year = new Date().getFullYear()
       >
         Contact
       </h2>
-      <address class="mt-4 flex flex-col gap-3 text-sm text-foreground/80 not-italic">
+      <address class="mt-4 flex flex-col gap-3 text-sm text-foreground/80 not-italic pointer-coarse:gap-0">
         <span>
           <span class="block font-medium text-foreground">
             {company.legalName}
@@ -92,24 +96,26 @@ const year = new Date().getFullYear()
         </span>
         <a
           href={company.phoneHref}
-          class="w-fit transition-colors hover:text-foreground"
+          class="flex w-fit items-center transition-colors hover:text-foreground pointer-coarse:min-h-11"
         >
           {company.phone}
         </a>
         <a
           href={`mailto:${company.email}`}
-          class="w-fit transition-colors hover:text-foreground"
+          class="flex w-fit items-center transition-colors hover:text-foreground pointer-coarse:min-h-11"
         >
           {company.email}
         </a>
         <a
           href={company.linkedin}
           rel="noopener"
-          class="w-fit transition-colors hover:text-foreground"
+          class="flex w-fit items-center transition-colors hover:text-foreground pointer-coarse:min-h-11"
         >
           LinkedIn
         </a>
-        <span class="text-xs text-muted-foreground">CVR {company.vatId}</span>
+        <span class="text-xs text-muted-foreground pointer-coarse:mt-2">
+          CVR {company.vatId}
+        </span>
       </address>
     </section>
   </div>
@@ -119,7 +125,7 @@ const year = new Date().getFullYear()
       <a
         href={company.website}
         rel="noopener"
-        class="underline-offset-4 hover:text-foreground hover:underline"
+        class="underline-offset-4 hover:text-foreground hover:underline pointer-coarse:inline-block pointer-coarse:py-3"
       >
         {company.legalName}
       </a>

@@ -18,7 +18,7 @@ const {
   alt,
   label = 'app.heftra.com',
   eager = false,
-  sizes = '(min-width: 1024px) 60vw, 100vw',
+  sizes = '(min-width: 1024px) 60vw, (min-width: 640px) 100vw, 220vw',
   class: className,
 } = Astro.props
 const image = screenshot(name)
@@ -45,17 +45,19 @@ const formats: Array<ImageOutputFormat> = import.meta.env.DEV
     </span>
   </div>
   {image ? (
-    <Picture
-      src={image}
-      alt={alt}
-      formats={formats}
-      fallbackFormat="webp"
-      sizes={sizes}
-      widths={[640, 960, 1280, 1920].filter((width) => width <= image.width)}
-      loading={eager ? 'eager' : 'lazy'}
-      fetchpriority={eager ? 'high' : 'auto'}
-      class="block h-auto w-full"
-    />
+    <div class="aspect-[4/3] overflow-hidden sm:aspect-auto">
+      <Picture
+        src={image}
+        alt={alt}
+        formats={formats}
+        fallbackFormat="webp"
+        sizes={sizes}
+        widths={[640, 960, 1280, 1920].filter((width) => width <= image.width)}
+        loading={eager ? 'eager' : 'lazy'}
+        fetchpriority={eager ? 'high' : 'auto'}
+        class="-ml-[44%] block h-auto w-[220%] max-w-none sm:ml-0 sm:w-full"
+      />
+    </div>
   ) : (
     <div
       role="img"
