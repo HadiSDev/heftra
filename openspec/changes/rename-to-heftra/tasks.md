@@ -123,9 +123,9 @@
 
 ## 8. Repository rename (confirm first)
 
-- [ ] 8.1 Check that `HadiSDev/heftra` does not already exist (`gh repo view HadiSDev/heftra`). Then ask the owner for explicit confirmation, and only then run `gh repo rename heftra -R HadiSDev/steelyard`.
-- [ ] 8.2 `git remote set-url origin git@github.com:HadiSDev/heftra.git`, `git fetch`, and push `main` once the owner says to push.
-- [ ] 8.3 Update the Claude memory entries that name Steelyard (`infra-port-conflicts.md`: the API title "Heftra Web API" and the compose names). Hand the owner the runbook for the folder move.
+- [x] 8.1 Check that `HadiSDev/heftra` does not already exist (`gh repo view HadiSDev/heftra`). Then ask the owner for explicit confirmation, and only then run `gh repo rename heftra -R HadiSDev/steelyard`.
+- [x] 8.2 `git remote set-url origin git@github.com:HadiSDev/heftra.git`, `git fetch`, and push `main` once the owner says to push.
+- [x] 8.3 Update the Claude memory entries that name Steelyard (`infra-port-conflicts.md`: the API title "Heftra Web API" and the compose names). Hand the owner the runbook for the folder move.
 
 ## 9. Product screenshots
 
