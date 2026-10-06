@@ -1,0 +1,203 @@
+---
+import Icon from '../ui/Icon.astro'
+import FormField from './FormField.astro'
+import { site } from '../../lib/site'
+import { links } from '../../lib/site-links'
+
+const companySizes = [
+  { value: '1-49', label: '1–49 employees' },
+  { value: '50-249', label: '50–249 employees' },
+  { value: '250-999', label: '250–999 employees' },
+  { value: '1000+', label: '1,000+ employees' },
+]
+
+const inputClasses =
+  'h-12 w-full rounded-xl border border-input bg-card px-4 text-base text-foreground placeholder:text-subtle-foreground transition-colors focus:border-foreground focus:outline-none aria-[invalid=true]:border-destructive'
+---
+
+<div class="demo-form-root" data-demo-form-root>
+  <form
+    class="hidden flex-col gap-5 rounded-[1.5rem] border border-border bg-card p-6 shadow-[var(--shadow-card)] sm:p-8"
+    novalidate
+    data-demo-form
+    data-endpoint={links.demoRequestEndpoint}
+    data-contact-email={site.contactEmail}
+  >
+    <div class="grid gap-5 sm:grid-cols-2">
+      <FormField name="name" label="Full name" required>
+        <input
+          id="demo-name"
+          name="name"
+          type="text"
+          autocomplete="name"
+          required
+          maxlength="200"
+          aria-describedby="demo-name-error"
+          class={inputClasses}
+        />
+      </FormField>
+      <FormField name="email" label="Work email" required>
+        <input
+          id="demo-email"
+          name="email"
+          type="email"
+          autocomplete="email"
+          required
+          maxlength="254"
+          aria-describedby="demo-email-error"
+          class={inputClasses}
+        />
+      </FormField>
+      <FormField name="company" label="Company" required>
+        <input
+          id="demo-company"
+          name="company"
+          type="text"
+          autocomplete="organization"
+          required
+          maxlength="200"
+          aria-describedby="demo-company-error"
+          class={inputClasses}
+        />
+      </FormField>
+      <FormField name="company_size" label="Company size" required>
+        <select
+          id="demo-company_size"
+          name="company_size"
+          required
+          aria-describedby="demo-company_size-error"
+          class={inputClasses}
+        >
+          <option value="" selected disabled>
+            Choose a size
+          </option>
+          {companySizes.map((size) => (
+            <option value={size.value}>{size.label}</option>
+          ))}
+        </select>
+      </FormField>
+    </div>
+    <FormField name="message" label="What would you like to see?">
+      <textarea
+        id="demo-message"
+        name="message"
+        rows="4"
+        maxlength="2000"
+        aria-describedby="demo-message-error"
+        class:list={[inputClasses, 'h-auto py-3']}
+        placeholder="Your ERP, the categories you care about, the savings you are after…"
+      ></textarea>
+    </FormField>
+
+    <div class="honeypot" aria-hidden="true">
+      <label for="demo-website">Website</label>
+      <input
+        id="demo-website"
+        name="website"
+        type="text"
+        tabindex="-1"
+        autocomplete="off"
+      />
+    </div>
+
+    <div class="flex flex-col gap-2" data-field="consent">
+      <label class="flex items-start gap-3 text-sm leading-relaxed">
+        <input
+          id="demo-consent"
+          name="consent"
+          type="checkbox"
+          required
+          aria-describedby="demo-consent-error"
+          class="mt-0.5 size-5 shrink-0 rounded border-input accent-[var(--primary)]"
+        />
+        <span>
+          I agree that Steelyard may use these details to contact me about a
+          demo, as described in the
+          <a href="/privacy/" class="font-medium underline underline-offset-4">
+            privacy policy
+          </a>
+          .
+        </span>
+      </label>
+      <p
+        id="demo-consent-error"
+        class="hidden text-sm font-medium text-destructive"
+        data-field-error
+      ></p>
+    </div>
+
+    <p
+      class="hidden rounded-xl border border-destructive/30 bg-destructive/8 px-4 py-3 text-sm text-destructive"
+      role="alert"
+      data-form-error
+    ></p>
+
+    <button
+      type="submit"
+      class="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-primary px-6 font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
+      data-submit
+    >
+      <span data-submit-label>Request my demo</span>
+      <Icon name="arrowRight" size={18} />
+    </button>
+    <p class="text-center text-xs text-muted-foreground">
+      Free, with no obligation. We reply within one business day.
+    </p>
+  </form>
+
+  <div
+    class="hidden flex-col items-start gap-5 rounded-[1.5rem] border border-border bg-card p-8 shadow-[var(--shadow-card)]"
+    tabindex="-1"
+    data-demo-confirmation
+  >
+    <span class="grid size-12 place-items-center rounded-full bg-success/12 text-success">
+      <Icon name="check" size={24} />
+    </span>
+    <h2 class="text-2xl font-semibold">Thanks, your request is in.</h2>
+    <p class="text-muted-foreground" data-confirmation-text>
+      Pick a time that suits you, and we will walk you through Steelyard on your
+      own spend.
+    </p>
+    <a
+      href="#"
+      class="hidden h-12 items-center justify-center gap-2 rounded-full bg-primary px-6 font-medium text-primary-foreground hover:opacity-90"
+      data-booking-link
+    >
+      <Icon name="calendar" size={18} />
+      Choose a time
+    </a>
+  </div>
+  <p class="visually-hidden" aria-live="polite" data-live-region></p>
+
+  <noscript>
+    <div class="rounded-[1.5rem] border border-border bg-card p-8">
+      <p class="font-medium">The request form needs JavaScript.</p>
+      <p class="mt-2 text-muted-foreground">
+        Write to{' '}
+        <a
+          href={`mailto:${site.contactEmail}?subject=Steelyard%20demo`}
+          class="font-medium text-foreground underline"
+        >
+          {site.contactEmail}
+        </a>
+        and we will set up your demo.
+      </p>
+    </div>
+  </noscript>
+</div>
+
+<style>
+  .honeypot {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+</style>
+
+<script>
+  import { initDemoForm } from '../../scripts/demo-form'
+
+  initDemoForm()
+</script>

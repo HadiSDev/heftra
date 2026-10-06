@@ -1,0 +1,77 @@
+---
+import SectionHeading from '../ui/SectionHeading.astro'
+import ProductFrame from '../ui/ProductFrame.astro'
+import ConnectVisual from './how-it-works/ConnectVisual.astro'
+
+const steps = [
+  {
+    number: '01',
+    title: 'Connect your ERP',
+    body: 'Sign in to your ERP from Steelyard and choose the expense accounts to import. Invoices and their attached documents come across automatically.',
+  },
+  {
+    number: '02',
+    title: 'AI categorizes every line',
+    body: 'Each invoice line is read and filed under your own spend tree. Lines the AI is unsure about are flagged for a person to confirm.',
+  },
+  {
+    number: '03',
+    title: 'Act on the savings',
+    body: 'See cheaper alternatives, duplicate suppliers and prices above your agreements, each with the amount at stake and the evidence behind it.',
+  },
+]
+---
+
+<section
+  id="how-it-works"
+  class="section dark ink-surface"
+  aria-labelledby="how-title"
+  data-how
+>
+  <div class="page-container">
+    <SectionHeading
+      id="how-title"
+      eyebrow="How it works"
+      title={'From ledger to savings\nin three steps.'}
+      lead="No spreadsheets and no consultants. Steelyard does the reading, sorting and comparing, and your team makes the calls."
+    />
+
+    <div class="how-track mt-16 lg:mt-24" data-how-track>
+      <ol class="how-steps flex flex-col gap-20 lg:gap-28" data-how-steps>
+        {steps.map((step, index) => (
+          <li
+            class="how-step grid items-center gap-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-16"
+            data-how-step={index}
+          >
+            <div class="how-copy flex flex-col gap-4">
+              <span class="font-mono text-sm text-white/55">{step.number}</span>
+              <h3 class="text-display-md font-semibold">{step.title}</h3>
+              <p class="text-lead text-white/65">{step.body}</p>
+              <div
+                class="how-progress mt-2 h-px w-full bg-white/10"
+                aria-hidden="true"
+              >
+                <div class="how-progress-bar h-px origin-left scale-x-0 bg-white" />
+              </div>
+            </div>
+            <div class="how-visual" data-how-visual={index}>
+              {index === 0 && <ConnectVisual />}
+              {index === 1 && (
+                <ProductFrame
+                  name="spend-lines"
+                  alt="Spend lines in Steelyard, each with its supplier, amount and the category the AI chose."
+                />
+              )}
+              {index === 2 && (
+                <ProductFrame
+                  name="alternatives"
+                  alt="Cheaper alternatives in Steelyard, ranked by the saving each one is worth."
+                />
+              )}
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,106 @@
+---
+import LegalPage from '../components/legal/LegalPage.astro'
+import { site } from '../lib/site'
+---
+
+<LegalPage
+  title="Privacy policy"
+  description="How Steelyard collects, uses and protects personal data, and the rights you have under the GDPR."
+  lastUpdated="2026-10-03"
+>
+  <p>
+    This policy explains what personal data Steelyard collects, why, and what
+    rights you have. It covers this website, the Steelyard application, and the
+    data our customers bring into it.
+  </p>
+
+  <h2>Who is responsible</h2>
+  <p>
+    For this website, demo requests and customer accounts, Steelyard is the{' '}
+    <strong>controller</strong>. For the spend data a customer imports from its
+    ERP (invoices, invoice lines, suppliers and uploaded agreements), the
+    customer is the controller and Steelyard is its <strong>processor</strong>,
+    acting only on the customer's instructions under a data processing
+    agreement.
+  </p>
+
+  <h2>What we collect</h2>
+  <ul>
+    <li>
+      <strong>Demo requests:</strong> your name, work email, company, company
+      size, your message, and the time you gave consent.
+    </li>
+    <li>
+      <strong>Accounts:</strong> name, email address, organization and role,
+      used to sign you in and manage access.
+    </li>
+    <li>
+      <strong>Spend data:</strong> invoices, invoice lines, supplier details and
+      agreements imported from the customer's ERP or uploaded by the customer.
+      These can include names of supplier contacts.
+    </li>
+    <li>
+      <strong>Technical data:</strong> IP address and browser details, used for
+      security and to prevent abuse.
+    </li>
+  </ul>
+
+  <h2>Why we use it, and on what basis</h2>
+  <ul>
+    <li>To answer a demo request and book a meeting, based on your consent.</li>
+    <li>
+      To provide the service to customers, based on our contract with them.
+    </li>
+    <li>
+      To keep the service secure and prevent abuse, based on our legitimate
+      interest.
+    </li>
+    <li>To meet legal obligations such as bookkeeping rules.</li>
+  </ul>
+  <p>
+    We do not sell personal data, and we do not use customer data to train AI
+    models for anyone else.
+  </p>
+
+  <h2>Where data is stored</h2>
+  <p>
+    Data is hosted in the European Union. We use a small number of
+    sub-processors for hosting, sign-in and AI inference. Each is bound by a
+    data processing agreement, and we will tell customers before adding a new
+    one.
+  </p>
+
+  <h2>How long we keep it</h2>
+  <ul>
+    <li>Demo requests are kept for 24 months, then deleted.</li>
+    <li>
+      Customer data is kept while the customer uses Steelyard. When a company is
+      removed, its data is deleted.
+    </li>
+    <li>
+      Security logs are kept for as long as needed to investigate incidents.
+    </li>
+  </ul>
+
+  <h2>Cookies</h2>
+  <p>
+    This website does not use tracking or advertising cookies. It remembers your
+    light or dark theme in your browser, and that choice never leaves your
+    device.
+  </p>
+
+  <h2>Your rights</h2>
+  <p>
+    You can ask to access, correct or delete your personal data, to restrict or
+    object to its use, to receive it in a portable format, and to withdraw
+    consent at any time. If your data is in Steelyard because your employer is a
+    customer, we will pass your request on to them. You can also complain to
+    your national data protection authority; in Denmark, that is Datatilsynet.
+  </p>
+
+  <h2>Contact</h2>
+  <p>
+    Write to <a href={`mailto:${site.privacyEmail}`}>{site.privacyEmail}</a>{' '}
+    with any question about this policy or your data.
+  </p>
+</LegalPage>

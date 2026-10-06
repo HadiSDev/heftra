@@ -1,0 +1,75 @@
+---
+import { getCollection } from 'astro:content'
+import Faq from '../components/sections/Faq.astro'
+import Features from '../components/sections/Features.astro'
+import FinalCta from '../components/sections/FinalCta.astro'
+import Hero from '../components/sections/Hero.astro'
+import HowItWorks from '../components/sections/HowItWorks.astro'
+import Integrations from '../components/sections/Integrations.astro'
+import Outcomes from '../components/sections/Outcomes.astro'
+import Pricing from '../components/sections/Pricing.astro'
+import Problem from '../components/sections/Problem.astro'
+import Security from '../components/sections/Security.astro'
+import Testimonials from '../components/sections/Testimonials.astro'
+import BaseLayout from '../layouts/BaseLayout.astro'
+import {
+  organizationJsonLd,
+  serializeJsonLd,
+  softwareApplicationJsonLd,
+  websiteJsonLd,
+} from '../lib/seo'
+import type { PricedPlan } from '../lib/seo'
+import { site } from '../lib/site'
+
+const siteUrl = new URL('/', Astro.site).href
+const plans = (await getCollection('pricing')).sort(
+  (a, b) => a.data.order - b.data.order,
+)
+const pricedPlans: Array<PricedPlan> = plans.flatMap((plan) =>
+  plan.data.monthlyPriceEur === null
+    ? []
+    : [{ name: plan.data.name, monthlyPriceEur: plan.data.monthlyPriceEur }],
+)
+
+const organization = serializeJsonLd(
+  organizationJsonLd({
+    name: site.name,
+    siteUrl,
+    logoUrl: new URL(site.logoPath, Astro.site).href,
+    email: site.contactEmail,
+  }),
+)
+const application = serializeJsonLd(
+  softwareApplicationJsonLd({
+    name: site.name,
+    description: site.description,
+    siteUrl,
+    imageUrl: new URL(site.ogImagePath, Astro.site).href,
+    plans: pricedPlans,
+  }),
+)
+const website = serializeJsonLd(websiteJsonLd(site.name, siteUrl))
+---
+
+<BaseLayout title={site.homeTitle} description={site.homeDescription}>
+  <script slot="head" type="application/ld+json" set:html={website} />
+  <script slot="head" type="application/ld+json" set:html={organization} />
+  <script slot="head" type="application/ld+json" set:html={application} />
+  <Hero />
+  <Integrations />
+  <Problem />
+  <HowItWorks />
+  <Features />
+  <Outcomes />
+  <Security />
+  <Testimonials />
+  <Pricing />
+  <Faq />
+  <FinalCta />
+</BaseLayout>
+
+<script>
+  import { initMotion } from '../scripts/motion'
+
+  initMotion()
+</script>

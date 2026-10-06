@@ -1,0 +1,185 @@
+.scene {
+  position: relative;
+  isolation: isolate;
+}
+
+.layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.layer.depth-3,
+.layer.depth-4 {
+  position: relative;
+  inset: auto;
+  pointer-events: auto;
+}
+
+.depth-0 {
+  z-index: 0;
+  filter: blur(var(--depth-blur, 0px));
+}
+
+.depth-1 {
+  z-index: 1;
+}
+
+.depth-2 {
+  z-index: 2;
+}
+
+.depth-3 {
+  z-index: 3;
+}
+
+.depth-4 {
+  z-index: 4;
+}
+
+.depth-5 {
+  z-index: 5;
+}
+
+.float-loop {
+  animation: float-loop 9s ease-in-out infinite;
+}
+
+.float-loop-slow {
+  animation: float-loop 12s ease-in-out infinite reverse;
+}
+
+@keyframes float-loop {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -12px;
+  }
+}
+
+html.motion-pending [data-reveal] {
+  opacity: 0;
+}
+
+html.motion-pending [data-reveal='lines'] {
+  opacity: 1;
+}
+
+html.motion-pending [data-reveal='lines'] .reveal-line > span {
+  display: inline-block;
+  transform: translateY(105%);
+}
+
+.reveal-line {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+}
+
+.reveal-line > span {
+  display: inline-block;
+}
+
+.word-light .word {
+  transition: color 0.2s linear;
+}
+
+html.motion-ready .word-light .word {
+  color: color-mix(in oklab, var(--foreground) 22%, transparent);
+}
+
+html.motion-ready .word-light .word.is-lit {
+  color: var(--foreground);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  html.motion-pending [data-reveal] {
+    opacity: 1;
+  }
+}
+
+.how-track.is-pinned .how-steps {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  grid-template-rows: repeat(3, auto);
+  column-gap: 4rem;
+  row-gap: 2.25rem;
+  align-items: center;
+}
+
+.how-track.is-pinned .how-step {
+  display: contents;
+}
+
+.how-track.is-pinned .how-copy {
+  grid-column: 1;
+}
+
+.how-track.is-pinned .how-copy h3 {
+  font-size: clamp(1.5rem, 1.2rem + 0.9vw, 2rem);
+}
+
+.how-track.is-pinned .how-copy p {
+  font-size: 1rem;
+}
+
+.how-track.is-pinned .how-step:nth-child(1) .how-copy {
+  grid-row: 1;
+}
+
+.how-track.is-pinned .how-step:nth-child(2) .how-copy {
+  grid-row: 2;
+}
+
+.how-track.is-pinned .how-step:nth-child(3) .how-copy {
+  grid-row: 3;
+}
+
+.how-track.is-pinned .how-visual {
+  grid-column: 2;
+  grid-row: 1 / span 3;
+  align-self: center;
+}
+
+.rotating-word {
+  display: inline-flex;
+  vertical-align: bottom;
+  padding-inline: 0.16em;
+  border-radius: 0.18em;
+  background-color: color-mix(in oklab, var(--foreground) 8%, transparent);
+}
+
+.rotating-word-window {
+  display: inline-block;
+  overflow: hidden;
+  height: 1lh;
+  vertical-align: bottom;
+}
+
+.rotating-word-track {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.rotating-word-item {
+  display: block;
+  height: 1lh;
+  white-space: nowrap;
+}
+
+.rotating-word:not(.is-rotating) .rotating-word-item + .rotating-word-item {
+  display: none;
+}

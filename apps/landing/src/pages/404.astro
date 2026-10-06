@@ -1,0 +1,27 @@
+---
+import Symbol from '../components/brand/Symbol.astro'
+import Button from '../components/ui/Button.astro'
+import BaseLayout from '../layouts/BaseLayout.astro'
+---
+
+<BaseLayout
+  title="Page not found · Steelyard"
+  description="The page you were looking for does not exist."
+  noindex
+>
+  <section class="page-container grid min-h-[80vh] place-items-center pt-24 text-center">
+    <div class="flex flex-col items-center gap-6">
+      <Symbol width={96} class="text-foreground" decorative />
+      <p class="font-mono text-xs tracking-[0.18em] text-muted-foreground uppercase">
+        Error 404
+      </p>
+      <h1 class="text-display-lg font-semibold">This page is off the scale.</h1>
+      <p class="max-w-md text-lead text-muted-foreground">
+        The page you were looking for has moved or never existed.
+      </p>
+      <Button href="/" size="lg" arrow>
+        Back to the home page
+      </Button>
+    </div>
+  </section>
+</BaseLayout>

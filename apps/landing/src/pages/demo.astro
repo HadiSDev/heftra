@@ -1,0 +1,50 @@
+---
+import DemoForm from '../components/demo/DemoForm.astro'
+import Icon from '../components/ui/Icon.astro'
+import BaseLayout from '../layouts/BaseLayout.astro'
+
+const agenda = [
+  'Your spend, categorized against your own spend tree',
+  'Cheaper alternatives and duplicate suppliers we find',
+  'How agreement compliance checks your invoices',
+  'Answers on data, security and getting started',
+]
+---
+
+<BaseLayout
+  breadcrumb="Get a demo"
+  title="Get a demo · Steelyard"
+  description="Book a free Steelyard demo. Tell us about your company and choose a time to see your own spend, categorized."
+>
+  <section class="relative overflow-hidden pt-36 pb-28">
+    <div
+      class="grid-pattern pointer-events-none absolute inset-x-0 top-0 h-[36rem] [mask-image:linear-gradient(to_bottom,black,transparent)] opacity-60"
+      aria-hidden="true"
+    ></div>
+    <div class="page-container relative grid gap-14 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-20">
+      <div class="flex flex-col gap-6">
+        <p class="font-mono text-xs font-medium tracking-[0.18em] text-muted-foreground uppercase">
+          Free demo
+        </p>
+        <h1 class="text-display-lg font-semibold">
+          See Steelyard on your own spend.
+        </h1>
+        <p class="text-lead text-muted-foreground">
+          Tell us a little about your company. Once you send it, you can pick a
+          time straight away. The demo is free and takes about 30 minutes.
+        </p>
+        <ul class="mt-2 flex flex-col gap-3">
+          {agenda.map((item) => (
+            <li class="flex gap-3">
+              <span class="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-foreground text-background">
+                <Icon name="check" size={12} />
+              </span>
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <DemoForm />
+    </div>
+  </section>
+</BaseLayout>

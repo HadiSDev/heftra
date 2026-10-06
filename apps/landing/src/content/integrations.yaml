@@ -1,0 +1,39 @@
+- id: dynamics-365
+  order: 1
+  name: Microsoft Dynamics 365
+  region: Business Central · Finance & Operations
+  status: coming-soon
+  logo: dynamics-365
+- id: sap
+  order: 2
+  name: SAP
+  region: S/4HANA · Business One
+  status: coming-soon
+  logo: sap
+- id: netsuite
+  order: 3
+  name: Oracle NetSuite
+  region: Oracle
+  status: coming-soon
+  logo: netsuite
+- id: ifs-cloud
+  order: 4
+  name: IFS Cloud
+  region: IFS
+  status: coming-soon
+  logo: ifs
+  logoColor: '#360065'
+- id: visma-net
+  order: 5
+  name: Visma.net
+  region: Nordics
+  status: coming-soon
+  logo: visma
+  logoColor: '#000000'
+- id: billy
+  order: 6
+  name: Billy
+  region: Denmark
+  status: live
+  logo: billy
+  logoColor: '#002E33'

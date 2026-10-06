@@ -1,0 +1,77 @@
+- id: categorization
+  order: 1
+  icon: sparkles
+  eyebrow: AI categorization
+  title: Every invoice line, in your own spend tree
+  benefit: Steelyard reads each line on every supplier invoice and files it under the category your business actually uses, not a generic account code.
+  points:
+    - Categorizes at line level, so one invoice can land in several categories
+    - Learns from your spend tree, your suppliers and what they sell
+    - Flags low-confidence lines for a person to confirm
+  screenshot: spend-lines
+  screenshotAlt: The Steelyard spend lines table, with each invoice line showing its supplier, amount and spend category.
+
+- id: dashboard
+  order: 2
+  icon: chart
+  eyebrow: Spend dashboard
+  title: See where the money goes, by category and supplier
+  benefit: One view of total spend, its trend over time and the categories and suppliers behind it, in your reporting currency.
+  points:
+    - Spend by category, supplier and month
+    - Every figure converted to your reporting currency
+    - Drill from a total down to the invoice line
+  screenshot: dashboard
+  screenshotAlt: The Steelyard dashboard showing total spend, spend over time and the largest categories and suppliers.
+
+- id: alternatives
+  order: 3
+  icon: coins
+  eyebrow: Cheaper alternatives
+  title: Find the same item for less
+  benefit: Steelyard matches what you buy across suppliers and shows where you pay more than you need to for the same product.
+  points:
+    - Compares unit prices for matching items across your suppliers
+    - Ranks findings by the saving they are worth
+    - Shows the evidence behind every match
+  screenshot: alternatives
+  screenshotAlt: The Steelyard alternatives list, ranking items by potential saving with current and alternative unit prices.
+
+- id: agreements
+  order: 4
+  icon: fileCheck
+  eyebrow: Agreement compliance
+  title: Hold suppliers to the prices you negotiated
+  benefit: Upload your trade and framework agreements. Steelyard reads the terms and checks every invoice line against them.
+  points:
+    - Terms read from the agreement, each quote checked against its page
+    - A manager confirms the terms before checks run
+    - Findings come with the amount and the reason
+  screenshot: agreements
+  screenshotAlt: A Steelyard agreement compliance report listing invoice lines priced above the agreed terms.
+
+- id: suppliers
+  order: 5
+  icon: building
+  eyebrow: Supplier directory
+  title: Know every supplier, and spot the duplicates
+  benefit: A clean directory of who you buy from, enriched from each supplier's own website, so overlapping suppliers stand out.
+  points:
+    - Supplier profiles built from their websites
+    - Spend and categories per supplier
+    - Redundant suppliers for the same category surfaced
+  screenshot: suppliers
+  screenshotAlt: The Steelyard supplier directory with spend and categories for each supplier.
+
+- id: emissions
+  order: 6
+  icon: leaf
+  eyebrow: Spend-based emissions
+  title: An emissions estimate from the spend you already have
+  benefit: Each line is matched to an emission sector, giving you a spend-based kgCO2e estimate without a separate data project.
+  points:
+    - Sector matching for every line, reviewable by a person
+    - Open emission factors, adjusted for inflation
+    - Emissions alongside spend on the dashboard
+  screenshot: dashboard
+  screenshotAlt: The Steelyard dashboard showing spend-based emissions next to spend.

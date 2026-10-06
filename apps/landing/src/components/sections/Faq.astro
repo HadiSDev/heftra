@@ -1,0 +1,58 @@
+---
+import { getCollection } from 'astro:content'
+import Icon from '../ui/Icon.astro'
+import SectionHeading from '../ui/SectionHeading.astro'
+import { faqPageJsonLd, serializeJsonLd } from '../../lib/seo'
+import { site } from '../../lib/site'
+
+const entries = (await getCollection('faq')).sort(
+  (a, b) => a.data.order - b.data.order,
+)
+const structuredData = serializeJsonLd(
+  faqPageJsonLd(entries.map((entry) => entry.data)),
+)
+---
+
+<section id="faq" class="section bg-canvas" aria-labelledby="faq-title">
+  <div class="page-container grid gap-12 lg:grid-cols-[minmax(0,4fr)_minmax(0,8fr)] lg:gap-20">
+    <div class="flex flex-col gap-6">
+      <SectionHeading
+        id="faq-title"
+        eyebrow="FAQ"
+        title="Questions, answered."
+      />
+      <p class="text-muted-foreground">
+        Something else on your mind? Write to
+        <a
+          href={`mailto:${site.contactEmail}`}
+          class="font-medium text-foreground underline underline-offset-4"
+        >
+          {site.contactEmail}
+        </a>
+        .
+      </p>
+    </div>
+    <div class="divide-y divide-border border-y border-border">
+      {entries.map((entry) => (
+        <details class="faq-item group" name="faq">
+          <summary class="flex cursor-pointer list-none items-center justify-between gap-6 py-6 text-left text-lg font-medium">
+            {entry.data.question}
+            <span class="grid size-8 shrink-0 place-items-center rounded-full border border-border transition-transform duration-300 group-open:rotate-45">
+              <Icon name="close" size={14} class="rotate-45" />
+            </span>
+          </summary>
+          <p class="max-w-2xl pb-6 leading-relaxed text-muted-foreground">
+            {entry.data.answer}
+          </p>
+        </details>
+      ))}
+    </div>
+  </div>
+  <script type="application/ld+json" set:html={structuredData} />
+</section>
+
+<style>
+  .faq-item summary::-webkit-details-marker {
+    display: none;
+  }
+</style>

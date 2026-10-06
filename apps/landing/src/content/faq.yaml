@@ -1,0 +1,49 @@
+- id: what-is-steelyard
+  order: 1
+  question: What does Steelyard do?
+  answer: Steelyard connects to your ERP, reads every supplier invoice line, and categorizes it with AI against your own spend tree. On top of that it shows cheaper alternatives for items you already buy, checks invoices against your supplier agreements, and estimates spend-based emissions.
+
+- id: which-erps
+  order: 2
+  question: Which ERP systems do you support?
+  answer: Steelyard is built for enterprise ERP systems. Connectors for Microsoft Dynamics 365 (Business Central and Finance & Operations), SAP S/4HANA and Business One, Oracle NetSuite, IFS Cloud and Visma.net are in development, and Billy is supported today. If you use another system, tell us when you request a demo.
+
+- id: setup-time
+  order: 3
+  question: How long does it take to get started?
+  answer: Connecting an ERP and choosing the accounts to import takes minutes, and Steelyard then imports and categorizes your invoices in the background. For larger ERP landscapes, we map your entities and accounts together with your team during onboarding.
+
+- id: ai-accuracy
+  order: 4
+  question: Can I trust the AI's categories?
+  answer: Every category is a suggestion you can review. Lines the AI is unsure about are flagged for a person to confirm, and once someone corrects a line, the AI never overwrites that choice.
+
+- id: data-location
+  order: 5
+  question: Where is my data stored?
+  answer: Your data is hosted in the EU. Each company's data is kept separate from every other company's, and ERP credentials are stored encrypted.
+
+- id: data-training
+  order: 6
+  question: Is my data used to train AI models?
+  answer: No. Your invoices and agreements are used to run Steelyard for you, and are not used to train models for anyone else.
+
+- id: spend-tree
+  order: 7
+  question: Do I have to use your categories?
+  answer: No. You can start from our default spend tree, copy and adapt it, or build your own. Steelyard categorizes against whichever tree your organization uses.
+
+- id: multi-entity
+  order: 8
+  question: Can we cover several legal entities and ERP systems?
+  answer: Yes. An organization holds any number of legal entities, each with its own ERP connection and data, and one spend tree can be shared across all of them, so group-wide reports compare like with like. The Group and Enterprise plans are built for this.
+
+- id: demo
+  order: 9
+  question: Is the demo free?
+  answer: Yes. Tell us a little about your company and you can book a time straight away. The demo is free and there is no obligation.
+
+- id: cancel
+  order: 10
+  question: Can I cancel at any time?
+  answer: Monthly plans can be cancelled at the end of any month, annual plans at the end of the year. You can export your data before you leave.

@@ -1,0 +1,138 @@
+---
+import Button from '../ui/Button.astro'
+import Icon from '../ui/Icon.astro'
+import ProductFrame from '../ui/ProductFrame.astro'
+import { links } from '../../lib/site-links'
+
+const headline = ['Know the true price', 'of everything you buy.']
+---
+
+<section
+  class="scene dark ink-surface overflow-hidden pt-36 pb-24 md:pt-44 md:pb-32"
+  data-scene="hero"
+  aria-labelledby="hero-title"
+>
+  <div class="layer depth-0" data-depth="0" aria-hidden="true">
+    <div class="grid-pattern absolute inset-0 [mask-image:radial-gradient(ellipse_70%_60%_at_50%_35%,black,transparent)] opacity-70"></div>
+  </div>
+  <div class="layer depth-1" data-depth="1" aria-hidden="true">
+    <div class="absolute top-[38%] left-1/2 h-[42rem] w-[62rem] -translate-x-1/2 rounded-full bg-[radial-gradient(closest-side,rgb(255_255_255/0.13),transparent)] blur-2xl"></div>
+  </div>
+
+  <div
+    class="layer depth-4 page-container flex flex-col items-center text-center"
+    data-depth="4"
+  >
+    <a
+      href="#product"
+      class="mb-8 inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/5 py-1 pr-3 pl-1 text-sm text-white/80 transition-colors hover:bg-white/10"
+      data-reveal="fade"
+    >
+      <span class="rounded-full bg-white px-2 py-0.5 text-xs font-semibold text-[#0a0a0a]">
+        New
+      </span>
+      Agreement compliance checks every invoice line
+      <Icon name="arrowRight" size={14} />
+    </a>
+    <h1
+      id="hero-title"
+      class="text-display-xl max-w-5xl font-semibold"
+      data-reveal="lines"
+    >
+      {headline.map((line) => (
+        <span class="reveal-line">
+          <span>{line}</span>
+        </span>
+      ))}
+    </h1>
+    <p class="text-lead mt-7 max-w-2xl text-white/70" data-reveal="fade">
+      Steelyard connects to your ERP, categorizes every invoice line with AI
+      against your own spend tree, and shows you where you pay too much:
+      duplicate suppliers, cheaper alternatives and prices that drift from your
+      agreements.
+    </p>
+    <div
+      class="mt-10 flex flex-col items-center gap-3 sm:flex-row"
+      data-reveal="fade"
+    >
+      <Button href={links.demo} size="lg" arrow>
+        Get a demo
+      </Button>
+      <Button
+        href="#how-it-works"
+        variant="secondary"
+        size="lg"
+        class="border-white/15 bg-white/5 text-white hover:bg-white/10"
+      >
+        See how it works
+      </Button>
+    </div>
+    <ul
+      class="mt-8 flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-white/55"
+      data-reveal="fade"
+    >
+      <li class="flex items-center gap-2">
+        <Icon name="check" size={14} /> Free demo
+      </li>
+      <li class="flex items-center gap-2">
+        <Icon name="layers" size={14} /> Your own spend tree
+      </li>
+      <li class="flex items-center gap-2">
+        <Icon name="globe" size={14} /> Hosted in the EU
+      </li>
+    </ul>
+  </div>
+
+  <div class="layer depth-3 page-container mt-16 md:mt-20" data-depth="3">
+    <div class="hero-stage relative mx-auto max-w-5xl [perspective:1800px]">
+      <div class="hero-product" data-hero-product>
+        <div class="float-loop">
+          <ProductFrame
+            name="dashboard"
+            alt="The Steelyard dashboard: total spend, spend over time, and the largest categories and suppliers."
+            eager
+            sizes="(min-width: 1024px) 64rem, 100vw"
+          />
+        </div>
+      </div>
+
+      <div class="layer depth-2" data-depth="2" aria-hidden="true">
+        <div
+          class="hero-chip float-loop-slow absolute top-[14%] -left-4 hidden w-64 rounded-2xl border border-white/10 bg-[#141414]/90 p-4 text-left shadow-product backdrop-blur md:block lg:-left-16"
+          data-chip="left"
+        >
+          <p class="font-mono text-[11px] tracking-[0.14em] text-white/55 uppercase">
+            Line categorized
+          </p>
+          <p class="mt-2 text-sm font-medium text-white">
+            Rebar B500B, 12 mm · 24 t
+          </p>
+          <p class="mt-1 flex items-center gap-1.5 text-sm text-white/60">
+            Building materials <Icon name="arrowRight" size={12} /> Steel
+          </p>
+        </div>
+        <div
+          class="hero-chip float-loop absolute right-2 -bottom-6 hidden w-60 rounded-2xl border border-white/10 bg-[#141414]/90 p-4 text-left shadow-product backdrop-blur sm:block lg:-right-14"
+          data-chip="right"
+        >
+          <p class="font-mono text-[11px] tracking-[0.14em] text-white/55 uppercase">
+            Saving found
+          </p>
+          <p class="mt-2 text-2xl font-semibold text-success tabular-nums">
+            €38,400 / yr
+          </p>
+          <p class="mt-1 text-sm text-white/60">
+            Same concrete, second supplier
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="layer depth-5" data-depth="5" aria-hidden="true">
+    <span class="hero-particle absolute top-[22%] left-[8%] size-3 rounded-full bg-white/25"></span>
+    <span class="hero-particle absolute top-[30%] right-[10%] size-5 rounded-full border border-white/25"></span>
+    <span class="hero-particle absolute top-[64%] left-[4%] size-2 rounded-full bg-white/30"></span>
+    <span class="hero-particle absolute top-[72%] right-[6%] size-2.5 rounded-full bg-white/20"></span>
+  </div>
+</section>

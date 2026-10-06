@@ -1,0 +1,68 @@
+---
+import Icon from '../ui/Icon.astro'
+import type { IconName } from '../ui/icons'
+
+interface Pain {
+  icon: IconName
+  title: string
+  body: string
+}
+
+const statement =
+  'Your ERP knows what you paid. It does not know what you bought, whether you paid too much for it, or whether the supplier kept to the deal.'
+
+const pains: Array<Pain> = [
+  {
+    icon: 'layers',
+    title: 'Ledger accounts, not categories',
+    body: 'Invoices are booked to a handful of accounts, so no one can say how much the business spends on packaging, IT or travel.',
+  },
+  {
+    icon: 'search',
+    title: 'The same thing from five suppliers',
+    body: 'Different teams buy the same items from different suppliers at different prices, and nobody sees the overlap.',
+  },
+  {
+    icon: 'alert',
+    title: 'Prices that drift from the agreement',
+    body: 'Discounts negotiated once quietly disappear from invoices, and checking every line by hand is not realistic.',
+  },
+]
+---
+
+<section class="section bg-canvas" aria-labelledby="problem-title">
+  <div class="page-container">
+    <p class="font-mono text-xs font-medium tracking-[0.18em] text-muted-foreground uppercase">
+      The problem
+    </p>
+    <h2 id="problem-title" class="visually-hidden">
+      Why spend is hard to see
+    </h2>
+    <p
+      class="word-light mt-6 max-w-5xl text-display-md font-semibold"
+      data-word-light
+    >
+      {statement.split(' ').map((word) => (
+        <>
+          <span class="word">{word}</span>{' '}
+        </>
+      ))}
+    </p>
+    <ul class="mt-16 grid gap-4 md:grid-cols-3" data-stagger>
+      {pains.map((pain) => (
+        <li
+          class="flex flex-col gap-4 rounded-[1.25rem] border border-border bg-card p-7"
+          data-reveal="rise"
+        >
+          <span class="grid size-10 place-items-center rounded-xl border border-border text-foreground">
+            <Icon name={pain.icon} size={20} />
+          </span>
+          <h3 class="text-lg font-semibold">{pain.title}</h3>
+          <p class="text-[0.9375rem] leading-relaxed text-muted-foreground">
+            {pain.body}
+          </p>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>

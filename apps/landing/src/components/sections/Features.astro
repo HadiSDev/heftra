@@ -1,0 +1,38 @@
+---
+import { getCollection } from 'astro:content'
+import FeatureBlock from '../ui/FeatureBlock.astro'
+import RotatingWord from '../ui/RotatingWord.astro'
+import SectionHeading from '../ui/SectionHeading.astro'
+
+const currencies = ['EUR', 'DKK', 'SEK', 'NOK', 'PLN', 'GBP', 'CHF', 'USD']
+
+const features = (await getCollection('features')).sort(
+  (a, b) => a.data.order - b.data.order,
+)
+---
+
+<section id="product" class="section bg-canvas" aria-labelledby="product-title">
+  <div class="page-container">
+    <SectionHeading
+      id="product-title"
+      eyebrow="Product"
+      lead="Each part of Steelyard answers one question about your spend, and they all work from the same categorized lines."
+    >
+      <Fragment slot="title">
+        <span class="reveal-line">
+          <span>One platform for</span>
+        </span>
+        <span class="reveal-line">
+          <span>
+            every <RotatingWord words={currencies} /> you spend.
+          </span>
+        </span>
+      </Fragment>
+    </SectionHeading>
+    <div class="mt-20 flex flex-col gap-28 lg:gap-36">
+      {features.map((feature, index) => (
+        <FeatureBlock {...feature.data} reversed={index % 2 === 1} />
+      ))}
+    </div>
+  </div>
+</section>

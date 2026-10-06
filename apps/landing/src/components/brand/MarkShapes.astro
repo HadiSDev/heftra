@@ -1,0 +1,17 @@
+---
+import type { MarkShape } from './geometry'
+
+interface Props {
+  shapes: Array<MarkShape>
+}
+
+const { shapes } = Astro.props
+---
+
+{shapes.map((shape) =>
+  shape.kind === 'circle' ? (
+    <circle cx={shape.cx} cy={shape.cy} r={shape.r} />
+  ) : (
+    <rect x={shape.x} y={shape.y} width={shape.width} height={shape.height} />
+  ),
+)}

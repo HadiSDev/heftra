@@ -1,0 +1,26 @@
+---
+type Tone = 'neutral' | 'success' | 'outline'
+
+interface Props {
+  tone?: Tone
+  class?: string
+}
+
+const { tone = 'neutral', class: className } = Astro.props
+
+const toneClasses: Record<Tone, string> = {
+  neutral: 'bg-muted text-muted-foreground',
+  success: 'bg-success/12 text-success',
+  outline: 'border border-border text-muted-foreground',
+}
+---
+
+<span
+  class:list={[
+    'inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium',
+    toneClasses[tone],
+    className,
+  ]}
+>
+  <slot />
+</span>

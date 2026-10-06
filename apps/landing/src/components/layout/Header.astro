@@ -1,0 +1,57 @@
+---
+import Lockup from '../brand/Lockup.astro'
+import Button from '../ui/Button.astro'
+import MobileMenu from './MobileMenu.astro'
+import ThemeToggle from './ThemeToggle.astro'
+import { navItems } from './nav'
+import { links } from '../../lib/site-links'
+---
+
+<header class="pointer-events-none fixed inset-x-0 top-0 z-50 pt-3">
+  <div class="page-container">
+    <nav
+      aria-label="Main"
+      data-header-nav
+      class="pointer-events-auto relative flex h-14 items-center justify-between gap-4 rounded-full border border-border bg-card/75 py-2 pr-2 pl-5 text-foreground shadow-[var(--shadow-panel)] backdrop-blur-xl backdrop-saturate-150 transition-[background-color,border-color] duration-300"
+    >
+      <a
+        href="/"
+        class="flex items-center rounded-md text-foreground"
+        aria-label="Steelyard home"
+      >
+        <Lockup width={112} />
+      </a>
+      <ul class="hidden items-center gap-1 md:flex">
+        {navItems.map((item) => (
+          <li>
+            <a
+              href={item.href}
+              class="rounded-full px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
+              {item.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+      <div class="flex items-center gap-1">
+        <ThemeToggle />
+        <a
+          href={links.signIn}
+          class="hidden rounded-full px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground md:inline-flex"
+        >
+          Sign in
+        </a>
+        <Button href={links.demo} class="hidden sm:inline-flex" arrow>
+          Get a demo
+        </Button>
+        <MobileMenu />
+      </div>
+    </nav>
+  </div>
+</header>
+
+<script>
+  import { initHeaderTheme } from '../../scripts/header-theme'
+
+  initHeaderTheme()
+</script>

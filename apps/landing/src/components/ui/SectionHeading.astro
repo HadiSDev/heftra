@@ -1,0 +1,51 @@
+---
+interface Props {
+  eyebrow?: string
+  title?: string
+  lead?: string
+  align?: 'start' | 'center'
+  id?: string
+  class?: string
+}
+
+const {
+  eyebrow,
+  title,
+  lead,
+  align = 'start',
+  id,
+  class: className,
+} = Astro.props
+const lines = title ? title.split('\n') : []
+const hasTitleSlot = Astro.slots.has('title')
+---
+
+<div
+  class:list={[
+    'flex max-w-3xl flex-col gap-4',
+    align === 'center' && 'mx-auto items-center text-center',
+    className,
+  ]}
+>
+  {eyebrow && (
+    <p class="font-mono text-xs font-medium tracking-[0.18em] text-muted-foreground uppercase">
+      {eyebrow}
+    </p>
+  )}
+  <h2 id={id} class="text-display-lg font-semibold" data-reveal="lines">
+    {hasTitleSlot ? (
+      <slot name="title" />
+    ) : (
+      lines.map((line) => (
+        <span class="reveal-line">
+          <span>{line}</span>
+        </span>
+      ))
+    )}
+  </h2>
+  {lead && (
+    <p class="text-lead text-muted-foreground" data-reveal="fade">
+      {lead}
+    </p>
+  )}
+</div>

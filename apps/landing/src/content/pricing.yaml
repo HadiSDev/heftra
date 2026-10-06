@@ -1,0 +1,47 @@
+- id: business
+  order: 1
+  name: Business
+  audience: Mid-size companies with one ERP and a handful of legal entities.
+  monthlyPriceEur: 1490
+  annualMonthlyPriceEur: 1242
+  ctaLabel: Get a demo
+  features:
+    - Up to 5 legal entities
+    - 1 ERP connection
+    - Up to 50,000 invoice lines a month
+    - AI categorization against your spend tree
+    - Spend dashboard and supplier directory
+    - Cheaper alternatives
+
+- id: group
+  order: 2
+  name: Group
+  audience: Groups standardising spend across entities and ERPs.
+  monthlyPriceEur: 3900
+  annualMonthlyPriceEur: 3250
+  recommended: true
+  ctaLabel: Get a demo
+  includesFrom: Business
+  features:
+    - Up to 25 legal entities
+    - Multiple ERP connections
+    - Up to 250,000 invoice lines a month
+    - Agreement compliance
+    - Spend-based emissions
+    - One spend tree across the group
+
+- id: enterprise
+  order: 3
+  name: Enterprise
+  audience: Large enterprises with complex ERP landscapes.
+  monthlyPriceEur: null
+  annualMonthlyPriceEur: null
+  ctaLabel: Talk to us
+  includesFrom: Group
+  features:
+    - Unlimited entities and volume
+    - Guided onboarding and ERP account mapping
+    - Data processing agreement and security review
+    - Uptime SLA
+    - Priority support with a named contact
+    - Spend tree designed with your team

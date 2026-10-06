@@ -1,0 +1,36 @@
+---
+import MarkShapes from './MarkShapes.astro'
+import {
+  LOCKUP_MARK_TRANSFORM,
+  LOCKUP_VIEWBOX,
+  MARK,
+  MIN_LOCKUP_WIDTH,
+  WORDMARK_PATH,
+  heightForWidth,
+  viewBoxAttribute,
+} from './geometry'
+
+interface Props {
+  width: number
+  class?: string
+}
+
+const { width, class: className } = Astro.props
+const rendered = Math.max(width, MIN_LOCKUP_WIDTH)
+---
+
+<svg
+  role="img"
+  aria-label="Steelyard"
+  viewBox={viewBoxAttribute(LOCKUP_VIEWBOX)}
+  width={rendered}
+  height={heightForWidth(LOCKUP_VIEWBOX, rendered)}
+  fill="currentColor"
+  data-variant="lockup"
+  class:list={['shrink-0', className]}
+>
+  <g transform={LOCKUP_MARK_TRANSFORM}>
+    <MarkShapes shapes={MARK} />
+  </g>
+  <path d={WORDMARK_PATH} />
+</svg>

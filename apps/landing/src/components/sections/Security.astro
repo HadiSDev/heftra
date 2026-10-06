@@ -1,0 +1,77 @@
+---
+import Icon from '../ui/Icon.astro'
+import SectionHeading from '../ui/SectionHeading.astro'
+import type { IconName } from '../ui/icons'
+
+interface Assurance {
+  icon: IconName
+  title: string
+  body: string
+}
+
+const assurances: Array<Assurance> = [
+  {
+    icon: 'globe',
+    title: 'Hosted in the EU',
+    body: 'Your spend data is stored and processed in the European Union, under GDPR.',
+  },
+  {
+    icon: 'layers',
+    title: 'Every company kept apart',
+    body: "Each company's data is scoped to that company. No query, report or AI step reads across companies.",
+  },
+  {
+    icon: 'lock',
+    title: 'Encrypted ERP credentials',
+    body: 'Credentials for your ERP are encrypted at rest and only used to import your data.',
+  },
+  {
+    icon: 'user',
+    title: 'People review the AI',
+    body: 'Uncertain categories are flagged for a person, and agreement terms are confirmed by a manager before any check runs.',
+  },
+  {
+    icon: 'history',
+    title: 'Human corrections stick',
+    body: 'When someone corrects a line, the AI never overwrites that choice. Every change is recorded.',
+  },
+  {
+    icon: 'fileCheck',
+    title: 'Evidence, not guesses',
+    body: 'Findings come with the amount, the reason and the source: the invoice line, the agreement page, the matching item.',
+  },
+]
+---
+
+<section
+  id="security"
+  class="section bg-canvas"
+  aria-labelledby="security-title"
+>
+  <div class="page-container grid gap-14 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-20">
+    <div class="lg:sticky lg:top-32 lg:self-start">
+      <SectionHeading
+        id="security-title"
+        eyebrow="AI you can trust"
+        title={'Your data stays yours.\nThe decisions too.'}
+        lead="Steelyard is built for finance and procurement teams who need to explain every number. The AI does the reading; people stay in charge."
+      />
+    </div>
+    <ul class="grid gap-4 sm:grid-cols-2" data-stagger>
+      {assurances.map((assurance) => (
+        <li
+          class="flex flex-col gap-3 rounded-[1.25rem] border border-border bg-card p-6"
+          data-reveal="rise"
+        >
+          <span class="grid size-10 place-items-center rounded-xl bg-inverted text-inverted-foreground">
+            <Icon name={assurance.icon} size={20} />
+          </span>
+          <h3 class="text-base font-semibold">{assurance.title}</h3>
+          <p class="text-sm leading-relaxed text-muted-foreground">
+            {assurance.body}
+          </p>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>

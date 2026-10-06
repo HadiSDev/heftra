@@ -1,0 +1,102 @@
+---
+import Button from './Button.astro'
+import Icon from './Icon.astro'
+
+interface Props {
+  name: string
+  audience: string
+  monthlyPriceEur: number | null
+  annualMonthlyPriceEur: number | null
+  recommended: boolean
+  ctaLabel: string
+  ctaHref: string
+  includesFrom?: string
+  features: Array<string>
+}
+
+const {
+  name,
+  audience,
+  monthlyPriceEur,
+  annualMonthlyPriceEur,
+  recommended,
+  ctaLabel,
+  ctaHref,
+  includesFrom,
+  features,
+} = Astro.props
+
+const euro = new Intl.NumberFormat('en-IE', {
+  style: 'currency',
+  currency: 'EUR',
+  maximumFractionDigits: 0,
+})
+---
+
+<article
+  class:list={[
+    'relative flex flex-col gap-6 rounded-[1.5rem] border p-7',
+    recommended
+      ? 'dark border-white/10 bg-canvas text-foreground shadow-[0_24px_48px_-12px_rgb(0_0_0/0.35)] lg:-my-4 lg:py-11'
+      : 'border-border bg-card text-card-foreground',
+  ]}
+  data-reveal="rise"
+>
+  <div class="flex items-center justify-between gap-3">
+    <h3 class="text-xl font-semibold">{name}</h3>
+    {recommended && (
+      <span class="rounded-full bg-foreground px-3 py-1 text-xs font-semibold text-background">
+        Recommended
+      </span>
+    )}
+  </div>
+  <p class="text-sm text-muted-foreground">{audience}</p>
+  <div class="min-h-[4.5rem]">
+    {monthlyPriceEur === null || annualMonthlyPriceEur === null ? (
+      <>
+        <p class="text-4xl font-semibold tracking-tight">Custom</p>
+        <p class="mt-1 text-sm text-muted-foreground">
+          Priced by entities and volume
+        </p>
+      </>
+    ) : (
+      <>
+        <p class="flex items-baseline gap-1.5">
+          <span class="price-monthly text-4xl font-semibold tracking-tight tabular-nums">
+            {euro.format(monthlyPriceEur)}
+          </span>
+          <span class="price-annual text-4xl font-semibold tracking-tight tabular-nums">
+            {euro.format(annualMonthlyPriceEur)}
+          </span>
+          <span class="text-sm text-muted-foreground">/ month</span>
+        </p>
+        <p class="mt-1 text-sm text-muted-foreground">
+          <span class="price-monthly">Billed monthly, excl. VAT</span>
+          <span class="price-annual">Billed yearly, excl. VAT</span>
+        </p>
+      </>
+    )}
+  </div>
+  <Button
+    href={ctaHref}
+    variant={recommended ? 'primary' : 'secondary'}
+    size="lg"
+    class="w-full"
+    arrow
+  >
+    {ctaLabel}
+  </Button>
+  <div class="flex flex-col gap-3 border-t border-border pt-6">
+    {includesFrom && (
+      <p class="text-sm font-medium">Everything in {includesFrom}, plus:</p>
+    )}
+    <ul class="flex flex-col gap-3">
+      {features.map((feature) => (
+        <li class="flex gap-3 text-sm">
+          <Icon name="check" size={16} class="mt-0.5 text-foreground" />
+          <span>{feature}</span>
+        </li>
+      ))}
+    </ul>
+  </div>
+</article>

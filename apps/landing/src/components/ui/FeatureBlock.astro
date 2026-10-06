@@ -1,0 +1,74 @@
+---
+import Icon from './Icon.astro'
+import ProductFrame from './ProductFrame.astro'
+import type { IconName } from './icons'
+import type { ScreenshotName } from '../../lib/screenshots'
+
+interface Props {
+  icon: IconName
+  eyebrow: string
+  title: string
+  benefit: string
+  points: Array<string>
+  screenshot: ScreenshotName
+  screenshotAlt: string
+  reversed?: boolean
+}
+
+const {
+  icon,
+  eyebrow,
+  title,
+  benefit,
+  points,
+  screenshot,
+  screenshotAlt,
+  reversed = false,
+} = Astro.props
+---
+
+<article
+  class:list={[
+    'grid items-center gap-10 lg:gap-16',
+    reversed
+      ? 'lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]'
+      : 'lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]',
+  ]}
+  data-feature
+>
+  <div
+    class:list={['flex flex-col gap-5', reversed && 'lg:order-2']}
+    data-reveal="rise"
+  >
+    <div class="flex items-center gap-3">
+      <span class="grid size-10 place-items-center rounded-xl bg-inverted text-inverted-foreground">
+        <Icon name={icon} size={20} />
+      </span>
+      <p class="font-mono text-xs font-medium tracking-[0.18em] text-muted-foreground uppercase">
+        {eyebrow}
+      </p>
+    </div>
+    <h3 class="text-display-md font-semibold">{title}</h3>
+    <p class="text-lead text-muted-foreground">{benefit}</p>
+    <ul class="flex flex-col gap-3 pt-1">
+      {points.map((point) => (
+        <li class="flex gap-3 text-[0.9375rem] leading-relaxed">
+          <span class="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-foreground text-background">
+            <Icon name="check" size={12} />
+          </span>
+          <span>{point}</span>
+        </li>
+      ))}
+    </ul>
+  </div>
+  <div
+    class:list={['feature-visual', reversed && 'lg:order-1']}
+    data-reveal="iris"
+  >
+    <ProductFrame
+      name={screenshot}
+      alt={screenshotAlt}
+      sizes="(min-width: 1024px) 56vw, 100vw"
+    />
+  </div>
+</article>

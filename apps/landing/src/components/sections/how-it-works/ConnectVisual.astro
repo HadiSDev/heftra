@@ -1,0 +1,69 @@
+---
+import Icon from '../../ui/Icon.astro'
+
+const accounts = [
+  { code: '1310', name: 'Office supplies', enabled: true },
+  { code: '1420', name: 'IT and software', enabled: true },
+  { code: '2210', name: 'Freight', enabled: true },
+  { code: '3050', name: 'Payroll', enabled: false },
+]
+---
+
+<div
+  class="overflow-hidden rounded-[1.25rem] border border-white/10 bg-[#141414] text-white shadow-product"
+  role="img"
+  aria-label="An ERP connection, connected, with expense accounts selected for import."
+>
+  <div
+    class="flex items-center justify-between border-b border-white/10 px-6 py-5"
+    aria-hidden="true"
+  >
+    <div class="flex items-center gap-3">
+      <span class="grid size-10 place-items-center rounded-xl bg-white text-[#0a0a0a]">
+        <Icon name="plug" size={20} />
+      </span>
+      <div>
+        <p class="font-semibold">Your ERP</p>
+        <p class="text-sm text-white/50">ERP connection</p>
+      </div>
+    </div>
+    <span class="inline-flex items-center gap-1.5 rounded-full bg-success/15 px-3 py-1 text-xs font-medium text-success">
+      <span class="size-1.5 rounded-full bg-success"></span>
+      Connected
+    </span>
+  </div>
+  <ul class="divide-y divide-white/8 px-6" aria-hidden="true">
+    {accounts.map((account) => (
+      <li class="flex items-center justify-between py-3.5 text-sm">
+        <span class="flex items-center gap-3">
+          <span class="font-mono text-white/55">{account.code}</span>
+          <span class:list={[account.enabled ? 'text-white' : 'text-white/55']}>
+            {account.name}
+          </span>
+        </span>
+        <span
+          class:list={[
+            'relative h-5 w-9 rounded-full transition-colors',
+            account.enabled ? 'bg-white' : 'bg-white/15',
+          ]}
+        >
+          <span
+            class:list={[
+              'absolute top-0.5 size-4 rounded-full',
+              account.enabled
+                ? 'right-0.5 bg-[#0a0a0a]'
+                : 'left-0.5 bg-white/60',
+            ]}
+          />
+        </span>
+      </li>
+    ))}
+  </ul>
+  <div
+    class="flex items-center gap-2 border-t border-white/10 px-6 py-4 text-sm text-white/55"
+    aria-hidden="true"
+  >
+    <Icon name="history" size={16} />
+    Importing invoices in the background
+  </div>
+</div>

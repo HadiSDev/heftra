@@ -1,0 +1,53 @@
+---
+import { getCollection } from 'astro:content'
+import IntegrationLogo from '../ui/IntegrationLogo.astro'
+
+const integrations = (await getCollection('integrations')).sort(
+  (a, b) => a.data.order - b.data.order,
+)
+---
+
+<section
+  class="border-b border-border bg-canvas py-14"
+  aria-labelledby="integrations-title"
+>
+  <div class="page-container flex flex-col items-center gap-8">
+    <h2
+      id="integrations-title"
+      class="text-center text-sm font-medium text-muted-foreground"
+    >
+      Built for the enterprise ERP you already run
+    </h2>
+    <ul
+      class="grid w-full grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6"
+      data-stagger
+    >
+      {integrations.map((integration) => (
+        <li
+          class="flex flex-col items-center gap-3 rounded-2xl border border-border px-3 py-5 text-center"
+          data-reveal="rise"
+        >
+          <IntegrationLogo
+            name={integration.data.name}
+            logo={integration.data.logo}
+            logoColor={integration.data.logoColor}
+            logoStyle={integration.data.logoStyle}
+          />
+          <span class="text-xs text-balance text-muted-foreground">
+            {integration.data.region}
+          </span>
+          {integration.data.status === 'live' ? (
+            <span class="mt-auto inline-flex items-center gap-1.5 rounded-full bg-success/12 px-2.5 py-0.5 text-xs font-medium text-success">
+              <span class="size-1.5 rounded-full bg-success" />
+              Live
+            </span>
+          ) : (
+            <span class="mt-auto rounded-full border border-border px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
+              Coming soon
+            </span>
+          )}
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>

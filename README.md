@@ -122,6 +122,17 @@ run never waits behind a long backlog. The stage CLIs
 (`python -m ai_api.sync.runner`, `python -m ai_api.documents.runner`) keep
 working on their own.
 
+## Landing site
+
+The public marketing site at `steelyard.com` lives in [`apps/landing`](apps/landing/README.md),
+a static Astro site with its own bun project. It runs on `http://localhost:3200`
+and posts demo requests to the web API, so add `http://localhost:3200` to
+`WEB_API_CORS_ORIGINS` and set `DEMO_BOOKING_URL` to hand out the booking link.
+
+```bash
+cd apps/landing && cp .env.example .env && ./node_modules/.bin/astro dev --port 3200
+```
+
 ## Test
 
 ```bash

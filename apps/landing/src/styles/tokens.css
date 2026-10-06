@@ -1,0 +1,93 @@
+:root {
+  --canvas: #f5f5f5;
+  --foreground: #0a0a0a;
+
+  --card: #ffffff;
+  --card-foreground: #0a0a0a;
+  --popover: #ffffff;
+  --popover-foreground: #0a0a0a;
+
+  --muted: #f0f0f0;
+  --muted-foreground: #5c5c5c;
+  --subtle-foreground: #6b6b6b;
+
+  --primary: #0a0a0a;
+  --primary-foreground: #ffffff;
+
+  --secondary: #ffffff;
+  --secondary-foreground: #0a0a0a;
+
+  --accent: #0a0a0a;
+  --accent-foreground: #ffffff;
+
+  --inverted: #0a0a0a;
+  --inverted-foreground: #ffffff;
+
+  --border: rgb(10 10 10 / 0.1);
+  --input: rgb(10 10 10 / 0.18);
+  --ring: rgb(10 10 10 / 0.55);
+
+  --success: #30783d;
+  --success-foreground: #ffffff;
+  --warning: #905c11;
+  --warning-foreground: #ffffff;
+  --destructive: #cd1d23;
+  --destructive-foreground: #ffffff;
+  --info: #1960e9;
+  --info-foreground: #ffffff;
+  --chart-1: #2563eb;
+  --chart-2: #0d9488;
+  --chart-3: #d97706;
+  --chart-4: #7c3aed;
+  --chart-5: #db2777;
+  --chart-other: #94a3b8;
+  --chart-uncategorized: #d4d4d4;
+
+  --radius: 0.75rem;
+}
+
+.dark {
+  --canvas: #0a0a0a;
+  --foreground: #ffffff;
+
+  --card: #141414;
+  --card-foreground: #ffffff;
+  --popover: #141414;
+  --popover-foreground: #ffffff;
+
+  --muted: #1c1c1c;
+  --muted-foreground: #a3a3a3;
+  --subtle-foreground: #8f8f8f;
+
+  --primary: #ffffff;
+  --primary-foreground: #0a0a0a;
+
+  --secondary: #1c1c1c;
+  --secondary-foreground: #ffffff;
+
+  --accent: #ffffff;
+  --accent-foreground: #0a0a0a;
+
+  --inverted: #ffffff;
+  --inverted-foreground: #0a0a0a;
+
+  --border: rgb(255 255 255 / 0.1);
+  --input: rgb(255 255 255 / 0.18);
+  --ring: rgb(255 255 255 / 0.6);
+
+  --success: #3e9b4f;
+  --success-foreground: #0a0a0a;
+  --warning: #e8a13b;
+  --warning-foreground: #0a0a0a;
+  --destructive: #e7555a;
+  --destructive-foreground: #0a0a0a;
+  --info: #4e85ee;
+  --info-foreground: #0a0a0a;
+  --chart-1: #60a5fa;
+  --chart-2: #2dd4bf;
+  --chart-3: #fbbf24;
+  --chart-4: #a78bfa;
+  --chart-5: #f472b6;
+  --chart-other: #64748b;
+  --chart-uncategorized: #404040;
+}

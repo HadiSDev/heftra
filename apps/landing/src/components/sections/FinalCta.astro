@@ -1,0 +1,58 @@
+---
+import Symbol from '../brand/Symbol.astro'
+import Button from '../ui/Button.astro'
+import { links } from '../../lib/site-links'
+---
+
+<section
+  class="scene dark ink-surface overflow-hidden py-32 md:py-44"
+  aria-labelledby="final-cta-title"
+  data-scene="final-cta"
+>
+  <div class="layer depth-0" data-depth="0" aria-hidden="true">
+    <div class="grid-pattern absolute inset-0 [mask-image:radial-gradient(ellipse_60%_70%_at_50%_50%,black,transparent)] opacity-60"></div>
+  </div>
+  <div class="layer depth-1" data-depth="1" aria-hidden="true">
+    <div class="absolute top-1/2 left-1/2 h-[36rem] w-[52rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(closest-side,rgb(255_255_255/0.12),transparent)] blur-2xl"></div>
+  </div>
+  <div
+    class="layer depth-4 page-container flex flex-col items-center gap-8 text-center"
+    data-depth="4"
+  >
+    <span class="float-loop text-white" data-reveal="fade">
+      <Symbol width={88} decorative />
+    </span>
+    <h2
+      id="final-cta-title"
+      class="text-display-lg max-w-4xl font-semibold"
+      data-reveal="lines"
+    >
+      <span class="reveal-line">
+        <span>See what your spend</span>
+      </span>
+      <span class="reveal-line">
+        <span>is really costing you.</span>
+      </span>
+    </h2>
+    <p class="text-lead max-w-xl text-white/65" data-reveal="fade">
+      Book a free demo. We will connect to your ERP and walk you through your
+      own spend.
+    </p>
+    <div
+      class="flex flex-col items-center gap-3 sm:flex-row"
+      data-reveal="fade"
+    >
+      <Button href={links.demo} size="lg" arrow>
+        Get a demo
+      </Button>
+      <Button
+        href={links.signIn}
+        variant="secondary"
+        size="lg"
+        class="border-white/15 bg-white/5 text-white hover:bg-white/10"
+      >
+        Sign in
+      </Button>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,57 @@
+---
+import Icon from './Icon.astro'
+
+type Variant = 'primary' | 'secondary' | 'ghost' | 'inverted'
+type Size = 'md' | 'lg'
+
+interface Props {
+  href: string
+  variant?: Variant
+  size?: Size
+  arrow?: boolean
+  class?: string
+  [key: `data-${string}`]: string
+}
+
+const {
+  href,
+  variant = 'primary',
+  size = 'md',
+  arrow = false,
+  class: className,
+  ...rest
+} = Astro.props
+
+const variantClasses: Record<Variant, string> = {
+  primary:
+    'bg-primary text-primary-foreground hover:opacity-90 shadow-[0_1px_0_rgb(255_255_255/0.15)_inset]',
+  secondary: 'bg-card text-card-foreground border border-input hover:bg-muted',
+  ghost: 'text-foreground hover:bg-muted',
+  inverted: 'bg-inverted text-inverted-foreground hover:opacity-90',
+}
+
+const sizeClasses: Record<Size, string> = {
+  md: 'h-10 px-4 text-sm gap-1.5',
+  lg: 'h-12 px-6 text-base gap-2',
+}
+---
+
+<a
+  href={href}
+  class:list={[
+    'group inline-flex items-center justify-center rounded-full font-medium whitespace-nowrap transition-[opacity,background-color,transform] duration-200 active:scale-[0.98]',
+    variantClasses[variant],
+    sizeClasses[size],
+    className,
+  ]}
+  {...rest}
+>
+  <slot />
+  {arrow && (
+    <Icon
+      name="arrowRight"
+      size={size === 'lg' ? 18 : 16}
+      class="transition-transform duration-200 group-hover:translate-x-0.5"
+    />
+  )}
+</a>

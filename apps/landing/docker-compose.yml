@@ -1,0 +1,23 @@
+name: steelyard-landing
+
+services:
+  landing:
+    build:
+      context: .
+      args:
+        PUBLIC_SITE_URL: ${PUBLIC_SITE_URL:-https://steelyard.com}
+        PUBLIC_APP_URL: ${PUBLIC_APP_URL:-https://app.steelyard.com}
+        PUBLIC_API_URL: ${PUBLIC_API_URL:-https://api.steelyard.com}
+    restart: unless-stopped
+    expose:
+      - "8080"
+
+  cloudflared:
+    image: cloudflare/cloudflared:2026.9.3
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN:?Set TUNNEL_TOKEN to the Cloudflare tunnel token}
+    restart: unless-stopped
+    depends_on:
+      landing:
+        condition: service_healthy

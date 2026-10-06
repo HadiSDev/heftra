@@ -1,0 +1,39 @@
+---
+import MarkShapes from './MarkShapes.astro'
+import {
+  MARK,
+  MIN_SYMBOL_WIDTH,
+  SMALL_MARK,
+  SMALL_SYMBOL_BELOW,
+  SMALL_SYMBOL_VIEWBOX,
+  SYMBOL_VIEWBOX,
+  heightForWidth,
+  viewBoxAttribute,
+} from './geometry'
+
+interface Props {
+  width: number
+  class?: string
+  decorative?: boolean
+}
+
+const { width, class: className, decorative = false } = Astro.props
+const rendered = Math.max(width, MIN_SYMBOL_WIDTH)
+const small = rendered < SMALL_SYMBOL_BELOW
+const box = small ? SMALL_SYMBOL_VIEWBOX : SYMBOL_VIEWBOX
+const shapes = small ? SMALL_MARK : MARK
+---
+
+<svg
+  role={decorative ? undefined : 'img'}
+  aria-label={decorative ? undefined : 'Steelyard'}
+  aria-hidden={decorative ? 'true' : undefined}
+  viewBox={viewBoxAttribute(box)}
+  width={rendered}
+  height={heightForWidth(box, rendered)}
+  fill="currentColor"
+  data-variant={small ? 'symbol-small' : 'symbol'}
+  class:list={['shrink-0', className]}
+>
+  <MarkShapes shapes={shapes} />
+</svg>

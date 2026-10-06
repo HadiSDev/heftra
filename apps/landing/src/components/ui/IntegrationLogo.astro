@@ -1,0 +1,58 @@
+---
+import { Image } from 'astro:assets'
+import { integrationLogo } from '../../lib/integration-logos'
+
+interface Props {
+  name: string
+  logo: string
+  logoColor?: string
+  logoStyle: 'wordmark' | 'icon'
+}
+
+const { name, logo, logoColor, logoStyle } = Astro.props
+const image = integrationLogo(logo)
+const logoHeight = 36
+const logoWidth = Math.round((image.width / image.height) * logoHeight)
+---
+
+<span class="grid h-16 w-full place-items-center rounded-xl bg-white px-3 ring-1 ring-black/5">
+  {logoStyle === 'icon' ? (
+    <span class="flex items-center gap-2 text-[#242424]">
+      <Image
+        src={image}
+        alt=""
+        width={28}
+        height={28}
+        format="svg"
+        class="size-7"
+      />
+      <span class="text-[0.9375rem] leading-tight font-semibold tracking-tight">
+        {name}
+      </span>
+    </span>
+  ) : logoColor ? (
+    <span
+      role="img"
+      aria-label={name}
+      class="integration-logo block h-9 w-full max-w-36"
+      style={`--logo: url("${image.src}"); --logo-color: ${logoColor}`}
+    />
+  ) : (
+    <Image
+      src={image}
+      alt={name}
+      width={logoWidth}
+      height={logoHeight}
+      format="svg"
+      class="h-9 w-full max-w-36 object-contain"
+    />
+  )}
+</span>
+
+<style>
+  .integration-logo {
+    background-color: var(--logo-color);
+    -webkit-mask: var(--logo) center / contain no-repeat;
+    mask: var(--logo) center / contain no-repeat;
+  }
+</style>

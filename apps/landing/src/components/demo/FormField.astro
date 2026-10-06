@@ -1,0 +1,33 @@
+---
+interface Props {
+  name: string
+  label: string
+  hint?: string
+  required?: boolean
+}
+
+const { name, label, hint, required = false } = Astro.props
+const inputId = `demo-${name}`
+const errorId = `${inputId}-error`
+---
+
+<div class="flex flex-col gap-2" data-field={name}>
+  <label for={inputId} class="text-sm font-medium">
+    {label}
+    {required ? (
+      <span class="text-muted-foreground" aria-hidden="true">
+        {' '}
+        *
+      </span>
+    ) : (
+      <span class="font-normal text-muted-foreground"> (optional)</span>
+    )}
+  </label>
+  <slot />
+  {hint && <p class="text-xs text-muted-foreground">{hint}</p>}
+  <p
+    id={errorId}
+    class="hidden text-sm font-medium text-destructive"
+    data-field-error
+  ></p>
+</div>

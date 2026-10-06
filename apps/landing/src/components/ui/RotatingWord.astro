@@ -1,0 +1,19 @@
+---
+interface Props {
+  words: Array<string>
+}
+
+const { words } = Astro.props
+const [first] = words
+---
+
+<span class="rotating-word" data-rotating-word>
+  <span class="visually-hidden">{first}</span>
+  <span class="rotating-word-window" aria-hidden="true">
+    <span class="rotating-word-track" data-rotating-word-track>
+      {words.map((word) => (
+        <span class="rotating-word-item">{word}</span>
+      ))}
+    </span>
+  </span>
+</span>

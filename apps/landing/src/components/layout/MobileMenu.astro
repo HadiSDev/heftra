@@ -1,0 +1,56 @@
+---
+import Button from '../ui/Button.astro'
+import Icon from '../ui/Icon.astro'
+import { navItems } from './nav'
+import { links } from '../../lib/site-links'
+---
+
+<div class="md:hidden" data-mobile-menu>
+  <button
+    type="button"
+    class="inline-flex size-9 items-center justify-center rounded-full text-foreground hover:bg-muted"
+    aria-expanded="false"
+    aria-controls="mobile-menu-panel"
+    aria-label="Open menu"
+    data-mobile-menu-button
+  >
+    <Icon name="menu" size={20} class="menu-open-icon" />
+    <Icon name="close" size={20} class="menu-close-icon hidden" />
+  </button>
+  <div
+    id="mobile-menu-panel"
+    hidden
+    class="absolute inset-x-0 top-[calc(100%+0.5rem)] rounded-3xl border border-border bg-card p-3 shadow-[var(--shadow-popover)]"
+    data-mobile-menu-panel
+  >
+    <ul class="flex flex-col">
+      {navItems.map((item) => (
+        <li>
+          <a
+            href={item.href}
+            class="block rounded-2xl px-4 py-3 text-base font-medium hover:bg-muted"
+          >
+            {item.label}
+          </a>
+        </li>
+      ))}
+      <li>
+        <a
+          href={links.signIn}
+          class="block rounded-2xl px-4 py-3 text-base font-medium hover:bg-muted"
+        >
+          Sign in
+        </a>
+      </li>
+    </ul>
+    <Button href={links.demo} size="lg" class="mt-2 w-full" arrow>
+      Get a demo
+    </Button>
+  </div>
+</div>
+
+<script>
+  import { initMobileMenus } from '../../scripts/mobile-menu'
+
+  initMobileMenus()
+</script>

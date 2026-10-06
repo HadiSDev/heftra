@@ -1,0 +1,80 @@
+---
+import Lockup from '../brand/Lockup.astro'
+import { site } from '../../lib/site'
+import { links } from '../../lib/site-links'
+
+interface FooterColumn {
+  title: string
+  items: Array<{ label: string; href: string }>
+}
+
+const columns: Array<FooterColumn> = [
+  {
+    title: 'Product',
+    items: [
+      { label: 'Features', href: '/#product' },
+      { label: 'How it works', href: '/#how-it-works' },
+      { label: 'Pricing', href: '/#pricing' },
+      { label: 'FAQ', href: '/#faq' },
+    ],
+  },
+  {
+    title: 'Company',
+    items: [
+      { label: 'Get a demo', href: links.demo },
+      { label: 'Sign in', href: links.signIn },
+      { label: 'Contact', href: `mailto:${site.contactEmail}` },
+    ],
+  },
+  {
+    title: 'Legal',
+    items: [
+      { label: 'Privacy policy', href: '/privacy/' },
+      { label: 'Terms of service', href: '/terms/' },
+      { label: 'Security', href: '/#security' },
+    ],
+  },
+]
+
+const year = new Date().getFullYear()
+---
+
+<footer class="border-t border-border bg-canvas">
+  <div class="page-container grid gap-12 py-16 md:grid-cols-[1.4fr_repeat(3,1fr)]">
+    <div class="flex flex-col gap-4">
+      <a href="/" class="w-fit text-foreground" aria-label="Steelyard home">
+        <Lockup width={128} />
+      </a>
+      <p class="max-w-xs text-sm text-muted-foreground">{site.tagline}</p>
+      <a
+        href={`mailto:${site.contactEmail}`}
+        class="w-fit text-sm font-medium text-foreground underline-offset-4 hover:underline"
+      >
+        {site.contactEmail}
+      </a>
+    </div>
+    {columns.map((column) => (
+      <nav aria-label={column.title}>
+        <h2 class="font-mono text-xs font-medium tracking-[0.18em] text-muted-foreground uppercase">
+          {column.title}
+        </h2>
+        <ul class="mt-4 flex flex-col gap-3">
+          {column.items.map((item) => (
+            <li>
+              <a
+                href={item.href}
+                class="text-sm text-foreground/80 transition-colors hover:text-foreground"
+              >
+                {item.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    ))}
+  </div>
+  <div class="page-container flex flex-col gap-2 border-t border-border py-6 text-xs text-muted-foreground sm:flex-row sm:justify-between">
+    <p>© {year} Steelyard. All rights reserved.</p>
+    <p>Hosted in the EU.</p>
+  </div>
+</footer>

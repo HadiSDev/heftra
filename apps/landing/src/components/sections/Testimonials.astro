@@ -1,0 +1,38 @@
+---
+import { getCollection } from 'astro:content'
+import SectionHeading from '../ui/SectionHeading.astro'
+
+const testimonials = (await getCollection('testimonials')).sort(
+  (a, b) => a.data.order - b.data.order,
+)
+---
+
+{testimonials.length > 0 && (
+  <section class="section bg-canvas" aria-labelledby="testimonials-title">
+    <div class="page-container">
+      <SectionHeading
+        id="testimonials-title"
+        eyebrow="Customers"
+        title="In their words."
+        align="center"
+      />
+      <ul class="mt-16 grid gap-4 md:grid-cols-2 lg:grid-cols-3" data-stagger>
+        {testimonials.map((testimonial) => (
+          <li data-reveal="rise">
+            <figure class="flex h-full flex-col justify-between gap-8 rounded-[1.25rem] border border-border bg-card p-7">
+              <blockquote class="text-lg leading-relaxed">
+                “{testimonial.data.quote}”
+              </blockquote>
+              <figcaption class="text-sm">
+                <span class="font-semibold">{testimonial.data.name}</span>
+                <span class="block text-muted-foreground">
+                  {testimonial.data.role}, {testimonial.data.company}
+                </span>
+              </figcaption>
+            </figure>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+)}
