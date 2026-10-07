@@ -20,7 +20,8 @@ import {
   TabsTab,
 } from '#/components/ui'
 import { Logo } from '#/components/brand/logo'
-import { GOOGLE_OAUTH_ENABLED } from '#/lib/env'
+import { DemoAccess } from '#/components/auth/demo-access'
+import { DEMO_LOGIN, GOOGLE_OAUTH_ENABLED } from '#/lib/env'
 
 export const Route = createFileRoute('/sign-in')({ component: SignInPage })
 
@@ -46,7 +47,10 @@ interface PanelProps {
 
 function PasswordPanel({ signIn, setError, finish }: PanelProps) {
   const form = useForm<{ email: string; password: string }>({
-    defaultValues: { email: '', password: '' },
+    defaultValues: {
+      email: DEMO_LOGIN?.email ?? '',
+      password: DEMO_LOGIN?.password ?? '',
+    },
   })
 
   async function onSubmit(values: { email: string; password: string }) {
@@ -282,6 +286,22 @@ function SignInPage() {
     await navigate({ to: '/' })
   }
 
+  async function signInAsDemo() {
+    if (!DEMO_LOGIN) {
+      return
+    }
+    setFormError(null)
+    const { error } = await signIn.password({
+      identifier: DEMO_LOGIN.email,
+      password: DEMO_LOGIN.password,
+    })
+    if (error) {
+      setFormError(clerkErrorMessage(error))
+      return
+    }
+    await finish()
+  }
+
   async function signInWithGoogle() {
     if (!signIn) {
       return
@@ -324,6 +344,10 @@ function SignInPage() {
             >
               {formError}
             </div>
+          ) : null}
+
+          {DEMO_LOGIN ? (
+            <DemoAccess login={DEMO_LOGIN} onSignIn={signInAsDemo} />
           ) : null}
 
           <Tabs

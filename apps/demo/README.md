@@ -56,11 +56,16 @@ Create a Compose service from this repository with compose path
 | `CLERK_PUBLISHABLE_KEY` | `pk_live_…`                                   |
 | `CLERK_SECRET_KEY`      | `sk_live_…`                                   |
 | `TUNNEL_TOKEN`          | the tunnel's token                            |
+| `DEMO_LOGIN_PASSWORD`   | the demo user's password, shown on sign-in    |
+| `DEMO_LOGIN_EMAIL`      | `demo@heftra.com` (default)                   |
 | `DEMO_APP_URL`          | `https://demo.heftra.com` (default)           |
 | `DEMO_API_URL`          | `https://demo-api.heftra.com` (default)       |
 
-The publishable key and `DEMO_API_URL` are baked into the web build, so change
-them by redeploying.
+The publishable key, `DEMO_API_URL` and the demo login are baked into the web
+build, so change them by redeploying. The sign-in page shows the demo login in a
+"Demo access" box with a one-click sign-in, and pre-fills the password form. Any
+build without `VITE_DEMO_EMAIL` and `VITE_DEMO_PASSWORD`, such as the real app,
+shows no box.
 
 In the tunnel, add these public hostnames:
 
@@ -69,6 +74,15 @@ In the tunnel, add these public hostnames:
 
 ## Sharing and ending it
 
-Send the investor `https://demo.heftra.com` with the demo login. To revoke
-access, change the demo user's password or ban the user in Clerk. Bring the
+Send the investor `https://demo.heftra.com`; the login is on the sign-in page,
+so anyone with the link can get in. To revoke access, ban the demo user in
+Clerk. Changing the password also works, but redeploy with the new
+`DEMO_LOGIN_PASSWORD` so the page shows it.
+
+Because the password is public, set these in Clerk:
+
+- Under **User & authentication → Restrictions**, turn off "Allow users to
+  delete their accounts", so a visitor can't remove the shared user.
+- Keep an eye on the demo user: a visitor could change its password from the
+  account portal. If that happens, reset it in Clerk. Bring the
 stack down when the demo period is over.

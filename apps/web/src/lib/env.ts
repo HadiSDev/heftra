@@ -24,3 +24,20 @@ export function assertRequiredEnv(): void {
     )
   }
 }
+
+/** A shared login shown on the sign-in page. Set only for the hosted demo. */
+export interface DemoLogin {
+  email: string
+  password: string
+}
+
+function readDemoLogin(): DemoLogin | null {
+  const email = import.meta.env.VITE_DEMO_EMAIL as string | undefined
+  const password = import.meta.env.VITE_DEMO_PASSWORD as string | undefined
+  if (!email || !password) {
+    return null
+  }
+  return { email, password }
+}
+
+export const DEMO_LOGIN: DemoLogin | null = readDemoLogin()
