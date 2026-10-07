@@ -46,7 +46,7 @@ The web app talks to Clerk's production instance for `heftra.com`. Set it up onc
 ## Dokploy
 
 Create a Compose service from this repository with compose path
-`deploy/demo/docker-compose.yml`, and set:
+`apps/demo/docker-compose.yml`, and set:
 
 | Variable                | Value                                         |
 | ----------------------- | --------------------------------------------- |

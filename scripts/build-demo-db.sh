@@ -2,7 +2,7 @@
 # Build the hosted demo's database dump: only the fictional Nordlys Byg A/S, never dev data.
 #
 # Usage:
-#   scripts/build-demo-db.sh                      # writes deploy/demo/postgres/demo.sql.gz
+#   scripts/build-demo-db.sh                      # writes apps/demo/postgres/demo.sql.gz
 #   scripts/build-demo-db.sh --factors-from NAME  # container holding an imported emission factor set
 #
 # It starts a throwaway PostgreSQL, applies the migrations, copies the emission factor sets and
@@ -11,7 +11,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-OUT="$ROOT/deploy/demo/postgres/demo.sql.gz"
+OUT="$ROOT/apps/demo/postgres/demo.sql.gz"
 FACTORS_FROM="heftra-postgres-1"
 FACTORS_DB="heftra"
 SCRATCH="heftra-demo-build"

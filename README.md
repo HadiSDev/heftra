@@ -148,6 +148,13 @@ and posts demo requests to the web API, so add `http://localhost:3200` to
 cd apps/landing && cp .env.example .env && ./node_modules/.bin/astro dev --port 3200
 ```
 
+## Investor demo
+
+[`apps/demo`](apps/demo/README.md) deploys a read-only copy of the web app at
+`demo.heftra.com` with Dokploy and Cloudflare Tunnel. It serves only the fictional
+Nordlys Byg A/S, from a database dump built by `scripts/build-demo-db.sh`, behind
+one shared Clerk login.
+
 ## Test
 
 ```bash
