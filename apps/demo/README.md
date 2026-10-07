@@ -9,12 +9,28 @@ one shared demo login.
 | `postgres`    | PostgreSQL 16, initialised from `postgres/demo.sql.gz` on first start      |
 | `link-org`    | One-shot step: points the demo organization at the Clerk org on each start |
 | `web-api`     | `apps/web-api/Dockerfile`; applies migrations, then serves on 8100         |
+| `demo-erp`    | `erp/`; a stand-in ERP that serves each invoice's PDF on 8001              |
 | `web`         | `apps/web/Dockerfile`; the TanStack Start server on 3100                   |
 | `cloudflared` | Cloudflare Tunnel; nothing is published on the host                        |
 
 The demo has no file store, AI services or worker. Pages read precomputed data,
 so they need none. The only thing that doesn't work is opening an agreement's
 original PDF.
+
+## Invoice documents
+
+The app fetches an invoice's document live from the company's ERP. The demo
+company's integration is the mock ERP type, so `demo-erp` plays that ERP:
+
+- `GET /api/v1/documents/{voucher}` renders the invoice posted under that
+  voucher as a PDF, from the demo database: supplier, buyer, lines and totals.
+  PDFs are rendered on first request and cached.
+- On start, it stores its own address (`http://demo-erp:8001`) as the
+  integration's credentials, encrypted with `DEMO_CREDENTIAL_KEY`, which the web
+  API uses to decrypt them.
+- `scripts/attach_invoice_documents.py` runs during the dump build. It gives
+  every demo invoice a processed document record with its totals, as a real ERP
+  sync would.
 
 ## The demo data
 
@@ -58,6 +74,7 @@ Create a Compose service from this repository with compose path
 | `TUNNEL_TOKEN`          | the tunnel's token                            |
 | `DEMO_LOGIN_PASSWORD`   | the demo user's password, shown on sign-in    |
 | `DEMO_LOGIN_EMAIL`      | `demo@heftra.com` (default)                   |
+| `DEMO_CREDENTIAL_KEY`   | a Fernet key (any; `demo-erp` re-registers)   |
 | `DEMO_APP_URL`          | `https://demo.heftra.com` (default)           |
 | `DEMO_API_URL`          | `https://demo-api.heftra.com` (default)       |
 

@@ -45,8 +45,22 @@ services:
       DATABASE_URL: postgresql://heftra:${DEMO_DB_PASSWORD}@postgres:5432/heftra
       CLERK_ISSUER: ${CLERK_ISSUER:?set CLERK_ISSUER}
       WEB_API_CORS_ORIGINS: ${DEMO_APP_URL:-https://demo.heftra.com}
+      WEB_API_CREDENTIAL_ENC_KEY: ${DEMO_CREDENTIAL_KEY:?set DEMO_CREDENTIAL_KEY}
     expose:
       - '8100'
+    restart: unless-stopped
+
+  demo-erp:
+    build: ./erp
+    depends_on:
+      link-org:
+        condition: service_completed_successfully
+    environment:
+      DATABASE_URL: postgresql://heftra:${DEMO_DB_PASSWORD}@postgres:5432/heftra
+      WEB_API_CREDENTIAL_ENC_KEY: ${DEMO_CREDENTIAL_KEY}
+      DEMO_ERP_URL: http://demo-erp:8001
+    expose:
+      - '8001'
     restart: unless-stopped
 
   web:

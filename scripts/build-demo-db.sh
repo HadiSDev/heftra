@@ -7,7 +7,8 @@
 #
 # It starts a throwaway PostgreSQL, applies the migrations, copies the emission factor sets and
 # price indices (public reference data) from the dev database, creates the demo organization and a
-# placeholder user, runs the demo-company seed against it, and dumps the result.
+# placeholder user, runs the demo-company seed against it, attaches each invoice's document
+# record (the demo ERP serves the PDFs), and dumps the result.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -81,6 +82,9 @@ SQL
 
 echo "Seeding Nordlys Byg A/S…"
 (cd "$ROOT" && uv run python apps/ai-api/scripts/demo_company)
+
+echo "Attaching invoice documents…"
+(cd "$ROOT" && uv run python apps/demo/scripts/attach_invoice_documents.py)
 
 echo "Writing $OUT…"
 mkdir -p "$(dirname "$OUT")"
