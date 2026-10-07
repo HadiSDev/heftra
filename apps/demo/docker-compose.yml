@@ -10,10 +10,11 @@ services:
     volumes:
       - demo_pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U heftra -d heftra']
+      test: ['CMD-SHELL', 'pg_isready -h 127.0.0.1 -U heftra -d heftra']
       interval: 5s
       timeout: 3s
-      retries: 30
+      retries: 60
+      start_period: 30s
     restart: unless-stopped
 
   link-org:
