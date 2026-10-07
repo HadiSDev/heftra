@@ -129,4 +129,4 @@
 
 ## 9. Product screenshots
 
-- [x] 9.1 Replace the Steelyard lockup in the five product screenshots. The local dev Clerk key was rejected (401), so the web app couldn't be recaptured. Only the sidebar logo changed, so the new white lockup from `brand/svg/heftra-lockup-white.svg` was composited over the old one instead: 180 px wide (the app's 90 px at 2×), same left edge and vertical centre, on the sidebar's `#141414`. A full recapture remains a nice-to-have once the dev key is fixed.
+- [x] 9.1 Recapture the five product screenshots with the Heftra lockup. They were first patched (the new lockup composited over the old one) while the dev Clerk key was rejected, then recaptured properly from the hosted demo (demo.heftra.com) with the demo login, `CAPTURE_LOGIN_EMAIL`/`CAPTURE_LOGIN_PASSWORD` and the persona scrub.

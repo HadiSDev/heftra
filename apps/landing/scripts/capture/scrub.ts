@@ -23,13 +23,16 @@ export async function applyPersona(
   persona: Persona,
 ): Promise<void> {
   await page.evaluate(({ personName, organizationName }) => {
-    const initialsAvatar = (text: string) => {
-      const initials = text
+    const initialsOf = (text: string) =>
+      text
         .split(/\s+/)
         .map((part) => part[0])
         .join('')
         .slice(0, 2)
         .toUpperCase()
+
+    const initialsAvatar = (text: string) => {
+      const initials = initialsOf(text)
       const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="#3f3f46"/><text x="32" y="41" font-family="Arial, sans-serif" font-size="24" font-weight="600" fill="#ffffff" text-anchor="middle">${initials}</text></svg>`
       return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`
     }
@@ -54,6 +57,25 @@ export async function applyPersona(
       replaceText(document.body, realName, personName)
       userAvatar.alt = personName
       userAvatar.src = initialsAvatar(personName)
+    } else {
+      const userMenu = document.querySelector(
+        'button[aria-haspopup]:has(span.truncate)',
+      )
+      const realName = userMenu
+        ?.querySelector('span.truncate')
+        ?.textContent?.trim()
+      if (userMenu && realName) {
+        const realInitials = initialsOf(realName)
+        replaceText(document.body, realName, personName)
+        userMenu.querySelectorAll('span').forEach((span) => {
+          if (
+            span.childElementCount === 0 &&
+            span.textContent?.trim() === realInitials
+          ) {
+            span.textContent = initialsOf(personName)
+          }
+        })
+      }
     }
 
     const caption = Array.from(document.querySelectorAll('span')).find(

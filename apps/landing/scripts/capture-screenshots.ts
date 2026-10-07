@@ -3,6 +3,7 @@ import { chromium } from '@playwright/test'
 import type { Page } from '@playwright/test'
 import { applyPersona, hideDevelopmentOverlays } from './capture/scrub.ts'
 import type { Persona } from './capture/scrub.ts'
+import { signIn, signInFromEnv } from './capture/sign-in.ts'
 
 interface Capture {
   name: string
@@ -25,7 +26,6 @@ const captures: Array<Capture> = [
 const themes = ['dark'] as const
 
 const appUrl = process.env.CAPTURE_APP_URL ?? 'http://localhost:3100'
-const signInUrl = process.env.CAPTURE_SIGN_IN_URL
 const companyId = process.env.CAPTURE_COMPANY_ID
 const persona: Persona = {
   personName: process.env.CAPTURE_PERSON_NAME ?? 'Mette Hansen',
@@ -52,11 +52,7 @@ async function applyTheme(
 }
 
 async function main(): Promise<void> {
-  if (!signInUrl) {
-    throw new Error(
-      'Set CAPTURE_SIGN_IN_URL to a sign-in URL from `clerk impersonate <user> --print` (dev instance).',
-    )
-  }
+  const method = signInFromEnv(process.env)
   mkdirSync(outputDir, { recursive: true })
 
   const browser = await chromium.launch()
@@ -65,12 +61,7 @@ async function main(): Promise<void> {
     deviceScaleFactor: 2,
   })
   const page = await context.newPage()
-  const ticketUrl = new URL(signInUrl)
-  ticketUrl.searchParams.set('redirect_url', new URL('/', appUrl).href)
-  await page.goto(ticketUrl.href)
-  await page.waitForURL((url) => url.href.startsWith(appUrl), {
-    timeout: 30_000,
-  })
+  await signIn(page, method, appUrl)
 
   for (const capture of captures) {
     await page.goto(pageUrl(capture.path))

@@ -72,20 +72,25 @@ Heftra connects to.
 Screenshots are real captures of the web app, rendered with `astro:assets`
 `<Picture>` as AVIF and WebP at several widths, and stored in `src/assets/product/`
 as `<name>-dark.png` (the product frame is always dark). Until a capture exists, its frame
-shows a "Screenshot pending" panel and the build tests fail. To capture them,
-run the web app with demo data and sign in through Clerk impersonation (dev
-instance only):
+shows a "Screenshot pending" panel and the build tests fail.
+
+The simplest source is the hosted demo (`apps/demo`), which serves only the
+fictional "Nordlys Byg A/S" and has a shared login:
 
 ```bash
-CAPTURE_SIGN_IN_URL="$(clerk impersonate <user> --print)" \
-CAPTURE_COMPANY_ID=<demo company id> \
-CAPTURE_AGREEMENT_PATH=/agreements/<agreement id> \
+CAPTURE_APP_URL=https://demo.heftra.com \
+CAPTURE_LOGIN_EMAIL=demo@heftra.com CAPTURE_LOGIN_PASSWORD=<demo password> \
+CAPTURE_COMPANY_ID=1488f6e8-023f-5c1c-99b4-1a6a286f18c0 \
+CAPTURE_AGREEMENT_PATH=/agreements/a850f0d1-a378-541d-8a97-fc2919d91327 \
   node --experimental-strip-types scripts/capture-screenshots.ts
 ```
 
-The demo company is the fictional "Nordlys Byg A/S", seeded with
-`uv run python apps/ai-api/scripts/demo_company` from the repository root. Before
-each shot the script hides development overlays (Clerk's impersonation badge,
+Against a local web app with the demo company seeded
+(`uv run python apps/ai-api/scripts/demo_company` from the repository root), sign
+in through Clerk impersonation on the dev instance instead, with
+`CAPTURE_SIGN_IN_URL="$(clerk impersonate <user> --print)"`.
+
+Before each shot the script hides development overlays (Clerk's impersonation badge,
 TanStack devtools) and replaces the signed-in person and organization with a
 persona ("Mette Hansen", "Nordlys Byg"), so no real names reach the site.
 
