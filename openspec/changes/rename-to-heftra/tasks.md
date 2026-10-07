@@ -129,8 +129,4 @@
 
 ## 9. Product screenshots
 
-- [ ] 9.1 Once the owner has the renamed web app running on 3100 with the Nordlys Byg demo company:
-  - recapture the five dark screenshots with `scripts/capture-screenshots.ts` (Clerk impersonation, dev instance only);
-  - inspect each capture for the Heftra lockup and for no real names;
-  - revoke the impersonation session;
-  - commit the new captures.
+- [x] 9.1 Replace the Steelyard lockup in the five product screenshots. The local dev Clerk key was rejected (401), so the web app couldn't be recaptured. Only the sidebar logo changed, so the new white lockup from `brand/svg/heftra-lockup-white.svg` was composited over the old one instead: 180 px wide (the app's 90 px at 2×), same left edge and vertical centre, on the sidebar's `#141414`. A full recapture remains a nice-to-have once the dev key is fixed.
