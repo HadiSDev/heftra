@@ -1,0 +1,75 @@
+name: heftra-demo
+
+services:
+  postgres:
+    build: ./postgres
+    environment:
+      POSTGRES_DB: heftra
+      POSTGRES_USER: heftra
+      POSTGRES_PASSWORD: ${DEMO_DB_PASSWORD:?set DEMO_DB_PASSWORD}
+    volumes:
+      - demo_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U heftra -d heftra']
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
+
+  link-org:
+    image: postgres:16
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: ${DEMO_DB_PASSWORD}
+      DEMO_CLERK_ORG_ID: ${DEMO_CLERK_ORG_ID:?set DEMO_CLERK_ORG_ID}
+    command:
+      - sh
+      - -c
+      - >-
+        psql -h postgres -U heftra -d heftra -v ON_ERROR_STOP=1
+        -c "update organizations set clerk_org_id = '$$DEMO_CLERK_ORG_ID'
+        where id = '35156cc7-fb21-4b93-9b06-9fb0356e8457'"
+    restart: 'no'
+
+  web-api:
+    build:
+      context: ../..
+      dockerfile: apps/web-api/Dockerfile
+    depends_on:
+      link-org:
+        condition: service_completed_successfully
+    environment:
+      DATABASE_URL: postgresql://heftra:${DEMO_DB_PASSWORD}@postgres:5432/heftra
+      CLERK_ISSUER: ${CLERK_ISSUER:?set CLERK_ISSUER}
+      WEB_API_CORS_ORIGINS: ${DEMO_APP_URL:-https://demo.heftra.com}
+    expose:
+      - '8100'
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ../../apps/web
+      args:
+        VITE_API_BASE_URL: ${DEMO_API_URL:-https://demo-api.heftra.com}
+        VITE_CLERK_PUBLISHABLE_KEY: ${CLERK_PUBLISHABLE_KEY:?set CLERK_PUBLISHABLE_KEY}
+    environment:
+      CLERK_PUBLISHABLE_KEY: ${CLERK_PUBLISHABLE_KEY}
+      CLERK_SECRET_KEY: ${CLERK_SECRET_KEY:?set CLERK_SECRET_KEY}
+    expose:
+      - '3100'
+    restart: unless-stopped
+
+  cloudflared:
+    image: cloudflare/cloudflared:2026.9.3
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN:?set TUNNEL_TOKEN}
+    depends_on:
+      - web
+      - web-api
+    restart: unless-stopped
+
+volumes:
+  demo_pgdata:

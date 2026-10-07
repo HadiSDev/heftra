@@ -1,0 +1,11 @@
+node_modules
+.output
+.tanstack
+.nitro
+.env
+.env.*
+!.env.example
+*.local
+coverage
+Dockerfile
+.dockerignore

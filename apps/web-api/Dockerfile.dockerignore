@@ -1,0 +1,10 @@
+*
+!pyproject.toml
+!uv.lock
+!.python-version
+!apps/web-api/pyproject.toml
+!apps/web-api/alembic.ini
+!apps/web-api/src
+!apps/ai-api/pyproject.toml
+!apps/mock-erp/pyproject.toml
+**/__pycache__
