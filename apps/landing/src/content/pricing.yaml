@@ -2,8 +2,8 @@
   order: 1
   name: Business
   audience: Mid-size companies with one ERP and a handful of legal entities.
-  monthlyPriceEur: 1490
-  annualMonthlyPriceEur: 1242
+  monthlyPriceEur: 2490
+  annualMonthlyPriceEur: 2075
   ctaLabel: Get a demo
   features:
     - Up to 5 legal entities
@@ -17,8 +17,8 @@
   order: 2
   name: Group
   audience: Groups standardising spend across entities and ERPs.
-  monthlyPriceEur: 3900
-  annualMonthlyPriceEur: 3250
+  monthlyPriceEur: 8900
+  annualMonthlyPriceEur: 7400
   recommended: true
   ctaLabel: Get a demo
   includesFrom: Business
