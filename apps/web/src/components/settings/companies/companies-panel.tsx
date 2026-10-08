@@ -98,8 +98,6 @@ export interface CompaniesPanelProps {
   canDelete?: boolean
   /** Whether the reader holds the platform flag to run a company's pipeline. */
   canRunPipelines?: boolean
-  /** Whether this is the hosted demo, which hides actions it can't serve. */
-  demo?: boolean
   /** The connectable ERP systems, from `GET /erp-types`. */
   erpTypes?: Array<ErpTypeRead>
   erpTypesLoading?: boolean
@@ -158,7 +156,6 @@ export function CompaniesPanel({
   canManage,
   canDelete = false,
   canRunPipelines = false,
-  demo = false,
   erpTypes = [],
   erpTypesLoading = false,
   integrations = [],
@@ -372,9 +369,7 @@ export function CompaniesPanel({
     }
   }
 
-  const canChangeCompanies = canManage && !demo
-
-  const action = canChangeCompanies ? (
+  const action = canManage ? (
     <Button
       size="sm"
       onClick={() => {
@@ -411,7 +406,7 @@ export function CompaniesPanel({
               Add the legal entity whose ERP data you want to categorize and
               report on.
             </p>
-            {canChangeCompanies ? (
+            {canManage ? (
               <Button
                 className="mt-4"
                 size="sm"
@@ -459,7 +454,7 @@ export function CompaniesPanel({
                   {canManage ? (
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
-                        {canRunPipelines && !demo ? (
+                        {canRunPipelines ? (
                           <CompanyRunMenu
                             company={company}
                             hasErp={hasConnectedErp(integrations, company.id)}
@@ -477,17 +472,15 @@ export function CompaniesPanel({
                             }
                           />
                           <DropdownMenuContent align="end">
-                            {canChangeCompanies ? (
-                              <DropdownMenuItem
-                                onClick={() => {
-                                  setEditing(company)
-                                  setDialogOpen(true)
-                                }}
-                              >
-                                <Pencil />
-                                Edit
-                              </DropdownMenuItem>
-                            ) : null}
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setEditing(company)
+                                setDialogOpen(true)
+                              }}
+                            >
+                              <Pencil />
+                              Edit
+                            </DropdownMenuItem>
                             <DropdownMenuItem
                               disabled={
                                 onManageAccounts === undefined ||
@@ -499,7 +492,7 @@ export function CompaniesPanel({
                               <ListChecks />
                               Manage accounts
                             </DropdownMenuItem>
-                            {onRecomputeFx && canChangeCompanies ? (
+                            {onRecomputeFx ? (
                               <DropdownMenuItem
                                 onClick={() =>
                                   setRecomputing({
@@ -514,7 +507,7 @@ export function CompaniesPanel({
                                 Recompute currency figures
                               </DropdownMenuItem>
                             ) : null}
-                            {onRecategorize && canChangeCompanies ? (
+                            {onRecategorize ? (
                               <DropdownMenuItem
                                 onClick={() => {
                                   setError(null)
@@ -529,31 +522,27 @@ export function CompaniesPanel({
                                 Recategorize failed lines
                               </DropdownMenuItem>
                             ) : null}
-                            {canChangeCompanies ? (
-                              <>
-                                <DropdownMenuSeparator />
-                                {company.is_active ? (
-                                  <DropdownMenuItem
-                                    className="text-destructive [&_svg]:text-destructive"
-                                    onClick={() => {
-                                      setError(null)
-                                      setConfirming(company.id)
-                                    }}
-                                  >
-                                    <Ban />
-                                    Deactivate
-                                  </DropdownMenuItem>
-                                ) : (
-                                  <DropdownMenuItem
-                                    onClick={() => void toggleActive(company)}
-                                  >
-                                    <RotateCcw />
-                                    Reactivate
-                                  </DropdownMenuItem>
-                                )}
-                              </>
-                            ) : null}
-                            {canDelete && !demo ? (
+                            <DropdownMenuSeparator />
+                            {company.is_active ? (
+                              <DropdownMenuItem
+                                className="text-destructive [&_svg]:text-destructive"
+                                onClick={() => {
+                                  setError(null)
+                                  setConfirming(company.id)
+                                }}
+                              >
+                                <Ban />
+                                Deactivate
+                              </DropdownMenuItem>
+                            ) : (
+                              <DropdownMenuItem
+                                onClick={() => void toggleActive(company)}
+                              >
+                                <RotateCcw />
+                                Reactivate
+                              </DropdownMenuItem>
+                            )}
+                            {canDelete ? (
                               <DropdownMenuItem
                                 className="text-destructive [&_svg]:text-destructive"
                                 onClick={() => {
@@ -647,7 +636,7 @@ export function CompaniesPanel({
         onConfirm={() => void confirmSwitch()}
       />
 
-      {canChangeCompanies ? (
+      {canManage ? (
         <CompanyDialog
           key={`${editing?.id ?? 'new'}-${String(dialogOpen)}`}
           open={dialogOpen}

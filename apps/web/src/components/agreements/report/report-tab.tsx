@@ -33,8 +33,6 @@ export interface ReportTabProps {
   order: SortOrder
   onSortChange: (next: SortState<FindingSort>) => void
   canEdit: boolean
-  /** Whether this is the hosted demo, which hides actions it can't serve. */
-  demo?: boolean
   analysing: boolean
   /** `true` rechecks every line, not only what changed. */
   onAnalyse: (full: boolean) => void
@@ -59,7 +57,6 @@ export function ReportTab({
   order,
   onSortChange,
   canEdit,
-  demo = false,
   analysing,
   onAnalyse,
   onReview,
@@ -79,7 +76,7 @@ export function ReportTab({
           <AnalysisStatus agreement={agreement} />
           <CoverageNotes agreement={agreement} />
         </div>
-        {canEdit && !demo ? (
+        {canEdit ? (
           <div className="flex flex-wrap items-center gap-2">
             <Button
               size="sm"

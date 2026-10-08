@@ -54,6 +54,7 @@ afterEach(() => {
 describe('Agreements route', () => {
   it('offers a manager the upload', async () => {
     principal.demo = false
+    principal.role = 'moderator'
     renderPage()
 
     expect(
@@ -61,13 +62,13 @@ describe('Agreements route', () => {
     ).toBeTruthy()
   })
 
-  it('hides the upload in demo mode', async () => {
+  it('offers the demo login the upload too', async () => {
     principal.demo = true
+    principal.role = 'demo'
     renderPage()
 
-    expect(await screen.findByText(/No agreements yet/)).toBeTruthy()
     expect(
-      screen.queryByRole('region', { name: 'Upload an agreement' }),
-    ).toBeNull()
+      await screen.findByRole('region', { name: 'Upload an agreement' }),
+    ).toBeTruthy()
   })
 })

@@ -147,7 +147,6 @@ function AgreementPage() {
       <AgreementHeading
         agreement={current}
         canEdit={canEdit}
-        demo={principal.demo}
         onDelete={async () => {
           await remove.mutateAsync(current.id)
           await navigate({ to: '/agreements' })
@@ -225,7 +224,6 @@ function AgreementPage() {
             void navigate({ search: { ...search, ...next } })
           }}
           canEdit={canEdit}
-          demo={principal.demo}
           analysing={analyse.isPending || isAnalysing(current)}
           onAnalyse={(full) => {
             analyse.mutate({ companyId: current.company_id, full })

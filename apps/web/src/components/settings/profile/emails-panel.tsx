@@ -3,6 +3,7 @@ import { Badge, Button, CodeInput, Input } from '#/components/ui'
 import type { ClerkEmailAddress, ClerkUser } from '#/lib/auth/clerk-types'
 import { serverErrorMessage } from '#/lib/form-errors'
 import { SettingsCard } from '#/components/settings/form'
+import { useDemoGuard } from '#/lib/demo/use-demo-guard'
 
 export interface EmailRow {
   id: string
@@ -193,6 +194,7 @@ export function EmailsView({
 /** Binds the view to Clerk's email-address resources. */
 export function EmailsPanel({ user }: { user: ClerkUser }) {
   const pending = React.useRef<ClerkEmailAddress | null>(null)
+  const guard = useDemoGuard()
 
   const emails: Array<EmailRow> = user.emailAddresses.map((email) => ({
     id: email.id,
@@ -204,32 +206,32 @@ export function EmailsPanel({ user }: { user: ClerkUser }) {
   return (
     <EmailsView
       emails={emails}
-      onAdd={async (address) => {
+      onAdd={guard(async (address: string) => {
         const created = await user.createEmailAddress({ email: address })
         pending.current = created
         await created.prepareVerification({ strategy: 'email_code' })
-      }}
-      onVerify={async (code) => {
+      })}
+      onVerify={guard(async (code: string) => {
         if (!pending.current) {
           throw new Error('No address is awaiting verification.')
         }
         await pending.current.attemptVerification({ code })
         pending.current = null
         await user.reload()
-      }}
-      onResend={async () => {
+      })}
+      onResend={guard(async () => {
         if (!pending.current) {
           throw new Error('No address is awaiting verification.')
         }
         await pending.current.prepareVerification({ strategy: 'email_code' })
-      }}
-      onSetPrimary={async (id) => {
+      })}
+      onSetPrimary={guard(async (id: string) => {
         await user.update({ primaryEmailAddressId: id })
-      }}
-      onRemove={async (id) => {
+      })}
+      onRemove={guard(async (id: string) => {
         await user.emailAddresses.find((email) => email.id === id)?.destroy()
         await user.reload()
-      }}
+      })}
     />
   )
 }

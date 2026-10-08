@@ -10,6 +10,7 @@ import {
   CardTitle,
   useToast,
 } from '#/components/ui'
+import { isDemoRefusal } from '#/lib/api/demo-refusal'
 import { applyServerError } from '#/lib/form-errors'
 
 /** The card every settings panel sits in — title, optional description, body. */
@@ -121,6 +122,9 @@ export function useSettingsSubmit() {
             fields: Object.keys(values) as Array<Path<T>>,
             fieldFor,
           })
+          if (isDemoRefusal(error)) {
+            return
+          }
           toast.add({
             title: 'Couldn’t save your changes',
             description: message,

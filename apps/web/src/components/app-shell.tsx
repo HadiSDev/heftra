@@ -8,6 +8,7 @@ import {
 import { useClerk, useUser } from '@clerk/tanstack-react-start'
 
 import { Logo } from '#/components/brand/logo'
+import { DemoBanner } from '#/components/demo-banner'
 import {
   Building2,
   ChevronDown,
@@ -210,6 +211,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <AppShell
       sidebar={<AppSidebar pathname={pathname} />}
+      banner={<DemoBanner />}
       header={
         <Topbar>
           <TopbarTitle>{title}</TopbarTitle>

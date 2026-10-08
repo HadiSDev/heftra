@@ -18,6 +18,7 @@ import { clerkErrorCode, serverErrorMessage } from '#/lib/form-errors'
 import { meKey } from '#/lib/api/organization'
 import { ReadOnlyNotice, SettingsCard } from '#/components/settings/form'
 import { initials } from '#/lib/format/initials'
+import { useDemoGuard } from '#/lib/demo/use-demo-guard'
 
 export interface MemberRow {
   /** Clerk membership id — what role changes and removals address. */
@@ -411,6 +412,7 @@ const FALLBACK_ROLES: Array<RoleOption> = [
 export function MembersPanel({ canManage }: { canManage: boolean }) {
   const { user } = useUser()
   const queryClient = useQueryClient()
+  const guard = useDemoGuard()
   const { organization, memberships, invitations, isLoaded } = useOrganization({
     memberships: { pageSize: 20, keepPreviousData: true },
     invitations: { pageSize: 20, keepPreviousData: true },
@@ -475,33 +477,33 @@ export function MembersPanel({ canManage }: { canManage: boolean }) {
       loading={!isLoaded}
       hasMore={memberships?.hasNextPage ?? false}
       onLoadMore={() => memberships?.fetchNext?.()}
-      onChangeRole={async (membershipId, role) => {
+      onChangeRole={guard(async (membershipId: string, role: string) => {
         const membership = memberships?.data?.find(
           (entry) => entry.id === membershipId,
         )
         await membership?.update({ role })
         await memberships?.revalidate?.()
         await refreshPrincipal()
-      }}
-      onRemove={async (membershipId) => {
+      })}
+      onRemove={guard(async (membershipId: string) => {
         const membership = memberships?.data?.find(
           (entry) => entry.id === membershipId,
         )
         await membership?.destroy()
         await memberships?.revalidate?.()
         await refreshPrincipal()
-      }}
-      onInvite={async (email, role) => {
+      })}
+      onInvite={guard(async (email: string, role: string) => {
         await organization?.inviteMember({ emailAddress: email, role })
         await invitations?.revalidate?.()
-      }}
-      onRevokeInvitation={async (invitationId) => {
+      })}
+      onRevokeInvitation={guard(async (invitationId: string) => {
         const invitation = invitations?.data?.find(
           (entry) => entry.id === invitationId,
         )
         await invitation?.revoke()
         await invitations?.revalidate?.()
-      }}
+      })}
     />
   )
 }

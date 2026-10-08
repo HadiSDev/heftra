@@ -2,8 +2,8 @@
 
 A temporary copy of the web app for showing Heftra to investors. It serves only
 the fictional **Nordlys Byg A/S**, never customer or dev data, behind one shared
-demo login. Visitors can use everything that works on the database alone, and
-the data goes back to its original state every night.
+demo login. Visitors see every option an organization admin has, but nothing
+they do is saved.
 
 | Service       | What it is                                                                 |
 | ------------- | -------------------------------------------------------------------------- |
@@ -20,33 +20,28 @@ so they need none.
 
 ## What visitors can do
 
-The demo user has the organization role **demo**, so visitors can make
-changes that only touch the database:
+The demo user has the **demo** role. It sees everything an organization admin
+sees, but changes nothing:
 
-- recategorize, verify and edit spend lines, and choose emission sectors;
-- edit and verify invoice headers;
-- build spend trees: create, edit, import, archive and delete them;
-- edit agreement terms and review agreement findings;
-- review alternatives: dismiss them, mark them switched, reopen them;
-- turn ERP accounts on and off;
-- read the emission factor sources and their companies' coverage.
+- **Every admin control is shown**: line and invoice editing, spend trees,
+  agreement upload and review, finding alternatives, companies and their ERP
+  connection, organization settings and members. System-admin tools stay
+  hidden.
+- **Every save is refused.** The web API answers any change from the demo role
+  with "This is a demo, so changes aren't saved." The web app shows that as a
+  toast and keeps the dialog open.
+- **Changes Clerk would make directly are intercepted too**: profile, email,
+  password, sessions, members and the organization logo.
+- **A banner on every page** tells visitors they're in the demo.
 
-The same role makes the web app hide the rest, and the web API refuse it with
-"Not available in the demo":
-
-- **work the demo can't run**: re-reading documents, finding alternatives,
-  editing specifications, reading or analysing agreements, pipeline runs;
-- **anything needing the file store or a real ERP**: uploading or opening
-  agreement PDFs, testing the connection, refreshing accounts, recomputing FX;
-- **changes that would break the demo for the next visitor**: creating,
-  editing, deactivating or deleting the company, changing its ERP connection,
-  deleting agreements, and editing the shared login's profile or password.
+Opening an agreement's original PDF shows a note instead, because the demo has
+no file store.
 
 ## Nightly reset
 
-Visitors share one login, so their changes stay visible to everyone until the
-`reset` service restores the original data, every day at 03:00
-Europe/Copenhagen (`DEMO_RESET_AT` changes the time). It:
+Visitors can't change the data, but as a safety net the `reset` service
+restores the original data every day at 03:00 Europe/Copenhagen
+(`DEMO_RESET_AT` changes the time). It:
 
 1. loads `postgres/demo.sql.gz` into a separate database;
 2. links it to the Clerk org;
@@ -103,11 +98,9 @@ The web app talks to Clerk's production instance for `heftra.com`. Set it up onc
    Nordlys Byg with the role **Member**. Set its public metadata to
    `{"demo": true}`, and under **Sessions → Customize session token** add the
    claim `"demo": "{{user.public_metadata.demo}}"` next to `system_admin`. The
-   web API gives a user with that claim the restricted **demo** role: it can
-   change data that only lives in the database, but can't manage members, the
-   organization profile, companies, the ERP connection or the danger zone. To
-   make the demo read-only again, remove `demo` from the user's public
-   metadata.
+   web API gives a user with that claim the **demo** role, which sees what an
+   organization admin sees and saves nothing. Removing `demo` from the user's
+   public metadata makes it a plain member again.
 6. Copy the production keys: the publishable key `pk_live_…`, the secret key
    `sk_live_…`, and the Frontend API URL (`https://clerk.heftra.com`).
 

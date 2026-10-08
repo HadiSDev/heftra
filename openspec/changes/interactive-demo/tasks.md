@@ -79,3 +79,10 @@
 
 - [x] 7.1 Full `uv run pytest -q`, the web vitest suite and `tsc --noEmit` pass at the baseline plus the new tests. `openspec validate interactive-demo --strict` passes.
 - [x] 7.2 Commit on `main`, and hand Hadi the redeploy steps (no volume removal needed).
+
+## 8. Rework: see everything, save nothing
+
+- [x] 8.1 Web API: `current_user` refuses every non-read request from the demo role with 403 "This is a demo, so changes aren't saved."; `require_org_admin` accepts the demo role; remove `refuse_in_demo` and its route decorators.
+- [x] 8.2 Web API tests: every authenticated write route refuses the demo login; the demo login reads what an organization admin reads; other roles still save; the claim sets the role.
+- [x] 8.3 Web app: the demo role passes `canManageOrganization`; remove the demo-based hiding (keep the agreement PDF pane note); one `isDemoRefusal` detector and a global `MutationCache` toast; a guard on Clerk-direct actions for the demo principal; the demo banner; tests.
+- [x] 8.4 README, full test runs, and a commit.

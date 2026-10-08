@@ -6,6 +6,7 @@ import { PreferencesPanel } from '#/components/settings/profile/preferences-pane
 import { ProfilePanel } from '#/components/settings/profile/profile-panel'
 import { SecurityPanel } from '#/components/settings/profile/security-panel'
 import { usePrincipal } from '#/lib/auth/auth'
+import { useDemoGuard } from '#/lib/demo/use-demo-guard'
 
 export const Route = createFileRoute('/_authed/settings/profile')({
   component: ProfileSection,
@@ -14,6 +15,7 @@ export const Route = createFileRoute('/_authed/settings/profile')({
 function ProfileSection() {
   const { user, isLoaded } = useUser()
   const principal = usePrincipal()
+  const guard = useDemoGuard()
 
   if (!isLoaded || !user) {
     return (
@@ -36,15 +38,14 @@ function ProfileSection() {
         displayName={user.fullName || user.username || principal.name}
         email={email}
         imageUrl={user.hasImage ? user.imageUrl : undefined}
-        onSave={({ firstName, lastName }) =>
-          user.update({ firstName, lastName })
-        }
-        onUploadImage={(file) => user.setProfileImage({ file })}
-        onRemoveImage={() => user.setProfileImage({ file: null })}
-        demo={principal.demo}
+        onSave={guard(({ firstName, lastName }) =>
+          user.update({ firstName, lastName }),
+        )}
+        onUploadImage={guard((file) => user.setProfileImage({ file }))}
+        onRemoveImage={guard(() => user.setProfileImage({ file: null }))}
       />
-      {principal.demo ? null : <EmailsPanel user={user} />}
-      <SecurityPanel user={user} demo={principal.demo} />
+      <EmailsPanel user={user} />
+      <SecurityPanel user={user} />
       <PreferencesPanel />
     </div>
   )

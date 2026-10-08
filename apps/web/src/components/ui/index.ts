@@ -122,7 +122,7 @@ export {
   TooltipContent,
 } from './overlays/tooltip'
 export { Tabs, TabsList, TabsTab, TabsPanel } from './display/tabs'
-export { ToastProvider, useToast } from './overlays/toast'
+export { ToastProvider, toastManager, useToast } from './overlays/toast'
 
 export {
   Card,

@@ -16,12 +16,9 @@ function notStored(error: unknown): boolean {
 export function LineAlternatives({
   line,
   canManage,
-  demo = false,
 }: {
   line: InvoiceLineRead
   canManage: boolean
-  /** Whether this is the hosted demo, which hides actions it can't serve. */
-  demo?: boolean
 }) {
   const api = useApi()
   const queryClient = useQueryClient()
@@ -32,7 +29,6 @@ export function LineAlternatives({
     <LineAlternativesView
       item={item.isPending ? undefined : (loaded ?? null)}
       canManage={canManage}
-      demo={demo}
       pending={find.isPending}
       error={
         find.error instanceof ApiError

@@ -384,25 +384,10 @@ describe('AgreementHeading', () => {
     expect(screen.queryByRole('button', { name: /Read again/ })).toBeNull()
     expect(screen.queryByRole('button', { name: /Delete/ })).toBeNull()
   })
-
-  it('offers neither a re-read nor a delete in demo mode', () => {
-    render(
-      <AgreementHeading
-        agreement={{ ...AGREEMENT, status: 'active' }}
-        canEdit
-        demo
-        onDelete={vi.fn(async () => {})}
-        onReadAgain={vi.fn(async () => {})}
-      />,
-    )
-
-    expect(screen.queryByRole('button', { name: /Read again/ })).toBeNull()
-    expect(screen.queryByRole('button', { name: /Delete/ })).toBeNull()
-  })
 })
 
 describe('TermsTab in demo mode', () => {
-  it('keeps the details editable but shows no document and no re-read', () => {
+  it('shows no document, but keeps the details and the re-read', () => {
     render(
       <TermsTab
         agreement={{ ...AGREEMENT, status: 'failed', read_error: 'Unreadable' }}
@@ -422,7 +407,7 @@ describe('TermsTab in demo mode', () => {
     expect(
       screen.getByText("Agreement documents aren't available in the demo."),
     ).toBeTruthy()
-    expect(screen.queryByRole('button', { name: /Read it again/ })).toBeNull()
+    expect(screen.getByRole('button', { name: /Read it again/ })).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Save details' })).toBeTruthy()
   })
 })
@@ -805,16 +790,6 @@ describe('ReportTab', () => {
 
     expect(props.onAnalyse).toHaveBeenNthCalledWith(1, false)
     expect(props.onAnalyse).toHaveBeenNthCalledWith(2, true)
-  })
-
-  it('keeps the finding review but offers no check in demo mode', () => {
-    renderReport({ demo: true })
-
-    expect(screen.getByRole('button', { name: 'Review' })).toBeTruthy()
-    expect(screen.queryByRole('button', { name: /^Check again/ })).toBeNull()
-    expect(
-      screen.queryByRole('button', { name: 'Check everything again' }),
-    ).toBeNull()
   })
 
   it('says what the last check could not cover', () => {

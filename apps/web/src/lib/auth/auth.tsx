@@ -25,7 +25,7 @@ export interface Principal {
   role: string
   isSystemAdmin: boolean
   organizationId: string
-  /** Whether this is the shared demo login, which can't use actions the demo has no backing for. */
+  /** Whether this is the hosted demo's shared login, whose changes aren't saved. */
   demo: boolean
 }
 
@@ -164,12 +164,16 @@ export function usePrincipal(): Principal {
 
 /** Role gates for management UI. */
 
-/** May edit the organization profile and reach the danger zone. */
+/** May edit the organization profile and reach the danger zone; the demo sees it all but saves nothing. */
 export function canManageOrganization(principal: Principal): boolean {
-  return principal.isSystemAdmin || principal.role === 'admin'
+  return (
+    principal.isSystemAdmin ||
+    principal.role === 'admin' ||
+    principal.role === 'demo'
+  )
 }
 
-/** May create, edit, and (de)activate companies; the demo role only reaches what the demo can serve. */
+/** May create, edit, and (de)activate companies; the demo sees it all but saves nothing. */
 export function canManageCompanies(principal: Principal): boolean {
   return (
     principal.isSystemAdmin ||

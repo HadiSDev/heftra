@@ -25,8 +25,7 @@ function ItemPage() {
   const { itemId } = Route.useParams()
   const api = useApi()
   const queryClient = useQueryClient()
-  const principal = usePrincipal()
-  const canManage = canManageCompanies(principal)
+  const canManage = canManageCompanies(usePrincipal())
   const item = useQuery(itemQueryOptions(api, itemId))
   const lines = useQuery(itemLinesQueryOptions(api, itemId))
   const search = useMutation(findAlternativesMutation(api, queryClient))
@@ -60,7 +59,6 @@ function ItemPage() {
       item={item.data}
       lines={lines.isError ? null : lines.data}
       canManage={canManage}
-      demo={principal.demo}
       searchPending={search.isPending}
       onSearch={() => {
         search.mutate(itemId)

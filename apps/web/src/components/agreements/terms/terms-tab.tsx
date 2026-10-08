@@ -17,7 +17,7 @@ import { TermCard } from './term-card'
 export interface TermsTabProps {
   agreement: AgreementRead
   canEdit: boolean
-  /** Whether this is the hosted demo, which hides actions it can't serve. */
+  /** Whether this is the hosted demo, which has no agreement documents to show. */
   demo?: boolean
   vendors: Array<VendorRead>
   /** The company's spend tree; null while it loads or when the company has none. */
@@ -112,7 +112,7 @@ export function TermsTab({
         {reading ? (
           <ReadingState
             agreement={agreement}
-            canEdit={canEdit && !demo}
+            canEdit={canEdit}
             onReadAgain={onReadAgain}
           />
         ) : null}

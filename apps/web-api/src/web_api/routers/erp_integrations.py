@@ -24,7 +24,6 @@ from ..auth.deps import (
     get_managed_company,
     get_managed_integration,
     get_session,
-    refuse_in_demo,
     require_management,
     tenant_scope,
 )
@@ -120,8 +119,7 @@ def get_integration(
 
 
 @router.post("/erp-integrations", response_model=ErpIntegrationRead,
-             status_code=status.HTTP_201_CREATED,
-             dependencies=[Depends(refuse_in_demo)])
+             status_code=status.HTTP_201_CREATED)
 def create_integration(
     body: ErpIntegrationCreate,
     scope: TenantScope = Depends(require_management),
@@ -140,10 +138,7 @@ def create_integration(
     return _read(integration)
 
 
-@router.patch(
-    "/erp-integrations/{integration_id}", response_model=ErpIntegrationRead,
-    dependencies=[Depends(refuse_in_demo)],
-)
+@router.patch("/erp-integrations/{integration_id}", response_model=ErpIntegrationRead)
 def update_integration(
     integration_id: str,
     body: ErpIntegrationUpdate,
@@ -169,10 +164,7 @@ def update_integration(
     return _read(integration)
 
 
-@router.post(
-    "/erp-integrations/{integration_id}/disconnect", response_model=ErpIntegrationRead,
-    dependencies=[Depends(refuse_in_demo)],
-)
+@router.post("/erp-integrations/{integration_id}/disconnect", response_model=ErpIntegrationRead)
 def disconnect_integration(
     integration_id: str,
     scope: TenantScope = Depends(require_management),
@@ -186,10 +178,7 @@ def disconnect_integration(
     return _read(integration)
 
 
-@router.post(
-    "/erp-integrations/{integration_id}/reconnect", response_model=ErpIntegrationRead,
-    dependencies=[Depends(refuse_in_demo)],
-)
+@router.post("/erp-integrations/{integration_id}/reconnect", response_model=ErpIntegrationRead)
 def reconnect_integration(
     integration_id: str,
     scope: TenantScope = Depends(require_management),
@@ -229,7 +218,6 @@ def _integration_history(session: Session, integration: ErpIntegration) -> dict:
     "/erp-integrations/{integration_id}/replace",
     response_model=ErpIntegrationRead,
     status_code=status.HTTP_201_CREATED,
-    dependencies=[Depends(refuse_in_demo)],
 )
 def replace_integration(
     integration_id: str,
@@ -296,8 +284,7 @@ def replace_integration(
 
 
 @router.post("/erp-integrations/{integration_id}/test-connection",
-             response_model=ConnectionTestResult,
-             dependencies=[Depends(refuse_in_demo)])
+             response_model=ConnectionTestResult)
 def test_connection(
     integration_id: str,
     scope: TenantScope = Depends(require_management),
@@ -325,8 +312,7 @@ def _connection_failure_message(exc: Exception) -> str:
 
 
 @router.post("/erp-integrations/{integration_id}/refresh-accounts",
-             response_model=RefreshAccountsResult,
-             dependencies=[Depends(refuse_in_demo)])
+             response_model=RefreshAccountsResult)
 def refresh_accounts(
     integration_id: str,
     scope: TenantScope = Depends(require_management),

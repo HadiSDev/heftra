@@ -1,8 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { ToastProvider } from '#/components/ui'
-import type { ClerkUser } from '#/lib/auth/clerk-types'
-import { SecurityPanel, SecurityView } from './security-panel'
+import { SecurityView } from './security-panel'
 import type { SecurityViewProps } from './security-panel'
 
 function renderView(overrides: Partial<SecurityViewProps> = {}) {
@@ -126,17 +125,5 @@ describe('SecurityView connected accounts', () => {
     expect(
       screen.getByRole('button', { name: 'Connect Microsoft' }),
     ).toBeTruthy()
-  })
-})
-
-describe('SecurityPanel in demo mode', () => {
-  it('replaces the password and session controls with a notice', () => {
-    render(<SecurityPanel user={{} as ClerkUser} demo />)
-
-    expect(
-      screen.getByText("The shared demo login can't be changed."),
-    ).toBeTruthy()
-    expect(screen.queryByLabelText('New password')).toBeNull()
-    expect(screen.queryByText('Active sessions')).toBeNull()
   })
 })

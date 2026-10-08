@@ -29,7 +29,6 @@ from ..auth.deps import (
     TenantScope,
     get_managed_company,
     get_session,
-    refuse_in_demo,
     require_management,
     resolve_company_ids,
     tenant_scope,
@@ -58,8 +57,7 @@ router = APIRouter(prefix="/api/v1", tags=["agreements"])
 
 
 @router.post("/companies/{company_id}/agreements", response_model=AgreementRead,
-             status_code=status.HTTP_201_CREATED,
-             dependencies=[Depends(refuse_in_demo)])
+             status_code=status.HTTP_201_CREATED)
 async def upload_agreement(
     company_id: str,
     file: UploadFile = File(...),
@@ -124,10 +122,7 @@ def update_agreement(
     return agreement_read(session, agreement, date.today())
 
 
-@router.delete(
-    "/agreements/{agreement_id}", status_code=status.HTTP_204_NO_CONTENT,
-    dependencies=[Depends(refuse_in_demo)],
-)
+@router.delete("/agreements/{agreement_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def remove_agreement(
     agreement_id: str,
     scope: TenantScope = Depends(require_management),
@@ -145,7 +140,7 @@ async def remove_agreement(
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@router.get("/agreements/{agreement_id}/document", dependencies=[Depends(refuse_in_demo)])
+@router.get("/agreements/{agreement_id}/document")
 async def get_agreement_document(
     agreement_id: str,
     scope: TenantScope = Depends(tenant_scope),
@@ -169,10 +164,7 @@ async def get_agreement_document(
                     headers={"Content-Disposition": f'inline; filename="{file_row.filename}"'})
 
 
-@router.post(
-    "/agreements/{agreement_id}/read", response_model=AgreementRead,
-    dependencies=[Depends(refuse_in_demo)],
-)
+@router.post("/agreements/{agreement_id}/read", response_model=AgreementRead)
 def read_agreement_again(
     agreement_id: str,
     scope: TenantScope = Depends(require_management),
@@ -192,8 +184,7 @@ def read_agreement_again(
 
 
 @router.post("/companies/{company_id}/agreements/analyse", response_model=PipelineRunRead,
-             status_code=status.HTTP_202_ACCEPTED,
-             dependencies=[Depends(refuse_in_demo)])
+             status_code=status.HTTP_202_ACCEPTED)
 def analyse_company_agreements(
     company_id: str,
     full: bool = Query(default=False),

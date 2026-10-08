@@ -23,8 +23,7 @@ function AccountsSection() {
   const api = useApi()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const principal = usePrincipal()
-  const canManage = canManageCompanies(principal)
+  const canManage = canManageCompanies(usePrincipal())
 
   const companies = useQuery(
     companiesQueryOptions(api, { includeInactive: true }),
@@ -77,7 +76,6 @@ function AccountsSection() {
         companies.isPending || integrations.isPending || accounts.isPending
       }
       canManage={canManage}
-      demo={principal.demo}
       hasIntegration={integration !== undefined}
       onToggle={(id, changes) => update.mutateAsync({ id, body: changes })}
       onRefresh={() => refresh.mutateAsync()}

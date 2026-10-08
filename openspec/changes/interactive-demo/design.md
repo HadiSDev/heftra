@@ -25,127 +25,108 @@ Authorization today:
   `canManageOrganization` (admin) in `lib/auth/auth.tsx`.
 - The demo user is a member, so it fails all of them.
 
-A survey of every action, and what it needs beyond Postgres, sorted them into
-four groups:
-
-- **works on the database alone**;
-- **queues work nobody runs**: worker, LLM or search;
-- **needs the file store or the real ERP API**;
-- **damages the shared demo**.
-
-The proposal lists them.
+The owner wants visitors to see every option an organization admin has, and
+to save nothing.
 
 ## Goals / Non-Goals
 
 **Goals:**
 
-- A visitor can do everything that works on the database alone.
-- A visitor never meets a spinner that never ends, a 500, or a broken demo
-  left by a previous visitor.
+- A visitor sees every control an organization admin sees, and can walk
+  through every dialog.
+- Nothing a visitor does is saved, and they are told so clearly, at the moment
+  they try.
+- A new write route is covered without anyone remembering to add a guard.
 - Every role other than `demo` behaves exactly as before.
-- The demo returns to its original state every night without anyone acting.
 - Emission factor sources can be shown to customers, not just system admins.
 
 **Non-Goals:**
 
 - Running AI, the worker or a file store in the demo.
-- Per-visitor sandboxes (an org per visitor). A shared, nightly-reset
-  workspace is enough for investor walkthroughs.
-- Seeding spend tree suggestions or new data. The dump is unchanged.
+- Pretending a save worked (optimistic updates that vanish on reload).
+- Showing system-admin tools to visitors.
 
 ## Decisions
 
-### 1. The demo user has its own role, `demo`, more restrictive than moderator
+### 1. The demo login is marked by a session claim and gets the `demo` role
 
 Custom Clerk organization roles need a paid Clerk plan, so the demo login is
-marked the way system admins already are. Its public metadata gets
-`demo: true`, and the production session token gains the claim
-`"demo": "{{user.public_metadata.demo}}"` next to `system_admin`. In Clerk the
-user stays an org **member**, so Clerk's own frontend API lets it neither
-invite, remove or re-role members nor edit the organization profile.
+marked the way system admins already are:
+
+- its public metadata gets `demo: true`;
+- the production session token gains the claim
+  `"demo": "{{user.public_metadata.demo}}"` next to `system_admin`.
+
+In Clerk the user stays an org **member**, so Clerk's own frontend API lets it
+neither invite, remove or re-role members nor edit the organization profile.
 
 `principal_from_claims` gives a caller with a truthy `demo` claim
-(`CLERK_DEMO_CLAIM`) the role `demo`, whatever its org role. `map_role` knows
-`demo` as an application role:
+(`CLERK_DEMO_CLAIM`) the role `demo`, whatever its org role. Code that doesn't
+know the claim (an older deploy) ignores it, so the user stays a read-only
+member. That means the claim can be set before or after a deploy.
 
-- `require_management` and `canManageCompanies` accept it;
-- `require_org_admin` and `canManageOrganization` don't.
+*Alternative*: a custom Clerk role, `org:demo`. Rejected because it needs a
+paid plan.
 
-So it reaches the database-only writes and nothing above them. Code that
-doesn't know the claim (an older deploy) ignores it, and the user stays a
-member, which is read-only. So the claim can be set before or after a deploy
-without exposing anything.
+*Alternative*: make the user `org:admin`. Rejected because admins really can
+write: suspending the organization, managing the production org's members.
 
-*Alternative*: a custom Clerk organization role, `org:demo`. Rejected because
-it needs a paid Clerk plan. The claim gives the same application role for free.
+### 2. See like an admin: the demo role passes the read-side gates
 
-*Alternative*: make the user `org:admin`. Rejected for two reasons. Admin passes
-`require_org_admin`, so a visitor could suspend the organization, and every
-request would return 403 until a reset. Clerk would also let a visitor manage
-the members of the production org.
+- **Web API**: `require_management` and `require_org_admin` accept `demo`, so
+  every read an organization admin can make, the demo login can make. System
+  admin checks don't accept it.
+- **Web app**: `canManageCompanies` and `canManageOrganization` are true for
+  the demo role, so every admin control renders. `principal.demo` is true for
+  it, and drives the banner and the Clerk guard.
 
-*Alternative*: make the user `org:moderator`, and add an env flag on each side
-to hide and refuse the demo's missing features. Rejected (the owner asked for a
-dedicated role). It also ties the restriction to deploy settings: a demo
-deployed without the flags would hand a moderator's shared login actions that
-hang or break the demo.
+### 3. Save nothing: one refusal at the root
 
-### 2. The role decides, on both sides
+`current_user` is the dependency behind every authenticated route.
+`tenant_scope` builds on it, and the few routes without a tenant use it
+directly. When the caller's role is `demo` and the request method isn't `GET`,
+`HEAD` or `OPTIONS`, it raises `403` with the detail "This is a demo, so
+changes aren't saved."
 
-- **Web API**: a dependency, `refuse_in_demo`, returns `403` with detail "Not
-  available in the demo" when the caller's role is `demo`, and does nothing
-  otherwise. It is added to each refused route's decorator `dependencies`, so
-  the route bodies don't change.
-- **Web app**: `principal.demo` is true when the role is `demo`
-  (`lib/auth/auth.tsx`). Components hide each refused action's control with
-  `!principal.demo`, next to the existing `canManage` checks.
+Because the refusal sits at the root:
 
-The UI hides; the API refuses. A stale tab or a hand-made request can't get
-past the API, and the UI never shows a control that would only error.
+- route bodies and decorators don't change;
+- a write route added later is refused without anyone touching it. A test walks
+  every write route in every router and asserts the refusal, so a route that
+  slips past `current_user` fails it.
 
-*Alternative*: derive the restriction from `VITE_DEMO_EMAIL` being set.
-Rejected because a sign-in convenience shouldn't silently change what the app
-allows, and the API would still need its own signal.
+The web app recognises the refusal in one place: an `ApiError` with status 403
+and that detail. A global `MutationCache` error handler shows a toast, "Changes
+aren't saved in the demo". The mutation has failed, so dialogs stay open with
+the visitor's input, and inline error text shows the same sentence.
 
-### 3. What demo mode refuses
+Clerk-direct actions (profile name and photo, emails, password, sessions,
+connected accounts, member invites and roles, organization logo) never reach
+the web API. For the demo principal, a guard in the web app intercepts their
+handlers and shows the same toast instead of calling Clerk. A visitor using
+Clerk's API by hand could still change the shared login. The README keeps the
+"watch the demo user" advice, and the nightly reset doesn't cover Clerk.
 
-The routes come from the survey. Names are the web API router files.
+The agreement document pane keeps a "not available in the demo" note. The
+demo has no file store, so the PDF request could only fail; that's a read, not
+an option to show.
 
-**Queues work nobody runs:**
+*Alternative*: refuse per route with a decorator dependency (the first
+version). Rejected because every new write route needs remembering, and an
+allow-list stops making sense when nothing is allowed.
 
-- `invoices`: re-read a document (`retrigger`);
-- `alternatives`: correct a specification, find alternatives (item and line);
-- `agreements`: read again, analyse;
-- `companies`: recategorize failed lines;
-- `pipeline_runs`: request a run (already system admin only).
+### 4. A banner sets expectations
 
-**Needs the file store or the real ERP:**
+`principal.demo` renders a slim, neutral banner at the top of the app shell:
+"You're exploring the Heftra demo. Try anything — changes aren't saved, and the
+demo resets every night." It uses ink and neutral tokens only, and a status
+role that isn't re-announced.
 
-- `agreements`: upload; open the PDF (an S3 read, which already returns 503);
-- `erp_integrations`: test connection, refresh accounts;
-- `companies`: recompute FX.
+### 5. Nightly reset: a safety net, restore beside, then swap
 
-**Damages the shared demo:**
-
-- `companies`: create, update (name, spend tree, currency), deactivate,
-  activate, delete;
-- `erp_integrations`: connect, patch, replace, disconnect, reconnect;
-- `agreements`: delete.
-
-Spend tree deletion stays allowed. The API already refuses to delete the tree
-a company uses, and the nightly reset restores the rest. ERP account toggles
-stay allowed; they only change which accounts a future sync would import.
-
-In the web app, the same actions are hidden in demo mode. So are the Profile
-page's name/email editing and the Security panel's password and session
-controls. These are Clerk calls the API can't intercept, and the shared
-password is printed on the sign-in page. Hiding them doesn't stop a determined
-visitor using Clerk's API directly; the README keeps the "watch the demo user"
-advice for that.
-
-### 4. Nightly reset: restore beside, then swap
-
-A `reset` service is built from `apps/demo/postgres/`, so it has `psql`,
+Nothing a visitor does should change the data, but the reset restores it every
+night in case something slips through (a future route, a manual change). A
+`reset` service is built from `apps/demo/postgres/`, so it has `psql`,
 `pg_dump` and the dump. Its script runs once a day at 03:00 Europe/Copenhagen
 (`TZ` set on the service), and can also be run by hand with
 `docker compose run --rm reset reset-now`.
@@ -177,7 +158,7 @@ Docker socket inside the stack, or a person.
 *Alternative*: truncate and reload tables in place. Rejected because it locks
 every table for the length of the load and can half-apply.
 
-### 5. Emission factors: read for everyone, scoped coverage
+### 6. Emission factors: read for everyone, scoped coverage
 
 - `admin_emission_factors.py` drops its router-wide `require_system_admin`.
 - `GET ""` takes `tenant_scope`. Every other route keeps
@@ -201,19 +182,19 @@ In the web app:
 ## Risks / Trade-offs
 
 - **[A visitor changes the shared password through Clerk's API]** → The UI
-  hides the controls, and the README tells the owner how to reset it. Clerk
-  can't make one user's password immutable.
-- **[Two visitors edit at once and see each other's changes]** → Acceptable for
-  investor walkthroughs. The nightly reset bounds it.
+  intercepts the controls, and the README tells the owner how to reset it.
+  Clerk can't make one user's password immutable.
+- **[A visitor expects a save to stick]** → The toast, the inline error and the
+  banner all say changes aren't saved.
+- **[A route reaches the database without `current_user`]** → The write-route
+  test fails for it. Unauthenticated routes (public demo requests, Clerk
+  webhooks) are named in the test and are not tied to the demo login.
 - **[The dump falls behind a migration]** → The reset refuses to swap, and logs
   why. The existing README rule (rebuild the dump after schema changes)
   applies.
-- **[A new write route is added without `refuse_in_demo`]** → A test lists every
-  mutating route and asserts it is either refused in demo mode or on an
-  explicit allow-list. A new route then forces a decision.
 - **[The session token changes in production Clerk]** → It gains one claim,
   read from public metadata, which only the backend can set. Only the demo user
-  has it set. The owner sees the exact CLI commands before they run.
+  has it set.
 
 ## Migration Plan
 
@@ -224,5 +205,5 @@ In the web app:
 3. Hadi redeploys the demo on Dokploy. The `demo_pgdata` volume can stay.
 4. Check on `demo.heftra.com`, then run `reset-now` once to confirm the reset.
 
-**Rollback**: remove `demo` from the user's public metadata. The demo is then
-read-only again.
+**Rollback**: remove `demo` from the user's public metadata. The demo login is
+then a plain member again, which sees no admin controls.

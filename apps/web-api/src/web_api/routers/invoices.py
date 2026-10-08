@@ -14,7 +14,7 @@ from web_api.db.models import (
 from web_api.connectors.base import ErpConnectionError
 from .. import integrations
 from ..audit import INVOICE_AUDIT_FIELDS, INVOICE_BASE_FX_FIELDS, diff_changes, record_audit
-from ..auth.deps import TenantScope, get_session, refuse_in_demo, require_management, resolve_company_ids, tenant_scope
+from ..auth.deps import TenantScope, get_session, require_management, resolve_company_ids, tenant_scope
 from ..documents import resolve_document_source
 from ..reconcile import reconcile_lines, totals_agree
 from ..vat import international_vat
@@ -249,10 +249,7 @@ def verify_invoice(
     return _read_after_write(session, invoice)
 
 
-@router.post(
-    "/invoices/{invoice_id}/reprocess", response_model=InvoiceRead,
-    dependencies=[Depends(refuse_in_demo)],
-)
+@router.post("/invoices/{invoice_id}/reprocess", response_model=InvoiceRead)
 def reprocess_invoice_document(
     invoice_id: str,
     scope: TenantScope = Depends(require_management),

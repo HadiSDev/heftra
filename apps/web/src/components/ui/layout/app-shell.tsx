@@ -6,6 +6,8 @@ export interface AppShellProps {
   sidebar: React.ReactNode
   /** Optional top bar (use the `Topbar` component). */
   header?: React.ReactNode
+  /** Optional full-width strip above everything else, e.g. a notice about the session. */
+  banner?: React.ReactNode
   children: React.ReactNode
   className?: string
 }
@@ -17,12 +19,19 @@ export const APP_SCROLL_ID = 'app-main'
 export function AppShell({
   sidebar,
   header,
+  banner,
   children,
   className,
 }: AppShellProps) {
   return (
-    <div className={cn('h-dvh overflow-hidden bg-background', className)}>
-      <div className="mx-auto flex h-full w-full max-w-[1600px] gap-4 p-3 sm:p-4">
+    <div
+      className={cn(
+        'flex h-dvh flex-col overflow-hidden bg-background',
+        className,
+      )}
+    >
+      {banner}
+      <div className="mx-auto flex min-h-0 w-full max-w-[1600px] flex-1 gap-4 p-3 sm:p-4">
         {sidebar}
         <div className="flex min-h-0 min-w-0 flex-1 flex-col">
           {header}

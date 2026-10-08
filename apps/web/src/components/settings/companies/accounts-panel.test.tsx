@@ -213,14 +213,4 @@ describe('AccountsPanel', () => {
     fireEvent.click(screen.getByRole('button', { name: /Companies/ }))
     expect(p.onBack).toHaveBeenCalled()
   })
-
-  it('keeps the toggles but offers no refresh from the ERP in demo mode', async () => {
-    const p = setup({ demo: true })
-
-    expect(
-      screen.queryByRole('button', { name: /Refresh from ERP/ }),
-    ).toBeNull()
-    fireEvent.click(screen.getByRole('switch', { name: 'VAT on 6010' }))
-    await waitFor(() => expect(p.onToggle).toHaveBeenCalledTimes(1))
-  })
 })

@@ -18,8 +18,6 @@ import { ReadAgainButton } from './read-again-button'
 export interface AgreementHeadingProps {
   agreement: AgreementRead
   canEdit: boolean
-  /** Whether this is the hosted demo, which hides actions it can't serve. */
-  demo?: boolean
   onDelete: () => Promise<void>
   onReadAgain: () => Promise<void>
 }
@@ -28,7 +26,6 @@ export interface AgreementHeadingProps {
 export function AgreementHeading({
   agreement,
   canEdit,
-  demo = false,
   onDelete,
   onReadAgain,
 }: AgreementHeadingProps) {
@@ -75,7 +72,7 @@ export function AgreementHeading({
             <p className="mt-2 max-w-3xl text-sm">{agreement.summary}</p>
           ) : null}
         </div>
-        {canEdit && !demo ? (
+        {canEdit ? (
           <div className="flex items-center gap-2">
             {reading ? null : (
               <ReadAgainButton

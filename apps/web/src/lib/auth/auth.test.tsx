@@ -191,7 +191,7 @@ describe('role gates', () => {
   it.each([
     ['admin', true],
     ['moderator', false],
-    ['demo', false],
+    ['demo', true],
     ['member', false],
     ['viewer', false],
   ] as const)('canManageOrganization(%s) === %s', (role, expected) => {

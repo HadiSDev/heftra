@@ -12,6 +12,7 @@ import {
   suspendOrganizationMutation,
   updateOrganizationMutation,
 } from '#/lib/api/organization'
+import { useDemoGuard } from '#/lib/demo/use-demo-guard'
 
 export const Route = createFileRoute('/_authed/settings/organization')({
   component: OrganizationSection,
@@ -22,6 +23,7 @@ function OrganizationSection() {
   const queryClient = useQueryClient()
   const principal = usePrincipal()
   const canManage = canManageOrganization(principal)
+  const guard = useDemoGuard()
 
   const organization = useQuery(organizationQueryOptions(api))
   const update = useMutation(updateOrganizationMutation(api, queryClient))
@@ -63,7 +65,7 @@ function OrganizationSection() {
         logoUrl={logo?.hasImage ? logo.imageUrl : undefined}
         onUploadLogo={
           canUploadLogo
-            ? async (file) => void (await logo.setLogo({ file }))
+            ? guard(async (file: File) => void (await logo.setLogo({ file })))
             : undefined
         }
       />

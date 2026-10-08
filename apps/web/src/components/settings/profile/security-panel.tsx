@@ -15,11 +15,11 @@ import {
 import type { ClerkUser } from '#/lib/auth/clerk-types'
 import { serverErrorMessage } from '#/lib/form-errors'
 import {
-  ReadOnlyNotice,
   SettingsCard,
   SubmitRow,
   useSettingsSubmit,
 } from '#/components/settings/form'
+import { useDemoGuard } from '#/lib/demo/use-demo-guard'
 
 export interface PasswordValues {
   currentPassword: string
@@ -327,28 +327,10 @@ function formatLastActive(date: Date | null | undefined): string {
   return `Last active ${date.toLocaleString()}`
 }
 
-/** The account's sign-in settings, or a notice on the hosted demo's shared login. */
-export function SecurityPanel({
-  user,
-  demo = false,
-}: {
-  user: ClerkUser
-  /** Whether this is the hosted demo's shared login, which can't be changed. */
-  demo?: boolean
-}) {
-  if (demo) {
-    return (
-      <SettingsCard title="Security">
-        <ReadOnlyNotice>The shared demo login can't be changed.</ReadOnlyNotice>
-      </SettingsCard>
-    )
-  }
-  return <ClerkSecurityPanel user={user} />
-}
-
 /** Binds the view to Clerk's password, session, and external-account APIs. */
-function ClerkSecurityPanel({ user }: { user: ClerkUser }) {
+export function SecurityPanel({ user }: { user: ClerkUser }) {
   const { session } = useSession()
+  const guard = useDemoGuard()
   const [sessions, setSessions] = React.useState<Array<SessionRow>>([])
   const [loading, setLoading] = React.useState(true)
 
@@ -396,20 +378,21 @@ function ClerkSecurityPanel({ user }: { user: ClerkUser }) {
   return (
     <SecurityView
       hasPassword={user.passwordEnabled}
-      onSavePassword={({ currentPassword, newPassword }) =>
-        user.updatePassword({
-          ...(user.passwordEnabled ? { currentPassword } : {}),
-          newPassword,
-        })
-      }
+      onSavePassword={guard(
+        ({ currentPassword, newPassword }: PasswordValues) =>
+          user.updatePassword({
+            ...(user.passwordEnabled ? { currentPassword } : {}),
+            newPassword,
+          }),
+      )}
       sessions={sessions}
       sessionsLoading={loading}
-      onRevokeSession={async (id) => {
+      onRevokeSession={guard(async (id: string) => {
         const all = await user.getSessions()
         await all.find((entry) => entry.id === id)?.revoke()
-      }}
+      })}
       connections={connections}
-      onConnect={async (strategy) => {
+      onConnect={guard(async (strategy: string) => {
         const origin = window.location.origin
         await user.createExternalAccount({
           strategy: strategy as Parameters<
@@ -417,13 +400,13 @@ function ClerkSecurityPanel({ user }: { user: ClerkUser }) {
           >[0]['strategy'],
           redirectUrl: `${origin}/settings/profile`,
         })
-      }}
-      onDisconnect={async (id) => {
+      })}
+      onDisconnect={guard(async (id: string) => {
         await user.externalAccounts
           .find((account) => account.id === id)
           ?.destroy()
         await user.reload()
-      }}
+      })}
     />
   )
 }

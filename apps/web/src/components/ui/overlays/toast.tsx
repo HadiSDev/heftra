@@ -6,6 +6,9 @@ import { cn } from '../cn'
 /** Access the toast manager: `const toast = useToast(); toast.add({ title })`. */
 export const useToast = Toast.useToastManager
 
+/** The app's toast manager, for raising toasts from outside React. */
+export const toastManager = Toast.createToastManager()
+
 function ToastList() {
   const { toasts } = Toast.useToastManager()
   return toasts.map((toast) => (
@@ -37,7 +40,7 @@ function ToastList() {
 /** Wrap the app once to enable toasts anywhere via `useToast()`. */
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
-    <Toast.Provider>
+    <Toast.Provider toastManager={toastManager}>
       {children}
       <Toast.Portal>
         <Toast.Viewport className="fixed right-4 bottom-4 z-50 mx-auto flex w-80 sm:right-8 sm:bottom-8">

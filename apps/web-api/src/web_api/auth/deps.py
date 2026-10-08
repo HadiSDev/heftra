@@ -6,7 +6,7 @@ import re
 from collections.abc import Generator
 from dataclasses import dataclass
 
-from fastapi import Depends, Header, HTTPException, status
+from fastapi import Depends, Header, HTTPException, Request, status
 from sqlalchemy import Engine
 from sqlmodel import Session, select
 
@@ -73,7 +73,12 @@ def get_principal(
         raise _UNAUTHORIZED
 
 
+DEMO_REFUSAL = "This is a demo, so changes aren't saved."
+_READ_METHODS = {"GET", "HEAD", "OPTIONS"}
+
+
 def current_user(
+    request: Request,
     principal: ClerkPrincipal = Depends(get_principal),
     session: Session = Depends(get_session),
 ) -> User:
@@ -84,6 +89,8 @@ def current_user(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Organization is suspended",
         )
+    if user.role == DEMO_ROLE and request.method not in _READ_METHODS:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=DEMO_REFUSAL)
     return user
 
 
@@ -139,8 +146,8 @@ def require_management(scope: TenantScope = Depends(tenant_scope)) -> TenantScop
 
 
 def require_org_admin(scope: TenantScope = Depends(tenant_scope)) -> TenantScope:
-    """Stricter gate for organization-profile changes: system admin or org admin."""
-    if scope.is_system_admin or scope.role == "admin":
+    """Stricter gate for organization-profile changes: system admin or org admin (or the demo login, which can't write)."""
+    if scope.is_system_admin or scope.role in {"admin", DEMO_ROLE}:
         return scope
     raise HTTPException(
         status_code=status.HTTP_403_FORBIDDEN,
@@ -156,15 +163,6 @@ def require_system_admin(scope: TenantScope = Depends(tenant_scope)) -> TenantSc
         status_code=status.HTTP_403_FORBIDDEN,
         detail="System administrator required",
     )
-
-
-def refuse_in_demo(scope: TenantScope = Depends(tenant_scope)) -> None:
-    """Refuse the demo role an action the hosted demo has no worker, AI, file store or ERP for."""
-    if scope.role == DEMO_ROLE:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not available in the demo",
-        )
 
 
 def resolve_target_organization(scope: TenantScope, organization_id: str | None) -> str:

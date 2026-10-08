@@ -34,8 +34,6 @@ export interface AccountsPanelProps {
   accounts: Array<ErpAccountRead>
   loading?: boolean
   canManage: boolean
-  /** Whether this is the hosted demo, which hides actions it can't serve. */
-  demo?: boolean
   /** False when the company has no connected integration. */
   hasIntegration: boolean
   onToggle: (id: string, changes: ErpAccountUpdate) => Promise<unknown>
@@ -49,7 +47,6 @@ export function AccountsPanel({
   accounts,
   loading,
   canManage,
-  demo = false,
   hasIntegration,
   onToggle,
   onRefresh,
@@ -169,20 +166,18 @@ export function AccountsPanel({
             The chart of accounts has not been read from the ERP. Fetch it to
             choose which accounts to sync.
           </p>
-          {demo ? null : (
-            <div className="mt-4">
-              <Button
-                variant="outline"
-                onClick={refresh}
-                disabled={!canManage || refreshing}
-              >
-                <RefreshCw
-                  className={cn('size-4', refreshing && 'animate-spin')}
-                />
-                Refresh from ERP
-              </Button>
-            </div>
-          )}
+          <div className="mt-4">
+            <Button
+              variant="outline"
+              onClick={refresh}
+              disabled={!canManage || refreshing}
+            >
+              <RefreshCw
+                className={cn('size-4', refreshing && 'animate-spin')}
+              />
+              Refresh from ERP
+            </Button>
+          </div>
           {refreshResult ? (
             <p className="mt-3 text-sm text-muted-foreground">
               {refreshResult}
@@ -218,18 +213,16 @@ export function AccountsPanel({
               >
                 Disable {shown.length} shown
               </Button>
-              {demo ? null : (
-                <Button
-                  variant="outline"
-                  onClick={refresh}
-                  disabled={!canManage || refreshing}
-                >
-                  <RefreshCw
-                    className={cn('size-4', refreshing && 'animate-spin')}
-                  />
-                  Refresh from ERP
-                </Button>
-              )}
+              <Button
+                variant="outline"
+                onClick={refresh}
+                disabled={!canManage || refreshing}
+              >
+                <RefreshCw
+                  className={cn('size-4', refreshing && 'animate-spin')}
+                />
+                Refresh from ERP
+              </Button>
             </div>
           </div>
 

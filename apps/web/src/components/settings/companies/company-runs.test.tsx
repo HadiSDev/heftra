@@ -141,17 +141,6 @@ describe('CompaniesPanel — pipeline runs for everyone else', () => {
   })
 })
 
-describe('CompaniesPanel — pipeline runs in demo mode', () => {
-  it('renders no Run menu, even for a system admin', async () => {
-    renderPanel({ demo: true })
-
-    expect(await screen.findByText('Acme A/S')).toBeTruthy()
-    expect(
-      screen.queryByRole('button', { name: 'Run pipeline for Acme A/S' }),
-    ).toBeNull()
-  })
-})
-
 describe('CompaniesPanel — layout', () => {
   it('fixes its column widths, so a changing run status cannot reflow the table', async () => {
     renderPanel({ canRunPipelines: true })

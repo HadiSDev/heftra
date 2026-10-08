@@ -87,8 +87,6 @@ export interface VoucherDrawerProps {
   onReprocess: (invoiceId: string) => Promise<void>
   /** Whether the signed-in user holds a management role. */
   canManage: boolean
-  /** Whether this is the hosted demo, which hides actions it can't serve. */
-  demo?: boolean
   /** Whether the Details tab's header editor has unsaved edits. */
   onHeaderDirtyChange?: (dirty: boolean) => void
   /** Whether dismissing must first confirm discarding edits. */
@@ -175,7 +173,6 @@ export function VoucherDrawer({
   vendors,
   onReprocess,
   canManage,
-  demo = false,
   onHeaderDirtyChange,
   hasUnsavedChanges,
 }: VoucherDrawerProps) {
@@ -307,7 +304,6 @@ export function VoucherDrawer({
                           <VoucherDetailsTab
                             invoice={invoice}
                             canManage={canManage}
-                            demo={demo}
                             vendors={vendors}
                             onReprocess={onReprocess}
                             onUpdateHeader={onUpdateHeader}
