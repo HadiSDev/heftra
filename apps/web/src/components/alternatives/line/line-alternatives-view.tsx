@@ -8,6 +8,8 @@ export interface LineAlternativesViewProps {
   /** The line's item; null when it hasn't been looked at, undefined while loading. */
   item: ItemRead | null | undefined
   canManage: boolean
+  /** Whether this is the hosted demo, which hides actions it can't serve. */
+  demo?: boolean
   pending: boolean
   error: string | null
   onFind: () => void
@@ -22,7 +24,13 @@ function bestSaving(item: ItemRead): number | null {
   return savings.length > 0 ? Math.max(...savings) : null
 }
 
-function Body({ item, canManage, pending, onFind }: LineAlternativesViewProps) {
+function Body({
+  item,
+  canManage,
+  demo = false,
+  pending,
+  onFind,
+}: LineAlternativesViewProps) {
   if (item === undefined) {
     return <p className="text-sm text-muted-foreground">Loading…</p>
   }
@@ -73,7 +81,7 @@ function Body({ item, canManage, pending, onFind }: LineAlternativesViewProps) {
           ? 'Nothing cheaper and at least as good was found.'
           : 'Not searched for cheaper alternatives yet.'}
       </p>
-      {canManage ? (
+      {canManage && !demo ? (
         <Button size="sm" variant="outline" onClick={onFind}>
           <Search />
           Find cheaper alternatives

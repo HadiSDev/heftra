@@ -4,7 +4,7 @@ from __future__ import annotations
 from decimal import Decimal
 
 from sqlalchemy import and_, case, func
-from sqlmodel import Session, select
+from sqlmodel import Session, col, select
 
 from .. import config
 from ..db.models import (
@@ -18,7 +18,7 @@ from ..emissions.factors import active_factor_set
 from ..schemas.admin import SectorCoverageRow
 
 
-def coverage_rows(session: Session) -> list[SectorCoverageRow]:
+def coverage_rows(session: Session, company_ids: list[str] | None = None) -> list[SectorCoverageRow]:
     factor_set = active_factor_set(session)
     classification = factor_set.classification if factor_set is not None else None
     in_active = EmissionSector.classification == classification
@@ -27,7 +27,7 @@ def coverage_rows(session: Session) -> list[SectorCoverageRow]:
     unsure = and_(is_ai, InvoiceLine.emission_sector_confidence
                   < Decimal(str(config.CATEGORIZATION_REVIEW_THRESHOLD)))
 
-    rows = session.exec(
+    query = (
         select(
             Company.id, Company.name, Organization.name,
             func.count(InvoiceLine.id),
@@ -40,7 +40,10 @@ def coverage_rows(session: Session) -> list[SectorCoverageRow]:
         .outerjoin(EmissionSector, EmissionSector.id == InvoiceLine.emission_sector_id)
         .group_by(Company.id, Company.name, Organization.name)
         .order_by(Organization.name, Company.name)
-    ).all()
+    )
+    if company_ids is not None:
+        query = query.where(col(Company.id).in_(company_ids))
+    rows = session.exec(query).all()
     return [
         SectorCoverageRow(
             company_id=company_id, company_name=company_name, organization_name=org_name,

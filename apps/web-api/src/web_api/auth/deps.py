@@ -14,7 +14,7 @@ from web_api.db.models import Company, ErpIntegration, Organization, User
 from web_api.db.session import engine
 
 from .clerk_sync import provision_user
-from .principal import ClerkPrincipal, TokenVerificationError
+from .principal import DEMO_ROLE, ClerkPrincipal, TokenVerificationError
 from .verifiers import TokenVerifier, default_verifier
 
 logger = logging.getLogger(__name__)
@@ -125,7 +125,7 @@ def resolve_company_ids(scope: TenantScope, company_id: str | None) -> list[str]
     return [company_id]
 
 
-_MANAGER_ROLES = {"admin", "moderator"}
+_MANAGER_ROLES = {"admin", "moderator", DEMO_ROLE}
 
 
 def require_management(scope: TenantScope = Depends(tenant_scope)) -> TenantScope:
@@ -156,6 +156,15 @@ def require_system_admin(scope: TenantScope = Depends(tenant_scope)) -> TenantSc
         status_code=status.HTTP_403_FORBIDDEN,
         detail="System administrator required",
     )
+
+
+def refuse_in_demo(scope: TenantScope = Depends(tenant_scope)) -> None:
+    """Refuse the demo role an action the hosted demo has no worker, AI, file store or ERP for."""
+    if scope.role == DEMO_ROLE:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not available in the demo",
+        )
 
 
 def resolve_target_organization(scope: TenantScope, organization_id: str | None) -> str:

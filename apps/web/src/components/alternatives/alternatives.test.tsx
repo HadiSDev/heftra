@@ -300,6 +300,7 @@ function renderItem(
   item: ItemRead,
   canManage = true,
   lines: Array<ItemLineRead> | undefined | null = LINES,
+  demo = false,
 ) {
   const props = {
     onSearch: vi.fn(),
@@ -311,6 +312,7 @@ function renderItem(
       item={item}
       lines={lines}
       canManage={canManage}
+      demo={demo}
       searchPending={false}
       {...props}
     />,
@@ -439,6 +441,20 @@ describe('ItemPanel', () => {
   })
 })
 
+describe('ItemPanel in demo mode', () => {
+  it('keeps the review but hides the search and the specification editor', () => {
+    renderItem(ITEM, true, LINES, true)
+
+    expect(screen.getByRole('button', { name: 'Dismiss' })).toBeTruthy()
+    expect(
+      screen.queryByRole('button', { name: 'Find cheaper alternatives' }),
+    ).toBeNull()
+    expect(
+      screen.queryByRole('button', { name: 'Correct the specification' }),
+    ).toBeNull()
+  })
+})
+
 describe('LineAlternativesView', () => {
   it('offers a manager a search for a line not looked at yet', () => {
     const onFind = vi.fn()
@@ -473,5 +489,22 @@ describe('LineAlternativesView', () => {
     expect(
       screen.getByRole('link', { name: 'See the alternatives' }),
     ).toHaveProperty('href', expect.stringContaining('/alternatives/i1'))
+  })
+
+  it('offers no search in demo mode', () => {
+    render(
+      <LineAlternativesView
+        item={null}
+        canManage
+        demo
+        pending={false}
+        error={null}
+        onFind={vi.fn()}
+      />,
+    )
+
+    expect(
+      screen.queryByRole('button', { name: 'Find cheaper alternatives' }),
+    ).toBeNull()
   })
 })

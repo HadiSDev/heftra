@@ -1,4 +1,4 @@
-"""System-admin emission factor controls over the API."""
+"""Emission factor status for everyone, and system-admin controls, over the API."""
 from __future__ import annotations
 
 from decimal import Decimal
@@ -42,16 +42,36 @@ def _sets(engine) -> dict[str, str]:
 
 
 @pytest.mark.parametrize(("method", "path"), [
-    ("get", ""),
     ("post", "/sets/any/activate"),
     ("post", "/price-index/refresh"),
     ("post", "/workbooks"),
     ("get", "/imports"),
 ])
-def test_an_organization_admin_is_refused(client, method, path):
+def test_an_organization_admin_is_refused_the_admin_actions(client, method, path):
     res = getattr(client, method)(f"{_BASE}{path}", headers=auth("tokA"))
 
     assert res.status_code == 403
+
+
+def test_a_member_reads_the_status_with_only_their_own_companies(client, engine, seed):
+    with Session(engine) as s:
+        Factors(s, version="CEDA 2025")
+
+    res = client.get(_BASE, headers=auth("tok_memberA"))
+
+    assert res.status_code == 200
+    body = res.json()
+    assert [row["version"] for row in body["sets"]] == ["CEDA 2025"]
+    assert [row["company_name"] for row in body["coverage"]] == ["Acme A"]
+
+
+def test_a_system_admin_sees_every_companys_coverage(client, engine, seed):
+    with Session(engine) as s:
+        Factors(s)
+
+    coverage = client.get(_BASE, headers=_ADMIN).json()["coverage"]
+
+    assert {row["company_name"] for row in coverage} == {"Acme A", "Beta B"}
 
 
 def test_the_status_lists_sets_active_first_with_their_counts(client, engine):

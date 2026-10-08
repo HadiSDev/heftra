@@ -189,10 +189,12 @@ function EntriesPage() {
         await reprocess.mutateAsync({ id: invoiceId })
       }}
       canManage={canManageCompanies(principal)}
+      demo={principal.demo}
       renderLineExtra={(line) => (
         <LineAlternatives
           line={line}
           canManage={canManageCompanies(principal)}
+          demo={principal.demo}
         />
       )}
     />

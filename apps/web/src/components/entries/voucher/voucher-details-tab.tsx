@@ -15,6 +15,8 @@ export interface VoucherDetailsTabProps {
   invoice: InvoiceDetailRead
   /** Whether the signed-in user holds a management role. */
   canManage: boolean
+  /** Whether this is the hosted demo, which hides actions it can't serve. */
+  demo?: boolean
   /** The organization's suppliers, or null while loading. */
   vendors: Array<VendorRead> | null
   /** `POST /invoices/{id}/reprocess`. */
@@ -107,6 +109,7 @@ function VerifiedNote({ invoice }: { invoice: InvoiceDetailRead }) {
 export function VoucherDetailsTab({
   invoice,
   canManage,
+  demo = false,
   vendors,
   onReprocess,
   onUpdateHeader,
@@ -177,7 +180,7 @@ export function VoucherDetailsTab({
 
       <DocumentProcessing
         invoice={invoice}
-        canRetrigger={canManage}
+        canRetrigger={canManage && !demo}
         onReprocess={onReprocess}
       />
     </div>

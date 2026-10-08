@@ -18,21 +18,34 @@ services:
     restart: unless-stopped
 
   link-org:
-    image: postgres:16
+    build: ./postgres
     depends_on:
       postgres:
         condition: service_healthy
     environment:
+      PGHOST: postgres
+      PGUSER: heftra
       PGPASSWORD: ${DEMO_DB_PASSWORD}
       DEMO_CLERK_ORG_ID: ${DEMO_CLERK_ORG_ID:?set DEMO_CLERK_ORG_ID}
-    command:
-      - sh
-      - -c
-      - >-
-        psql -h postgres -U heftra -d heftra -v ON_ERROR_STOP=1
-        -c "update organizations set clerk_org_id = '$$DEMO_CLERK_ORG_ID'
-        where id = '35156cc7-fb21-4b93-9b06-9fb0356e8457'"
+    entrypoint: ['demo-reset']
+    command: ['link']
     restart: 'no'
+
+  reset:
+    build: ./postgres
+    depends_on:
+      link-org:
+        condition: service_completed_successfully
+    environment:
+      PGHOST: postgres
+      PGUSER: heftra
+      PGPASSWORD: ${DEMO_DB_PASSWORD}
+      DEMO_CLERK_ORG_ID: ${DEMO_CLERK_ORG_ID}
+      DEMO_RESET_AT: ${DEMO_RESET_AT:-03:00}
+      TZ: Europe/Copenhagen
+    entrypoint: ['demo-reset']
+    command: ['schedule']
+    restart: unless-stopped
 
   web-api:
     build:

@@ -18,9 +18,10 @@ const averageFormat = new Intl.NumberFormat('en-GB', {
 
 export interface PriceIndexCardProps {
   indices: Array<AdminPriceIndexRead>
-  refreshing: boolean
-  error: string | null
-  onRefresh: (series: string) => void
+  refreshing?: boolean
+  error?: string | null
+  /** Omit to show the indices without a way to refresh them. */
+  onRefresh?: (series: string) => void
 }
 
 function IndexFigures({ index }: { index: AdminPriceIndexRead }) {
@@ -62,8 +63,8 @@ function IndexFigures({ index }: { index: AdminPriceIndexRead }) {
 /** The price indices spend is deflated with, and a refresh from FRED. */
 export function PriceIndexCard({
   indices,
-  refreshing,
-  error,
+  refreshing = false,
+  error = null,
   onRefresh,
 }: PriceIndexCardProps) {
   return (
@@ -88,17 +89,19 @@ export function PriceIndexCard({
                 <span className="font-medium">{index.label}</span>
                 <Badge variant="outline">{index.series}</Badge>
               </div>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={refreshing}
-                onClick={() => {
-                  onRefresh(index.series)
-                }}
-              >
-                <RefreshCw className={refreshing ? 'animate-spin' : ''} />
-                {refreshing ? 'Refreshing…' : 'Refresh from FRED'}
-              </Button>
+              {onRefresh ? (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={refreshing}
+                  onClick={() => {
+                    onRefresh(index.series)
+                  }}
+                >
+                  <RefreshCw className={refreshing ? 'animate-spin' : ''} />
+                  {refreshing ? 'Refreshing…' : 'Refresh from FRED'}
+                </Button>
+              ) : null}
             </div>
             <IndexFigures index={index} />
           </div>

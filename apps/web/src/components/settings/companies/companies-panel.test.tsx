@@ -935,6 +935,21 @@ describe('CompaniesPanel — manage accounts', () => {
   })
 })
 
+describe('CompaniesPanel — demo mode', () => {
+  it('offers only Manage accounts, with no way to add or change a company', async () => {
+    renderPanel({ demo: true, canDelete: true, onManageAccounts: vi.fn() })
+
+    expect(screen.queryByRole('button', { name: 'Add company' })).toBeNull()
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Actions for Acme A/S' }),
+    )
+    const items = (await screen.findAllByRole('menuitem')).map(
+      (item) => item.textContent,
+    )
+    expect(items).toEqual(['Manage accounts'])
+  })
+})
+
 describe('CompaniesPanel — reporting currency', () => {
   it('shows each company’s reporting currency in the list', () => {
     renderPanel({ companies: [ACME, RETIRED], includeInactive: true })

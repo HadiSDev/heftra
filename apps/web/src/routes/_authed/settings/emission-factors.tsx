@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Card } from '#/components/ui'
 import { ActivateDialog } from '#/components/settings/emission-factors/activate-dialog'
 import type { MatchRequest } from '#/components/settings/emission-factors/coverage-card'
 import { EmissionFactorsAdmin } from '#/components/settings/emission-factors/emission-factors-admin'
@@ -35,19 +34,24 @@ function errorText(error: Error | null): string | null {
 function EmissionFactorsRoute() {
   const principal = usePrincipal()
   if (!principal.isSystemAdmin) {
-    return (
-      <Card className="p-6">
-        <h1 className="font-display text-lg font-semibold">
-          System admins only
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Emission factors are shared by every organization, so only system
-          admins can manage them.
-        </p>
-      </Card>
-    )
+    return <ReadOnlyEmissionFactorsPage />
   }
   return <EmissionFactorsPage />
+}
+
+function ReadOnlyEmissionFactorsPage() {
+  const api = useApi()
+  const status = useQuery(emissionFactorsStatusQueryOptions(api))
+  return (
+    <EmissionFactorsAdmin
+      status={status.data}
+      statusError={status.isError}
+      onRetry={() => {
+        void status.refetch()
+      }}
+      management={null}
+    />
+  )
 }
 
 function EmissionFactorsPage() {
@@ -111,32 +115,33 @@ function EmissionFactorsPage() {
         onRetry={() => {
           void status.refetch()
         }}
-        jobs={jobs.data ?? []}
-        refreshing={
-          refresh.isPending || hasUnfinishedImport(jobs.data, 'price_index')
-        }
-        refreshError={errorText(refresh.error)}
-        importingWorkbook={hasUnfinishedImport(jobs.data, 'factor_workbook')}
-        matchRequests={matchRequests}
-        onActivate={setTarget}
-        onRefresh={(series) => {
-          refresh.mutate(series)
+        management={{
+          jobs: jobs.data ?? [],
+          refreshing:
+            refresh.isPending || hasUnfinishedImport(jobs.data, 'price_index'),
+          refreshError: errorText(refresh.error),
+          importingWorkbook: hasUnfinishedImport(jobs.data, 'factor_workbook'),
+          matchRequests,
+          onActivate: setTarget,
+          onRefresh: (series) => {
+            refresh.mutate(series)
+          },
+          onUpload: async (file, activateWhenImported, onProgress) => {
+            try {
+              await upload.mutateAsync({
+                file,
+                activate: activateWhenImported,
+                onProgress,
+              })
+            } catch (error) {
+              throw new Error(
+                errorText(error instanceof Error ? error : null) ??
+                  'Upload failed',
+              )
+            }
+          },
+          onMatch,
         }}
-        onUpload={async (file, activateWhenImported, onProgress) => {
-          try {
-            await upload.mutateAsync({
-              file,
-              activate: activateWhenImported,
-              onProgress,
-            })
-          } catch (error) {
-            throw new Error(
-              errorText(error instanceof Error ? error : null) ??
-                'Upload failed',
-            )
-          }
-        }}
-        onMatch={onMatch}
       />
       <ActivateDialog
         target={target}

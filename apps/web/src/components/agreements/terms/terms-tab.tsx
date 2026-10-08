@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { FileWarning, Loader2, RotateCw } from 'lucide-react'
+import { FileText, FileWarning, Loader2, RotateCw } from 'lucide-react'
 import { Button, Card } from '#/components/ui'
 import type { PageRequest } from '#/components/entries/invoice-document/invoice-document'
 import type {
@@ -17,6 +17,8 @@ import { TermCard } from './term-card'
 export interface TermsTabProps {
   agreement: AgreementRead
   canEdit: boolean
+  /** Whether this is the hosted demo, which hides actions it can't serve. */
+  demo?: boolean
   vendors: Array<VendorRead>
   /** The company's spend tree; null while it loads or when the company has none. */
   spendTreeNodes: Array<SpendCategoryRead> | null
@@ -62,10 +64,22 @@ function ReadingState({
   )
 }
 
+function DocumentUnavailable() {
+  return (
+    <div className="flex h-full flex-col items-center justify-center gap-2 p-6 text-center">
+      <FileText className="size-8 text-muted-foreground" aria-hidden="true" />
+      <p className="text-sm text-muted-foreground">
+        Agreement documents aren't available in the demo.
+      </p>
+    </div>
+  )
+}
+
 /** The document beside its details and terms, for a person to review. */
 export function TermsTab({
   agreement,
   canEdit,
+  demo = false,
   vendors,
   spendTreeNodes,
   onVendorSearch,
@@ -84,17 +98,21 @@ export function TermsTab({
   return (
     <div className="grid min-h-0 gap-6 lg:grid-cols-2">
       <Card className="h-[75vh] min-h-0 overflow-hidden p-0">
-        <AgreementDocument
-          agreementId={agreement.id}
-          filename={agreement.file.filename}
-          pageRequest={pageRequest}
-        />
+        {demo ? (
+          <DocumentUnavailable />
+        ) : (
+          <AgreementDocument
+            agreementId={agreement.id}
+            filename={agreement.file.filename}
+            pageRequest={pageRequest}
+          />
+        )}
       </Card>
       <div className="flex min-w-0 flex-col gap-4">
         {reading ? (
           <ReadingState
             agreement={agreement}
-            canEdit={canEdit}
+            canEdit={canEdit && !demo}
             onReadAgain={onReadAgain}
           />
         ) : null}

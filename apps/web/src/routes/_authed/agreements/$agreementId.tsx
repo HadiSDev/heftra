@@ -65,7 +65,8 @@ function AgreementPage() {
   const navigate = useNavigate({ from: Route.fullPath })
   const api = useApi()
   const queryClient = useQueryClient()
-  const canEdit = canManageCompanies(usePrincipal())
+  const principal = usePrincipal()
+  const canEdit = canManageCompanies(principal)
   const [vendorQuery, setVendorQuery] = React.useState('')
   const debouncedVendors = useDebouncedValue(vendorQuery, 250)
 
@@ -146,6 +147,7 @@ function AgreementPage() {
       <AgreementHeading
         agreement={current}
         canEdit={canEdit}
+        demo={principal.demo}
         onDelete={async () => {
           await remove.mutateAsync(current.id)
           await navigate({ to: '/agreements' })
@@ -174,6 +176,7 @@ function AgreementPage() {
         <TermsTab
           agreement={current}
           canEdit={canEdit}
+          demo={principal.demo}
           vendors={vendors.data?.items ?? []}
           spendTreeNodes={spendTreeNodes}
           onVendorSearch={setVendorQuery}
@@ -222,6 +225,7 @@ function AgreementPage() {
             void navigate({ search: { ...search, ...next } })
           }}
           canEdit={canEdit}
+          demo={principal.demo}
           analysing={analyse.isPending || isAnalysing(current)}
           onAnalyse={(full) => {
             analyse.mutate({ companyId: current.company_id, full })

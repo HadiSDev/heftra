@@ -5,12 +5,6 @@ import type * as RouterModule from '@tanstack/react-router'
 
 import { Route } from './settings'
 
-const principal = { isSystemAdmin: false }
-
-vi.mock('#/lib/auth/auth', () => ({
-  usePrincipal: () => principal,
-}))
-
 vi.mock('@tanstack/react-router', async (importOriginal) => {
   const actual = await importOriginal<typeof RouterModule>()
   return {
@@ -39,18 +33,10 @@ afterEach(() => {
 })
 
 describe('Settings tabs', () => {
-  it('offers Emission factors to a system admin, last', () => {
-    principal.isSystemAdmin = true
+  it('offers Emission factors to everyone, last', () => {
     render(<SettingsLayout />)
 
     const tabs = screen.getAllByRole('tab').map((tab) => tab.textContent)
     expect(tabs.at(-1)).toBe('Emission factors')
-  })
-
-  it('hides it from everyone else', () => {
-    principal.isSystemAdmin = false
-    render(<SettingsLayout />)
-
-    expect(screen.queryByRole('tab', { name: 'Emission factors' })).toBeNull()
   })
 })

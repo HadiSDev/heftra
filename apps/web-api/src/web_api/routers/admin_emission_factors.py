@@ -1,4 +1,4 @@
-"""System-admin controls for emission factors: status, activation, CPI refresh, workbook upload."""
+"""Emission factors: a status everyone can read, and system-admin activation, CPI refresh and uploads."""
 from __future__ import annotations
 
 from fastapi import (
@@ -17,7 +17,7 @@ from sqlmodel import Session, col, select
 from .. import config
 from ..admin.factor_sets import counted_factor_set
 from ..admin.status import emission_factors_status
-from ..auth.deps import TenantScope, get_session, require_system_admin
+from ..auth.deps import TenantScope, get_session, require_system_admin, tenant_scope
 from ..db.models import EmissionFactorSet, ReferenceDataImport, ReferenceImportKind, User
 from ..emissions.activation import activate_factor_set
 from ..price_indices.series import index_for_currency
@@ -31,14 +31,17 @@ from ..schemas.admin import (
     ReferenceImportRead,
 )
 
-router = APIRouter(prefix="/api/v1/admin/emission-factors", tags=["admin"],
-                   dependencies=[Depends(require_system_admin)])
+router = APIRouter(prefix="/api/v1/admin/emission-factors", tags=["admin"])
 
 
 @router.get("", response_model=EmissionFactorsStatusRead)
-def get_status(session: Session = Depends(get_session)) -> EmissionFactorsStatusRead:
-    """The factor sets, their price indices, and each company's sector coverage."""
-    return emission_factors_status(session)
+def get_status(
+    scope: TenantScope = Depends(tenant_scope),
+    session: Session = Depends(get_session),
+) -> EmissionFactorsStatusRead:
+    """The factor sets, their price indices, and sector coverage for the companies the caller sees."""
+    company_ids = None if scope.is_system_admin else scope.company_ids
+    return emission_factors_status(session, company_ids)
 
 
 @router.post("/sets/{factor_set_id}/activate", response_model=FactorSetActivationRead)
@@ -110,7 +113,8 @@ def upload_workbook(
     return _job_read(session, job)
 
 
-@router.get("/imports", response_model=list[ReferenceImportRead])
+@router.get("/imports", response_model=list[ReferenceImportRead],
+            dependencies=[Depends(require_system_admin)])
 def list_imports(
     limit: int = Query(default=20, ge=1, le=100),
     session: Session = Depends(get_session),

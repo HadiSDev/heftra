@@ -11,10 +11,8 @@ import { ImportJobs } from './import-jobs'
 import { PriceIndexCard } from './price-index-card'
 import { WorkbookUpload } from './workbook-upload'
 
-export interface EmissionFactorsAdminProps {
-  status: EmissionFactorsStatusRead | undefined
-  statusError: boolean
-  onRetry: () => void
+/** A system admin's controls: activation, refresh, upload, imports and matching. */
+export interface EmissionFactorsManagement {
   jobs: Array<ReferenceImportRead>
   refreshing: boolean
   refreshError: string | null
@@ -30,20 +28,20 @@ export interface EmissionFactorsAdminProps {
   onMatch: (companyId: string) => void
 }
 
-/** The Emission factors admin page: sets, inflation, upload, imports and coverage. */
+export interface EmissionFactorsAdminProps {
+  status: EmissionFactorsStatusRead | undefined
+  statusError: boolean
+  onRetry: () => void
+  /** Null renders the page read-only, for anyone but a system admin. */
+  management: EmissionFactorsManagement | null
+}
+
+/** The Emission factors page: sets, inflation, upload, imports and coverage. */
 export function EmissionFactorsAdmin({
   status,
   statusError,
   onRetry,
-  jobs,
-  refreshing,
-  refreshError,
-  importingWorkbook,
-  matchRequests,
-  onActivate,
-  onRefresh,
-  onUpload,
-  onMatch,
+  management,
 }: EmissionFactorsAdminProps) {
   return (
     <div className="flex flex-col gap-6">
@@ -51,7 +49,10 @@ export function EmissionFactorsAdmin({
         <h2 className="font-display text-lg font-medium">Emission factors</h2>
         <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
           The factor sets and price index every company&apos;s emissions are
-          estimated with. Changes here apply to all organizations.
+          estimated with.{' '}
+          {management
+            ? 'Changes here apply to all organizations.'
+            : 'They are shared by every organization, and system admins manage them.'}
         </p>
       </div>
       {statusError ? (
@@ -75,24 +76,32 @@ export function EmissionFactorsAdmin({
       ) : null}
       {status ? (
         <>
-          <FactorSetsCard sets={status.sets} onActivate={onActivate} />
+          <FactorSetsCard
+            sets={status.sets}
+            onActivate={management?.onActivate}
+          />
           <div className="grid gap-6 lg:grid-cols-2">
             <PriceIndexCard
               indices={status.price_indices}
-              refreshing={refreshing}
-              error={refreshError}
-              onRefresh={onRefresh}
+              refreshing={management?.refreshing}
+              error={management?.refreshError}
+              onRefresh={management?.onRefresh}
             />
-            <WorkbookUpload importing={importingWorkbook} onUpload={onUpload} />
+            {management ? (
+              <WorkbookUpload
+                importing={management.importingWorkbook}
+                onUpload={management.onUpload}
+              />
+            ) : null}
           </div>
         </>
       ) : null}
-      <ImportJobs jobs={jobs} />
+      {management ? <ImportJobs jobs={management.jobs} /> : null}
       {status ? (
         <CoverageCard
           rows={status.coverage}
-          requests={matchRequests}
-          onMatch={onMatch}
+          requests={management?.matchRequests}
+          onMatch={management?.onMatch}
         />
       ) : null}
     </div>

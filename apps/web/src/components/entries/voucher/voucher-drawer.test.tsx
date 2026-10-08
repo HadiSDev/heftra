@@ -523,6 +523,43 @@ describe('VoucherDrawer — tabs', () => {
   })
 })
 
+describe('VoucherDrawer — demo mode', () => {
+  it('keeps the header editor but offers no document re-read', () => {
+    const parsed = {
+      ...withInvoice,
+      invoice: invoice({ source: 'pdf_extraction' }),
+    }
+    render(
+      <VoucherDrawer
+        {...props({ detail: parsed, tab: 'details', demo: true })}
+      />,
+    )
+
+    expect(screen.getByLabelText(/invoice number/i)).toBeTruthy()
+    expect(
+      screen.queryByRole('button', { name: /Process document again/ }),
+    ).toBeNull()
+  })
+
+  it('offers the document re-read outside demo mode', () => {
+    render(<VoucherDrawer {...props({ tab: 'details' })} />)
+
+    expect(
+      screen.getByRole('button', { name: /Process document again/ }),
+    ).toBeTruthy()
+  })
+
+  it('keeps the line editor', () => {
+    const onVerifyLine = vi.fn().mockResolvedValue(undefined)
+    render(
+      <VoucherDrawer {...props({ tab: 'lines', onVerifyLine, demo: true })} />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: /accept/i }))
+    expect(onVerifyLine).toHaveBeenCalledWith('l1', {})
+  })
+})
+
 describe('VoucherDrawer — dismissal', () => {
   it('closes immediately when there are no unsaved edits', async () => {
     const onOpenChange = vi.fn()

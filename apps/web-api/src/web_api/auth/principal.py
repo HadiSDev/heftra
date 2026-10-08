@@ -23,7 +23,8 @@ class ClerkPrincipal:
     is_system_admin: bool = False
 
 
-_APP_ROLES = ("admin", "moderator", "member", "viewer")
+DEMO_ROLE = "demo"
+_APP_ROLES = ("admin", "moderator", DEMO_ROLE, "member", "viewer")
 
 
 def map_role(clerk_role: str | None) -> str:
@@ -43,6 +44,12 @@ def _claim_truthy(value: object) -> bool:
     return bool(value)
 
 
+def _is_demo_login(claims: dict) -> bool:
+    """The shared demo login, marked by a session claim from the user's public metadata."""
+    claim_name = config.CLERK_DEMO_CLAIM
+    return _claim_truthy(claims.get(claim_name)) if claim_name else False
+
+
 def principal_from_claims(claims: dict) -> ClerkPrincipal:
     """Build a principal from verified JWT claims."""
     user_id = claims.get("sub")
@@ -60,6 +67,8 @@ def principal_from_claims(claims: dict) -> ClerkPrincipal:
 
     claim_name = config.CLERK_SYSTEM_ADMIN_CLAIM
     is_system_admin = _claim_truthy(claims.get(claim_name)) if claim_name else False
+    if _is_demo_login(claims):
+        role = DEMO_ROLE
 
     return ClerkPrincipal(
         user_id=user_id,

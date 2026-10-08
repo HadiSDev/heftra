@@ -82,6 +82,7 @@ function CompaniesSection() {
       canManage={canManage}
       canDelete={principal.isSystemAdmin}
       canRunPipelines={principal.isSystemAdmin}
+      demo={principal.demo}
       erpTypes={erpTypes.data ?? []}
       erpTypesLoading={erpTypes.isPending && canManage}
       integrations={integrations.data ?? []}

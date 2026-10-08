@@ -13,7 +13,10 @@ import type {
 } from '#/lib/api/admin-emission-factor-types'
 import { ActivateDialog } from './activate-dialog'
 import { EmissionFactorsAdmin } from './emission-factors-admin'
-import type { EmissionFactorsAdminProps } from './emission-factors-admin'
+import type {
+  EmissionFactorsAdminProps,
+  EmissionFactorsManagement,
+} from './emission-factors-admin'
 
 afterEach(() => {
   cleanup()
@@ -84,11 +87,11 @@ const FINISHED_JOB: ReferenceImportRead = {
   error: null,
 }
 
-function renderPage(overrides: Partial<EmissionFactorsAdminProps> = {}) {
-  const props: EmissionFactorsAdminProps = {
-    status: STATUS,
-    statusError: false,
-    onRetry: vi.fn(),
+function renderPage(
+  overrides: Partial<EmissionFactorsAdminProps> = {},
+  managementOverrides: Partial<EmissionFactorsManagement> = {},
+) {
+  const management: EmissionFactorsManagement = {
     jobs: [],
     refreshing: false,
     refreshError: null,
@@ -98,10 +101,17 @@ function renderPage(overrides: Partial<EmissionFactorsAdminProps> = {}) {
     onRefresh: vi.fn(),
     onUpload: vi.fn(async () => {}),
     onMatch: vi.fn(),
+    ...managementOverrides,
+  }
+  const props = {
+    status: STATUS,
+    statusError: false,
+    onRetry: vi.fn(),
+    management,
     ...overrides,
   }
   render(<EmissionFactorsAdmin {...props} />)
-  return props
+  return { onRetry: props.onRetry, management }
 }
 
 describe('EmissionFactorsAdmin', () => {
@@ -113,7 +123,7 @@ describe('EmissionFactorsAdmin', () => {
     expect(sets.textContent).toContain('Active')
     expect(sets.textContent).toContain('68,000')
     fireEvent.click(screen.getByRole('button', { name: 'Activate' }))
-    expect(props.onActivate).toHaveBeenCalledWith(CEDA_2024)
+    expect(props.management.onActivate).toHaveBeenCalledWith(CEDA_2024)
   })
 
   it('shows the price index and refreshes it', () => {
@@ -123,7 +133,7 @@ describe('EmissionFactorsAdmin', () => {
     expect(card.textContent).toContain('Aug 2026')
     expect(card.textContent).toContain('304.70')
     fireEvent.click(screen.getByRole('button', { name: 'Refresh from FRED' }))
-    expect(props.onRefresh).toHaveBeenCalledWith('CPIAUCSL')
+    expect(props.management.onRefresh).toHaveBeenCalledWith('CPIAUCSL')
   })
 
   it('says estimates are unadjusted while the index is not imported', () => {
@@ -149,7 +159,7 @@ describe('EmissionFactorsAdmin', () => {
   })
 
   it('disables the refresh while one is running', () => {
-    renderPage({ refreshing: true })
+    renderPage({}, { refreshing: true })
 
     const button = screen.getByRole('button', { name: /Refreshing/ })
     expect((button as HTMLButtonElement).disabled).toBe(true)
@@ -165,7 +175,7 @@ describe('EmissionFactorsAdmin', () => {
     fireEvent.click(screen.getByRole('button', { name: /Upload and import/ }))
 
     await waitFor(() => {
-      expect(props.onUpload).toHaveBeenCalledWith(
+      expect(props.management.onUpload).toHaveBeenCalledWith(
         file,
         true,
         expect.any(Function),
@@ -185,15 +195,18 @@ describe('EmissionFactorsAdmin', () => {
     ).toBeTruthy()
     const button = screen.getByRole('button', { name: /Upload and import/ })
     expect((button as HTMLButtonElement).disabled).toBe(true)
-    expect(props.onUpload).not.toHaveBeenCalled()
+    expect(props.management.onUpload).not.toHaveBeenCalled()
   })
 
   it('shows the server’s refusal of an upload', async () => {
-    renderPage({
-      onUpload: vi.fn(async () => {
-        throw new Error('An import of this kind is already queued or running')
-      }),
-    })
+    renderPage(
+      {},
+      {
+        onUpload: vi.fn(async () => {
+          throw new Error('An import of this kind is already queued or running')
+        }),
+      },
+    )
 
     fireEvent.change(screen.getByLabelText('Workbook file'), {
       target: { files: [new File(['PK'], 'ceda.xlsx')] },
@@ -208,20 +221,23 @@ describe('EmissionFactorsAdmin', () => {
   })
 
   it('lists the jobs with their outcome', () => {
-    renderPage({
-      jobs: [
-        FINISHED_JOB,
-        {
-          ...FINISHED_JOB,
-          id: 'j2',
-          kind: 'price_index',
-          subject: 'CPIAUCSL',
-          status: 'failed',
-          result: null,
-          error: 'downloading CPIAUCSL: timed out',
-        },
-      ],
-    })
+    renderPage(
+      {},
+      {
+        jobs: [
+          FINISHED_JOB,
+          {
+            ...FINISHED_JOB,
+            id: 'j2',
+            kind: 'price_index',
+            subject: 'CPIAUCSL',
+            status: 'failed',
+            result: null,
+            error: 'downloading CPIAUCSL: timed out',
+          },
+        ],
+      },
+    )
 
     const jobs = screen.getByRole('region', { name: 'Recent imports' })
     expect(jobs.textContent).toContain(
@@ -232,9 +248,10 @@ describe('EmissionFactorsAdmin', () => {
   })
 
   it('shows each company’s coverage and asks for matching', () => {
-    const props = renderPage({
-      matchRequests: { c1: { state: 'requested' } },
-    })
+    const props = renderPage(
+      {},
+      { matchRequests: { c1: { state: 'requested' } } },
+    )
 
     const coverage = screen.getByRole('region', { name: 'Sector coverage' })
     expect(coverage.textContent).toContain('VectorLab ApS')
@@ -243,7 +260,7 @@ describe('EmissionFactorsAdmin', () => {
     fireEvent.click(
       screen.getByRole('button', { name: /Match emission sectors/ }),
     )
-    expect(props.onMatch).toHaveBeenCalledWith('c1')
+    expect(props.management.onMatch).toHaveBeenCalledWith('c1')
   })
 
   it('offers a retry when the status fails to load', () => {
@@ -251,6 +268,58 @@ describe('EmissionFactorsAdmin', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Try again' }))
     expect(props.onRetry).toHaveBeenCalled()
+  })
+})
+
+describe('EmissionFactorsAdmin read-only', () => {
+  it('shows the sets, the index and the coverage without any controls', () => {
+    renderPage({ management: null })
+
+    const sets = screen.getByRole('region', { name: 'Factor sets' })
+    expect(sets.textContent).toContain('CEDA 2024')
+    expect(sets.textContent).toContain('Active')
+    expect(
+      screen.getByRole('region', { name: 'Price index' }).textContent,
+    ).toContain('Aug 2026')
+    expect(
+      screen.getByRole('region', { name: 'Sector coverage' }).textContent,
+    ).toContain('VectorLab ApS')
+    expect(screen.queryByRole('button', { name: 'Activate' })).toBeNull()
+    expect(
+      screen.queryByRole('button', { name: /Refresh from FRED/ }),
+    ).toBeNull()
+    expect(screen.queryByLabelText('Workbook file')).toBeNull()
+    expect(screen.queryByRole('region', { name: 'Recent imports' })).toBeNull()
+    expect(
+      screen.queryByRole('button', { name: /Match emission sectors/ }),
+    ).toBeNull()
+  })
+
+  it('names the organization only when the coverage spans several', () => {
+    renderPage({ management: null })
+    expect(
+      screen.getByRole('region', { name: 'Sector coverage' }).textContent,
+    ).not.toContain('VectorLab ·')
+    cleanup()
+
+    renderPage({
+      management: null,
+      status: {
+        ...STATUS,
+        coverage: [
+          ...STATUS.coverage,
+          {
+            ...STATUS.coverage[0],
+            company_id: 'c2',
+            company_name: 'Nordlys Byg A/S',
+            organization_name: 'Nordlys',
+          },
+        ],
+      },
+    })
+    const coverage = screen.getByRole('region', { name: 'Sector coverage' })
+    expect(coverage.textContent).toContain('VectorLab · 80 lines')
+    expect(coverage.textContent).toContain('Nordlys · 80 lines')
   })
 })
 

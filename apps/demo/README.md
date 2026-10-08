@@ -1,21 +1,67 @@
 # Hosted demo (demo.heftra.com)
 
-A temporary, read-only copy of the web app for showing Heftra to investors. It
-serves only the fictional **Nordlys Byg A/S**, never customer or dev data, behind
-one shared demo login.
+A temporary copy of the web app for showing Heftra to investors. It serves only
+the fictional **Nordlys Byg A/S**, never customer or dev data, behind one shared
+demo login. Visitors can use everything that works on the database alone, and
+the data goes back to its original state every night.
 
 | Service       | What it is                                                                 |
 | ------------- | -------------------------------------------------------------------------- |
 | `postgres`    | PostgreSQL 16, initialised from `postgres/demo.sql.gz` on first start      |
 | `link-org`    | One-shot step: points the demo organization at the Clerk org on each start |
+| `reset`       | Restores the original data every night at 03:00 (Europe/Copenhagen)        |
 | `web-api`     | `apps/web-api/Dockerfile`; applies migrations, then serves on 8100         |
 | `demo-erp`    | `erp/`; a stand-in ERP that serves each invoice's PDF on 8001              |
 | `web`         | `apps/web/Dockerfile`; the TanStack Start server on 3100                   |
 | `cloudflared` | Cloudflare Tunnel; nothing is published on the host                        |
 
 The demo has no file store, AI services or worker. Pages read precomputed data,
-so they need none. The only thing that doesn't work is opening an agreement's
-original PDF.
+so they need none.
+
+## What visitors can do
+
+The demo user has the organization role **demo**, so visitors can make
+changes that only touch the database:
+
+- recategorize, verify and edit spend lines, and choose emission sectors;
+- edit and verify invoice headers;
+- build spend trees: create, edit, import, archive and delete them;
+- edit agreement terms and review agreement findings;
+- review alternatives: dismiss them, mark them switched, reopen them;
+- turn ERP accounts on and off;
+- read the emission factor sources and their companies' coverage.
+
+The same role makes the web app hide the rest, and the web API refuse it with
+"Not available in the demo":
+
+- **work the demo can't run**: re-reading documents, finding alternatives,
+  editing specifications, reading or analysing agreements, pipeline runs;
+- **anything needing the file store or a real ERP**: uploading or opening
+  agreement PDFs, testing the connection, refreshing accounts, recomputing FX;
+- **changes that would break the demo for the next visitor**: creating,
+  editing, deactivating or deleting the company, changing its ERP connection,
+  deleting agreements, and editing the shared login's profile or password.
+
+## Nightly reset
+
+Visitors share one login, so their changes stay visible to everyone until the
+`reset` service restores the original data, every day at 03:00
+Europe/Copenhagen (`DEMO_RESET_AT` changes the time). It:
+
+1. loads `postgres/demo.sql.gz` into a separate database;
+2. links it to the Clerk org;
+3. keeps `demo-erp`'s registered credentials;
+4. swaps it in for the live database in under a second.
+
+To reset by hand:
+
+```bash
+docker compose run --rm reset reset-now
+```
+
+If the dump's schema revision differs from the live database's (the code gained
+a migration and the dump wasn't rebuilt), the reset refuses and logs it, and the
+live data stays as it is. Rebuild the dump and redeploy to fix that.
 
 ## Invoice documents
 
@@ -54,8 +100,14 @@ The web app talks to Clerk's production instance for `heftra.com`. Set it up onc
 3. Under **Organizations**, enable organizations.
 4. Create the organization **Nordlys Byg** and copy its id (`org_…`).
 5. Create the user `demo@heftra.com` with a strong password, and add it to
-   Nordlys Byg with the role **Member**. Members can read everything but change
-   nothing, because every write needs admin or moderator.
+   Nordlys Byg with the role **Member**. Set its public metadata to
+   `{"demo": true}`, and under **Sessions → Customize session token** add the
+   claim `"demo": "{{user.public_metadata.demo}}"` next to `system_admin`. The
+   web API gives a user with that claim the restricted **demo** role: it can
+   change data that only lives in the database, but can't manage members, the
+   organization profile, companies, the ERP connection or the danger zone. To
+   make the demo read-only again, remove `demo` from the user's public
+   metadata.
 6. Copy the production keys: the publishable key `pk_live_…`, the secret key
    `sk_live_…`, and the Frontend API URL (`https://clerk.heftra.com`).
 
@@ -77,6 +129,7 @@ Create a Compose service from this repository with compose path
 | `DEMO_CREDENTIAL_KEY`   | a Fernet key (any; `demo-erp` re-registers)   |
 | `DEMO_APP_URL`          | `https://demo.heftra.com` (default)           |
 | `DEMO_API_URL`          | `https://demo-api.heftra.com` (default)       |
+| `DEMO_RESET_AT`         | time of the nightly reset (default `03:00`)   |
 
 The publishable key, `DEMO_API_URL` and the demo login are baked into the web
 build, so change them by redeploying. The sign-in page shows the demo login in a

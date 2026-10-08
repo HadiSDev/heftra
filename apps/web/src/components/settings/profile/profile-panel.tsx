@@ -14,6 +14,7 @@ import {
   Input,
 } from '#/components/ui'
 import {
+  ReadOnlyNotice,
   SettingsCard,
   SubmitRow,
   useSettingsSubmit,
@@ -54,6 +55,8 @@ export interface ProfilePanelProps {
   onSave: (values: ProfileValues) => Promise<unknown>
   onUploadImage: (file: File) => Promise<unknown>
   onRemoveImage: () => Promise<unknown>
+  /** Whether this is the hosted demo's shared login, which can't be changed. */
+  demo?: boolean
 }
 
 /** Personal identity: name plus avatar. */
@@ -65,6 +68,7 @@ export function ProfilePanel({
   onSave,
   onUploadImage,
   onRemoveImage,
+  demo = false,
 }: ProfilePanelProps) {
   const form = useForm<ProfileValues>({ defaultValues })
   const submit = useSettingsSubmit()
@@ -133,88 +137,102 @@ export function ProfilePanel({
             <div className="truncate text-sm text-muted-foreground">
               {email}
             </div>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                size="sm"
-                variant="secondary"
-                disabled={imageBusy}
-                onClick={() => fileInput.current?.click()}
-              >
-                {imageBusy ? 'Working…' : 'Change photo'}
-              </Button>
-              {imageUrl ? (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  disabled={imageBusy}
-                  onClick={handleRemoveImage}
-                >
-                  Remove
-                </Button>
-              ) : null}
-            </div>
-            <input
-              ref={fileInput}
-              type="file"
-              accept={ACCEPTED_IMAGE_TYPES.join(',')}
-              className="hidden"
-              aria-label="Profile photo"
-              onChange={handleFile}
-            />
+            {demo ? null : (
+              <>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    disabled={imageBusy}
+                    onClick={() => fileInput.current?.click()}
+                  >
+                    {imageBusy ? 'Working…' : 'Change photo'}
+                  </Button>
+                  {imageUrl ? (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      disabled={imageBusy}
+                      onClick={handleRemoveImage}
+                    >
+                      Remove
+                    </Button>
+                  ) : null}
+                </div>
+                <input
+                  ref={fileInput}
+                  type="file"
+                  accept={ACCEPTED_IMAGE_TYPES.join(',')}
+                  className="hidden"
+                  aria-label="Profile photo"
+                  onChange={handleFile}
+                />
+              </>
+            )}
             {imageError ? (
               <p className="text-sm text-destructive">{imageError}</p>
             ) : null}
           </div>
         </div>
 
-        <Form {...form}>
-          <form
-            className="flex flex-col gap-4"
-            onSubmit={submit({ form, run: onSave, success: 'Profile updated' })}
-          >
-            <div className="grid gap-4 sm:grid-cols-2">
-              <FormField
-                control={form.control}
-                name="firstName"
-                rules={{
-                  maxLength: {
-                    value: 60,
-                    message: 'Keep it under 60 characters.',
-                  },
-                }}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>First name</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="lastName"
-                rules={{
-                  maxLength: {
-                    value: 60,
-                    message: 'Keep it under 60 characters.',
-                  },
-                }}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Last name</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <SubmitRow form={form} />
-          </form>
-        </Form>
+        {demo ? (
+          <ReadOnlyNotice>
+            The shared demo login can't be changed.
+          </ReadOnlyNotice>
+        ) : (
+          <Form {...form}>
+            <form
+              className="flex flex-col gap-4"
+              onSubmit={submit({
+                form,
+                run: onSave,
+                success: 'Profile updated',
+              })}
+            >
+              <div className="grid gap-4 sm:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="firstName"
+                  rules={{
+                    maxLength: {
+                      value: 60,
+                      message: 'Keep it under 60 characters.',
+                    },
+                  }}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>First name</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="lastName"
+                  rules={{
+                    maxLength: {
+                      value: 60,
+                      message: 'Keep it under 60 characters.',
+                    },
+                  }}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Last name</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <SubmitRow form={form} />
+            </form>
+          </Form>
+        )}
       </div>
     </SettingsCard>
   )

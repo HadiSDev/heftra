@@ -129,3 +129,16 @@ describe('ProfilePanel', () => {
     await waitFor(() => expect(onUploadImage).toHaveBeenCalledWith(file))
   })
 })
+
+describe('ProfilePanel in demo mode', () => {
+  it('shows who is signed in, with nothing to change', () => {
+    renderPanel({ demo: true })
+
+    expect(screen.getByText('ada@example.com')).toBeTruthy()
+    expect(
+      screen.getByText("The shared demo login can't be changed."),
+    ).toBeTruthy()
+    expect(screen.queryByLabelText('First name')).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Change photo' })).toBeNull()
+  })
+})

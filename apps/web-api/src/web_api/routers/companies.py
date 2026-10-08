@@ -16,6 +16,7 @@ from ..auth.deps import (
     TenantScope,
     get_managed_company,
     get_session,
+    refuse_in_demo,
     require_management,
     require_system_admin,
     resolve_target_organization,
@@ -83,7 +84,8 @@ def list_companies(
 
 
 @router.post("/companies", response_model=CompanyCreateResult,
-             status_code=status.HTTP_201_CREATED)
+             status_code=status.HTTP_201_CREATED,
+             dependencies=[Depends(refuse_in_demo)])
 def create_company(
     body: CompanyCreate,
     scope: TenantScope = Depends(require_management),
@@ -114,7 +116,10 @@ def create_company(
     )
 
 
-@router.patch("/companies/{company_id}", response_model=CompanyUpdateResult)
+@router.patch(
+    "/companies/{company_id}", response_model=CompanyUpdateResult,
+    dependencies=[Depends(refuse_in_demo)],
+)
 def update_company(
     company_id: str,
     body: CompanyUpdate,
@@ -150,7 +155,10 @@ def update_company(
     )
 
 
-@router.post("/companies/{company_id}/recompute-fx", response_model=FxRecomputeResult)
+@router.post(
+    "/companies/{company_id}/recompute-fx", response_model=FxRecomputeResult,
+    dependencies=[Depends(refuse_in_demo)],
+)
 def recompute_company_fx(
     company_id: str,
     scope: TenantScope = Depends(require_management),
@@ -172,7 +180,10 @@ def recompute_company_fx(
 REQUEUED_ACTION = "requeued_for_categorization"
 
 
-@router.post("/companies/{company_id}/recategorize", response_model=RecategorizeResult)
+@router.post(
+    "/companies/{company_id}/recategorize", response_model=RecategorizeResult,
+    dependencies=[Depends(refuse_in_demo)],
+)
 def recategorize_company_lines(
     company_id: str,
     scope: TenantScope = Depends(require_management),
@@ -216,7 +227,10 @@ def recategorize_company_lines(
     return RecategorizeResult(company_id=company.id, queued=len(lines))
 
 
-@router.post("/companies/{company_id}/deactivate", response_model=CompanyRead)
+@router.post(
+    "/companies/{company_id}/deactivate", response_model=CompanyRead,
+    dependencies=[Depends(refuse_in_demo)],
+)
 def deactivate_company(
     company_id: str,
     scope: TenantScope = Depends(require_management),
@@ -231,7 +245,10 @@ def deactivate_company(
     return _company_read(session, company)
 
 
-@router.post("/companies/{company_id}/activate", response_model=CompanyRead)
+@router.post(
+    "/companies/{company_id}/activate", response_model=CompanyRead,
+    dependencies=[Depends(refuse_in_demo)],
+)
 def activate_company(
     company_id: str,
     scope: TenantScope = Depends(require_management),
@@ -246,7 +263,10 @@ def activate_company(
     return _company_read(session, company)
 
 
-@router.delete("/companies/{company_id}", response_model=CompanyDeleteResult)
+@router.delete(
+    "/companies/{company_id}", response_model=CompanyDeleteResult,
+    dependencies=[Depends(refuse_in_demo)],
+)
 def delete_company_endpoint(
     company_id: str,
     confirm: bool = Query(default=False),

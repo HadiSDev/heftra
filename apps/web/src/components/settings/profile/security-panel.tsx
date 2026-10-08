@@ -15,6 +15,7 @@ import {
 import type { ClerkUser } from '#/lib/auth/clerk-types'
 import { serverErrorMessage } from '#/lib/form-errors'
 import {
+  ReadOnlyNotice,
   SettingsCard,
   SubmitRow,
   useSettingsSubmit,
@@ -326,8 +327,27 @@ function formatLastActive(date: Date | null | undefined): string {
   return `Last active ${date.toLocaleString()}`
 }
 
+/** The account's sign-in settings, or a notice on the hosted demo's shared login. */
+export function SecurityPanel({
+  user,
+  demo = false,
+}: {
+  user: ClerkUser
+  /** Whether this is the hosted demo's shared login, which can't be changed. */
+  demo?: boolean
+}) {
+  if (demo) {
+    return (
+      <SettingsCard title="Security">
+        <ReadOnlyNotice>The shared demo login can't be changed.</ReadOnlyNotice>
+      </SettingsCard>
+    )
+  }
+  return <ClerkSecurityPanel user={user} />
+}
+
 /** Binds the view to Clerk's password, session, and external-account APIs. */
-export function SecurityPanel({ user }: { user: ClerkUser }) {
+function ClerkSecurityPanel({ user }: { user: ClerkUser }) {
   const { session } = useSession()
   const [sessions, setSessions] = React.useState<Array<SessionRow>>([])
   const [loading, setLoading] = React.useState(true)

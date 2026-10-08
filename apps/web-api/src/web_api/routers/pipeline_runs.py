@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlmodel import Session, select
 
 from web_api.db.models import ErpIntegration, PipelineRun, PipelineRunKind, PipelineRunStatus
-from ..auth.deps import TenantScope, get_managed_company, get_session, require_system_admin
+from ..auth.deps import TenantScope, get_managed_company, get_session, refuse_in_demo, require_system_admin
 from ..schemas import PipelineRunCreate, PipelineRunRead
 
 router = APIRouter(prefix="/api/v1", tags=["pipeline-runs"])
@@ -36,7 +36,8 @@ def _has_connected_erp(session: Session, company_id: str) -> bool:
 
 
 @router.post("/companies/{company_id}/runs", response_model=PipelineRunRead,
-             status_code=status.HTTP_201_CREATED)
+             status_code=status.HTTP_201_CREATED,
+             dependencies=[Depends(refuse_in_demo)])
 def request_run(
     company_id: str,
     body: PipelineRunCreate,

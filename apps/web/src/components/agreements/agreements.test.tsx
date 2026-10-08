@@ -21,6 +21,7 @@ import { AgreementHeading } from './detail/agreement-heading'
 import { AgreementsPanel } from './list/agreements-panel'
 import { ReportTab } from './report/report-tab'
 import { TermCard } from './terms/term-card'
+import { TermsTab } from './terms/terms-tab'
 
 vi.mock('@tanstack/react-router', async (importOriginal) => {
   const actual = await importOriginal<typeof RouterModule>()
@@ -382,6 +383,47 @@ describe('AgreementHeading', () => {
 
     expect(screen.queryByRole('button', { name: /Read again/ })).toBeNull()
     expect(screen.queryByRole('button', { name: /Delete/ })).toBeNull()
+  })
+
+  it('offers neither a re-read nor a delete in demo mode', () => {
+    render(
+      <AgreementHeading
+        agreement={{ ...AGREEMENT, status: 'active' }}
+        canEdit
+        demo
+        onDelete={vi.fn(async () => {})}
+        onReadAgain={vi.fn(async () => {})}
+      />,
+    )
+
+    expect(screen.queryByRole('button', { name: /Read again/ })).toBeNull()
+    expect(screen.queryByRole('button', { name: /Delete/ })).toBeNull()
+  })
+})
+
+describe('TermsTab in demo mode', () => {
+  it('keeps the details editable but shows no document and no re-read', () => {
+    render(
+      <TermsTab
+        agreement={{ ...AGREEMENT, status: 'failed', read_error: 'Unreadable' }}
+        canEdit
+        demo
+        vendors={[]}
+        spendTreeNodes={null}
+        onVendorSearch={vi.fn()}
+        busyTermId={null}
+        onSaveHeader={vi.fn(async () => {})}
+        onUpdateTerm={vi.fn(async () => {})}
+        onAddTerm={vi.fn(async () => {})}
+        onReadAgain={vi.fn()}
+      />,
+    )
+
+    expect(
+      screen.getByText("Agreement documents aren't available in the demo."),
+    ).toBeTruthy()
+    expect(screen.queryByRole('button', { name: /Read it again/ })).toBeNull()
+    expect(screen.getByRole('button', { name: 'Save details' })).toBeTruthy()
   })
 })
 
@@ -763,6 +805,16 @@ describe('ReportTab', () => {
 
     expect(props.onAnalyse).toHaveBeenNthCalledWith(1, false)
     expect(props.onAnalyse).toHaveBeenNthCalledWith(2, true)
+  })
+
+  it('keeps the finding review but offers no check in demo mode', () => {
+    renderReport({ demo: true })
+
+    expect(screen.getByRole('button', { name: 'Review' })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: /^Check again/ })).toBeNull()
+    expect(
+      screen.queryByRole('button', { name: 'Check everything again' }),
+    ).toBeNull()
   })
 
   it('says what the last check could not cover', () => {

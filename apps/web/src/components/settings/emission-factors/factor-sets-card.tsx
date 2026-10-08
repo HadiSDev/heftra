@@ -18,7 +18,8 @@ import { formatCount, formatDay } from '#/lib/format/format'
 
 export interface FactorSetsCardProps {
   sets: Array<AdminFactorSetRead>
-  onActivate: (set: AdminFactorSetRead) => void
+  /** Omit to list the sets without a way to activate them. */
+  onActivate?: (set: AdminFactorSetRead) => void
 }
 
 /** Every imported factor set, the active one marked, the others activatable. */
@@ -34,7 +35,8 @@ export function FactorSetsCard({ sets, onActivate }: FactorSetsCardProps) {
       </CardHeader>
       {sets.length === 0 ? (
         <p className="px-6 pb-6 text-sm text-muted-foreground">
-          No factor sets are imported yet. Upload an Open CEDA workbook below.
+          No factor sets are imported yet.
+          {onActivate ? ' Upload an Open CEDA workbook below.' : ''}
         </p>
       ) : (
         <div className="overflow-x-auto px-2 pb-2">
@@ -82,7 +84,7 @@ export function FactorSetsCard({ sets, onActivate }: FactorSetsCardProps) {
                   <TableCell className="text-right">
                     {set.active ? (
                       <Badge variant="success">Active</Badge>
-                    ) : (
+                    ) : onActivate ? (
                       <Button
                         size="sm"
                         variant="outline"
@@ -92,7 +94,7 @@ export function FactorSetsCard({ sets, onActivate }: FactorSetsCardProps) {
                       >
                         Activate
                       </Button>
-                    )}
+                    ) : null}
                   </TableCell>
                 </TableRow>
               ))}

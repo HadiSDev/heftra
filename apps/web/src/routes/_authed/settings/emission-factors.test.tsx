@@ -1,6 +1,7 @@
 import type { ComponentType } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 import { Route } from './emission-factors'
 
@@ -14,10 +15,24 @@ vi.mock('#/lib/auth/auth', () => ({
 const EmissionFactorsRoute = Route.options.component as unknown as ComponentType
 
 describe('Emission factors route', () => {
-  it('tells anyone but a system admin it is not for them, without asking the API', () => {
-    render(<EmissionFactorsRoute />)
+  it('shows anyone but a system admin a read-only page, without asking for the imports', async () => {
+    get.mockResolvedValue({
+      sets: [],
+      price_indices: [],
+      coverage: [],
+    })
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <EmissionFactorsRoute />
+      </QueryClientProvider>,
+    )
 
-    expect(screen.getByText('System admins only')).toBeTruthy()
-    expect(get).not.toHaveBeenCalled()
+    expect(
+      await screen.findByRole('region', { name: 'Factor sets' }),
+    ).toBeTruthy()
+    expect(screen.queryByLabelText('Workbook file')).toBeNull()
+    expect(screen.queryByRole('region', { name: 'Recent imports' })).toBeNull()
+    expect(get).toHaveBeenCalledTimes(1)
+    expect(get.mock.calls[0][0]).not.toContain('/imports')
   })
 })

@@ -26,11 +26,12 @@ function AgreementsPage() {
   const navigate = useNavigate({ from: Route.fullPath })
   const { sort, order } = resolveAgreementSort(Route.useSearch())
   const queryClient = useQueryClient()
-  const canManage = canManageCompanies(usePrincipal())
+  const principal = usePrincipal()
+  const canUpload = canManageCompanies(principal) && !principal.demo
   const agreements = useQuery(agreementsQueryOptions(api))
   const companies = useQuery({
     ...companiesQueryOptions(api),
-    enabled: canManage,
+    enabled: canUpload,
   })
   const upload = useMutation(uploadAgreementMutation(api, queryClient))
 
@@ -49,7 +50,7 @@ function AgreementsPage() {
         })
       }}
       upload={
-        canManage
+        canUpload
           ? {
               companies: (companies.data ?? []).map((company) => ({
                 id: company.id,

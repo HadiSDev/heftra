@@ -41,9 +41,10 @@ function ProfileSection() {
         }
         onUploadImage={(file) => user.setProfileImage({ file })}
         onRemoveImage={() => user.setProfileImage({ file: null })}
+        demo={principal.demo}
       />
-      <EmailsPanel user={user} />
-      <SecurityPanel user={user} />
+      {principal.demo ? null : <EmailsPanel user={user} />}
+      <SecurityPanel user={user} demo={principal.demo} />
       <PreferencesPanel />
     </div>
   )

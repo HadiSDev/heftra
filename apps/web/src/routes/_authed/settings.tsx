@@ -5,7 +5,6 @@ import {
   useRouterState,
 } from '@tanstack/react-router'
 import { Tabs, TabsList, TabsTab } from '#/components/ui'
-import { usePrincipal } from '#/lib/auth/auth'
 
 export const Route = createFileRoute('/_authed/settings')({
   component: SettingsLayout,
@@ -18,21 +17,15 @@ const TABS = [
   { to: '/settings/organization', label: 'Organization' },
   { to: '/settings/companies', label: 'Companies' },
   { to: '/settings/spend-trees', label: 'Spend trees' },
-] as const
-
-/** Sections only system admins see, after the others. */
-const SYSTEM_ADMIN_TABS = [
   { to: '/settings/emission-factors', label: 'Emission factors' },
 ] as const
 
 function SettingsLayout() {
-  const principal = usePrincipal()
   const pathname = useRouterState({
     select: (state) => state.location.pathname,
   })
-  const tabs = principal.isSystemAdmin ? [...TABS, ...SYSTEM_ADMIN_TABS] : TABS
   const active =
-    tabs.find((tab) => pathname.startsWith(tab.to))?.to ?? TABS[0].to
+    TABS.find((tab) => pathname.startsWith(tab.to))?.to ?? TABS[0].to
 
   return (
     <div className="flex flex-col gap-6">
@@ -48,7 +41,7 @@ function SettingsLayout() {
 
       <Tabs value={active}>
         <TabsList>
-          {tabs.map((tab) => (
+          {TABS.map((tab) => (
             <TabsTab
               key={tab.to}
               value={tab.to}

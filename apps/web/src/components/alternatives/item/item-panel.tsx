@@ -123,6 +123,8 @@ export interface ItemPanelProps {
   /** The item's spend lines, newest first; undefined while loading, null when they failed. */
   lines: Array<ItemLineRead> | undefined | null
   canManage: boolean
+  /** Whether this is the hosted demo, which hides actions it can't serve. */
+  demo?: boolean
   searchPending: boolean
   onSearch: () => void
   onSaveSpec: (spec: Specification) => Promise<void>
@@ -134,6 +136,7 @@ export function ItemPanel({
   item,
   lines,
   canManage,
+  demo = false,
   searchPending,
   onSearch,
   onSaveSpec,
@@ -146,7 +149,7 @@ export function ItemPanel({
       <Header item={item} />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <SearchStatus item={item} />
-        {canManage ? (
+        {canManage && !demo ? (
           <div className="flex flex-wrap gap-2">
             <Button
               variant="outline"

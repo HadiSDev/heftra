@@ -16,6 +16,7 @@ from ..alternatives.specification import correct_specification
 from ..auth.deps import (
     TenantScope,
     get_session,
+    refuse_in_demo,
     require_management,
     resolve_company_ids,
     tenant_scope,
@@ -81,7 +82,10 @@ def read_item_lines(
     return item_lines(session, get_item(session, scope, item_id))
 
 
-@router.patch("/items/{item_id}/specification", response_model=ItemRead)
+@router.patch(
+    "/items/{item_id}/specification", response_model=ItemRead,
+    dependencies=[Depends(refuse_in_demo)],
+)
 def update_specification(
     item_id: str,
     body: Specification,
@@ -96,7 +100,8 @@ def update_specification(
 
 
 @router.post("/items/{item_id}/find-alternatives", response_model=PipelineRunRead,
-             status_code=status.HTTP_202_ACCEPTED)
+             status_code=status.HTTP_202_ACCEPTED,
+             dependencies=[Depends(refuse_in_demo)])
 def find_alternatives(
     item_id: str,
     scope: TenantScope = Depends(require_management),
@@ -124,7 +129,8 @@ def read_line_item(
 
 
 @router.post("/invoice-lines/{line_id}/find-alternatives", response_model=ItemRead,
-             status_code=status.HTTP_202_ACCEPTED)
+             status_code=status.HTTP_202_ACCEPTED,
+             dependencies=[Depends(refuse_in_demo)])
 def find_line_alternatives(
     line_id: str,
     scope: TenantScope = Depends(require_management),

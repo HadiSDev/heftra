@@ -36,7 +36,12 @@ vi.mock('#/lib/api/api-client', async (importOriginal) => ({
 
 function Probe() {
   const principal = usePrincipal()
-  return <div data-testid="org">{principal.organizationId}</div>
+  return (
+    <>
+      <div data-testid="org">{principal.organizationId}</div>
+      <div data-testid="demo">{String(principal.demo)}</div>
+    </>
+  )
 }
 
 function tree(client: QueryClient) {
@@ -75,6 +80,40 @@ describe('AuthProvider org scope', () => {
     )
     expect(client.getQueryData(['reports', 'entries-summary'])).toBeUndefined()
     expect(get).toHaveBeenCalledTimes(2)
+  })
+})
+
+describe('AuthProvider demo login', () => {
+  it('marks the demo role as the demo login', async () => {
+    get.mockResolvedValueOnce({
+      id: 'user_demo',
+      email: 'demo@heftra.com',
+      name: 'Demo',
+      role: 'demo',
+      is_system_admin: false,
+      organization_id: activeOrgId,
+    })
+    const client = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    })
+
+    render(tree(client))
+
+    await waitFor(() =>
+      expect(screen.getByTestId('demo').textContent).toBe('true'),
+    )
+  })
+
+  it('does not mark any other role as the demo login', async () => {
+    const client = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    })
+
+    render(tree(client))
+
+    await waitFor(() =>
+      expect(screen.getByTestId('demo').textContent).toBe('false'),
+    )
   })
 })
 
@@ -144,6 +183,7 @@ describe('role gates', () => {
       role: 'member',
       isSystemAdmin: false,
       organizationId: 'org1',
+      demo: false,
       ...overrides,
     }
   }
@@ -151,6 +191,7 @@ describe('role gates', () => {
   it.each([
     ['admin', true],
     ['moderator', false],
+    ['demo', false],
     ['member', false],
     ['viewer', false],
   ] as const)('canManageOrganization(%s) === %s', (role, expected) => {
@@ -160,6 +201,7 @@ describe('role gates', () => {
   it.each([
     ['admin', true],
     ['moderator', true],
+    ['demo', true],
     ['member', false],
     ['viewer', false],
   ] as const)('canManageCompanies(%s) === %s', (role, expected) => {

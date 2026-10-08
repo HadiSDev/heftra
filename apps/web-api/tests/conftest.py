@@ -36,6 +36,7 @@ PRINCIPALS: dict[str, ClerkPrincipal] = {
     "tok_noorg": ClerkPrincipal("userC", None, None, None, None, None),
     "tok_empty": ClerkPrincipal("userE", "clerk_orgEmpty", "Empty Org", "org:admin", "e@e.com", "Eve"),
     "tok_moderatorA": ClerkPrincipal("userMod", "clerk_orgA", "Org A", "org:moderator", "mod@a.com", "Mod"),
+    "tok_demoA": ClerkPrincipal("userDemo", "clerk_orgA", "Org A", "demo", "demo@a.com", "Demo"),
     "tok_memberA": ClerkPrincipal("userMem", "clerk_orgA", "Org A", "org:member", "mem@a.com", "Mem"),
     "tok_viewerA": ClerkPrincipal("userVie", "clerk_orgA", "Org A", "org:viewer", "vie@a.com", "Vie"),
     "tok_sysadmin": ClerkPrincipal("userSys", "clerk_orgA", "Org A", "org:member", "sys@a.com", "Sys", is_system_admin=True),

@@ -24,8 +24,9 @@ export type MatchRequest =
 
 export interface CoverageCardProps {
   rows: Array<SectorCoverageRow>
-  requests: Record<string, MatchRequest | undefined>
-  onMatch: (companyId: string) => void
+  requests?: Record<string, MatchRequest | undefined>
+  /** Omit to show the coverage without a way to request matching. */
+  onMatch?: (companyId: string) => void
 }
 
 function matchedShare(row: SectorCoverageRow): number {
@@ -45,8 +46,17 @@ function RequestNote({ request }: { request: MatchRequest | undefined }) {
   return null
 }
 
+function spansOrganizations(rows: Array<SectorCoverageRow>): boolean {
+  return new Set(rows.map((row) => row.organization_name)).size > 1
+}
+
 /** Each company's lines by emission sector, with a way to match the rest. */
-export function CoverageCard({ rows, requests, onMatch }: CoverageCardProps) {
+export function CoverageCard({
+  rows,
+  requests = {},
+  onMatch,
+}: CoverageCardProps) {
+  const showOrganization = spansOrganizations(rows)
   return (
     <Card role="region" aria-label="Sector coverage">
       <CardHeader>
@@ -66,9 +76,11 @@ export function CoverageCard({ rows, requests, onMatch }: CoverageCardProps) {
               <TableHead className="text-right">Person</TableHead>
               <TableHead className="text-right">To review</TableHead>
               <TableHead className="text-right">Unmatched</TableHead>
-              <TableHead className="text-right">
-                <span className="sr-only">Actions</span>
-              </TableHead>
+              {onMatch ? (
+                <TableHead className="text-right">
+                  <span className="sr-only">Actions</span>
+                </TableHead>
+              ) : null}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -81,7 +93,8 @@ export function CoverageCard({ rows, requests, onMatch }: CoverageCardProps) {
                     <div className="flex flex-col">
                       <span className="font-medium">{row.company_name}</span>
                       <span className="text-xs text-muted-foreground">
-                        {row.organization_name} · {formatCount(row.lines)} lines
+                        {showOrganization ? `${row.organization_name} · ` : ''}
+                        {formatCount(row.lines)} lines
                       </span>
                     </div>
                   </TableCell>
@@ -113,24 +126,26 @@ export function CoverageCard({ rows, requests, onMatch }: CoverageCardProps) {
                   <TableCell className="text-right tabular-nums">
                     {formatCount(row.unmatched)}
                   </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex flex-col items-end gap-1">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={
-                          row.lines === 0 || request?.state === 'pending'
-                        }
-                        onClick={() => {
-                          onMatch(row.company_id)
-                        }}
-                      >
-                        <Leaf />
-                        Match emission sectors
-                      </Button>
-                      <RequestNote request={request} />
-                    </div>
-                  </TableCell>
+                  {onMatch ? (
+                    <TableCell className="text-right">
+                      <div className="flex flex-col items-end gap-1">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={
+                            row.lines === 0 || request?.state === 'pending'
+                          }
+                          onClick={() => {
+                            onMatch(row.company_id)
+                          }}
+                        >
+                          <Leaf />
+                          Match emission sectors
+                        </Button>
+                        <RequestNote request={request} />
+                      </div>
+                    </TableCell>
+                  ) : null}
                 </TableRow>
               )
             })}

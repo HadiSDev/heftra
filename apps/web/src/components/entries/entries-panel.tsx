@@ -148,6 +148,8 @@ export interface EntriesPanelProps {
   onReprocess: (invoiceId: string) => Promise<void>
   /** Whether the signed-in user holds a management role. */
   canManage: boolean
+  /** Whether this is the hosted demo, which hides actions it can't serve. */
+  demo?: boolean
 }
 
 /** The Entries page body. */
@@ -188,6 +190,7 @@ export function EntriesPanel({
   renderLineExtra,
   onReprocess,
   canManage,
+  demo = false,
 }: EntriesPanelProps) {
   const pageCount = result
     ? Math.max(1, Math.ceil(result.total / result.page_size))
@@ -280,6 +283,7 @@ export function EntriesPanel({
         vendors={vendors}
         onReprocess={onReprocess}
         canManage={canManage}
+        demo={demo}
         onHeaderDirtyChange={setHeaderDirty}
         hasUnsavedChanges={headerDirty}
       />
